@@ -104,7 +104,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
     PeriphClkInitStruct.PLL2.PLL2Q = 2;
     PeriphClkInitStruct.PLL2.PLL2R = 2;
     PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_3;
-    PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOMEDIUM;
+    PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOWIDE;
     PeriphClkInitStruct.PLL2.PLL2FRACN = 3072.0;
     PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_PLL2;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
@@ -216,6 +216,9 @@ void HAL_DAC_MspInit(DAC_HandleTypeDef* hdac)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+    /* DAC1 interrupt Init */
+    HAL_NVIC_SetPriority(TIM6_DAC_IRQn, 15, 0);
+    HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
   /* USER CODE BEGIN DAC1_MspInit 1 */
 
   /* USER CODE END DAC1_MspInit 1 */
@@ -244,6 +247,8 @@ void HAL_DAC_MspDeInit(DAC_HandleTypeDef* hdac)
     */
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_4);
 
+    /* DAC1 interrupt DeInit */
+    HAL_NVIC_DisableIRQ(TIM6_DAC_IRQn);
   /* USER CODE BEGIN DAC1_MspDeInit 1 */
 
   /* USER CODE END DAC1_MspDeInit 1 */
