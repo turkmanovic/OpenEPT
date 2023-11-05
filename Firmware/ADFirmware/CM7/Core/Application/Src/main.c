@@ -38,15 +38,15 @@ const osThreadAttr_t defaultTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
 };
 
-void SystemClock_Config(void);
-static void MPU_Initialize(void);
-static void MPU_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_DMA_Init(void);
-static void MX_USART3_Init(void);
-static void MX_ADC1_Init(void);
-static void MX_DAC1_Init(void);
-void StartDefaultTask(void *argument);
+void SystemClock_Config(void);   //System
+static void MPU_Initialize(void); //System
+static void MPU_Config(void);   //System
+static void MX_GPIO_Init(void); //GPIO
+static void MX_DMA_Init(void); //AnalogIN
+static void MX_USART3_Init(void); //UART
+static void MX_ADC1_Init(void);	//AnalogIN
+static void MX_DAC1_Init(void);	//AnalogOUT
+void StartDefaultTask(void *argument); //Izbaciti
 
 /**
   * @brief  The application entry point.
@@ -60,15 +60,15 @@ int main(void)
 /* USER CODE END Boot_Mode_Sequence_0 */
 
   /* Enable I-Cache---------------------------------------------------------*/
-  SCB_EnableICache();
+  SCB_EnableICache();	//System
 
   /* Enable D-Cache---------------------------------------------------------*/
-  SCB_EnableDCache();
+  SCB_EnableDCache();	//System
 
 /* USER CODE BEGIN Boot_Mode_Sequence_1 */
   /* Wait until CPU2 boots and enters in stop mode or timeout*/
-  timeout = 0xFFFF;
-  while((__HAL_RCC_GET_FLAG(RCC_FLAG_D2CKRDY) != RESET) && (timeout-- > 0));
+  timeout = 0xFFFF;	//System
+  while((__HAL_RCC_GET_FLAG(RCC_FLAG_D2CKRDY) != RESET) && (timeout-- > 0));	//System
 //  if ( timeout < 0 )
 //  {
 //  Error_Handler();
@@ -77,17 +77,17 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+  HAL_Init();	//System
 
   /* MPU Configuration--------------------------------------------------------*/
-  MPU_Config();
+  MPU_Config();	//System
 
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
 
   /* Configure the system clock */
-  SystemClock_Config();
+  SystemClock_Config();	//System
 /* USER CODE BEGIN Boot_Mode_Sequence_2 */
 /* When system initialization is finished, Cortex-M7 will release Cortex-M4 by means of
 HSEM notification */
@@ -111,17 +111,17 @@ Error_Handler();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_USART3_Init();
-  MX_ADC1_Init();
-  MX_DAC1_Init();
+  MX_GPIO_Init();	//GPIO
+  MX_DMA_Init();	//AnalogIN
+  MX_USART3_Init();	//UART
+  MX_ADC1_Init();	//AnalogIN
+  MX_DAC1_Init();	//AnalogOut
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
 
   /* Init scheduler */
-  osKernelInitialize();
+  osKernelInitialize();	//System
 
 
   /* creation of defaultTask */
