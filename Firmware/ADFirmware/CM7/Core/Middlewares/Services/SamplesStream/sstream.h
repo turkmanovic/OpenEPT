@@ -54,7 +54,7 @@ typedef enum{
 
 
 sstream_status_t			SSTREAM_Init(void);
-sstream_status_t			SSTREAM();
+sstream_status_t			SSTREAM_Start();
 sstream_status_t			SSTREAM_Stop();
 sstream_status_t			SSTREAM_SetResolution(sstream_adc_resolution_t resolution);
 sstream_adc_resolution_t	SSTREAM_GetReolsution();

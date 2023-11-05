@@ -12,7 +12,7 @@ sstream_status_t			SSTREAM_Init(void)
 
 	return SSTREAM_STATUS_OK;
 }
-sstream_status_t			SSTREAM()
+sstream_status_t			SSTREAM_Start()
 {
 
 	return SSTREAM_STATUS_OK;
