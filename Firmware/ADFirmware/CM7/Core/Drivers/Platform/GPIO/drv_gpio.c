@@ -153,9 +153,10 @@ drv_gpio_status_t DRV_GPIO_Pin_SetState(drv_gpio_port_t port, drv_gpio_pin pin, 
 }
 
 
-drv_gpio_status_t DRV_GPIO_Pin_EnableInt(drv_gpio_port_t port, drv_gpio_pin pin, drv_gpio_pin_isr_callback callback)
+drv_gpio_status_t DRV_GPIO_Pin_EnableInt(drv_gpio_port_t port, drv_gpio_pin pin, uint32_t pri, drv_gpio_pin_isr_callback callback)
 {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	drv_gpio_status_t status = DRV_GPIO_STATUS_OK;
 	if(prvDRV_GPIO_PORTS[port].initState != DRV_GPIO_PORT_INIT_STATUS_INITIALIZED || prvDRV_GPIO_PORTS[port].lock == NULL) return DRV_GPIO_STATUS_ERROR;
 	if(pin > DRV_GPIO_PIN_MAX_NUMBER || pin > DRV_GPIO_INTERRUPTS_MAX_NUMBER) return DRV_GPIO_STATUS_ERROR;
 
@@ -169,9 +170,42 @@ drv_gpio_status_t DRV_GPIO_Pin_EnableInt(drv_gpio_port_t port, drv_gpio_pin pin,
 
 	prvDRV_GPIO_PINS_INTERRUPTS[pin] = callback;
 
-	if(pin >= 10  || pin <= 15){
-		HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+	if(pin >= 10  && pin <= 15){
+		HAL_NVIC_SetPriority(EXTI15_10_IRQn, pri, 0);
 		HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+	}
+	if(pin >= 5  && pin <= 9){
+		HAL_NVIC_SetPriority(EXTI9_5_IRQn, pri, 0);
+		HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+	}
+	if(pin < 5)
+	{
+		switch(pin)
+		{
+		case 0:
+			HAL_NVIC_SetPriority(EXTI0_IRQn, pri, 0);
+			HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+			break;
+		case 1:
+			HAL_NVIC_SetPriority(EXTI1_IRQn, pri, 0);
+			HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+			break;
+		case 2:
+			HAL_NVIC_SetPriority(EXTI2_IRQn, pri, 0);
+			HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+			break;
+		case 3:
+			HAL_NVIC_SetPriority(EXTI3_IRQn, pri, 0);
+			HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+			break;
+		case 4:
+			HAL_NVIC_SetPriority(EXTI4_IRQn, pri, 0);
+			HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+			break;
+		default:
+			/*Never ends here*/
+			break;
+		}
 	}
 
 	if(xSemaphoreGive(prvDRV_GPIO_PORTS[port].lock) == pdFALSE ) return DRV_GPIO_STATUS_ERROR;
