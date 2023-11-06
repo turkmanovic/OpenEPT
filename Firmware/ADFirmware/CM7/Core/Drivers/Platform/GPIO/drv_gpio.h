@@ -18,8 +18,9 @@
 
 #include "globalConfig.h"
 
-#define DRV_GPIO_PORT_MAX_NUMBER	CONF_GPIO_PORT_MAX_NUMBER
-#define DRV_GPIO_PIN_MAX_NUMBER		CONF_GPIO_PIN_MAX_NUMBER
+#define DRV_GPIO_PORT_MAX_NUMBER		CONF_GPIO_PORT_MAX_NUMBER
+#define DRV_GPIO_PIN_MAX_NUMBER			CONF_GPIO_PIN_MAX_NUMBER
+#define DRV_GPIO_INTERRUPTS_MAX_NUMBER	CONF_GPIO_INTERRUPTS_MAX_NUMBER
 
 typedef enum
 {
@@ -95,6 +96,7 @@ typedef struct
 }drv_gpio_pin_init_conf_t;
 
 typedef void (*drv_gpio_pin_isr_callback)(drv_gpio_pin);
+
 
 drv_gpio_status_t DRV_GPIO_Init();
 drv_gpio_status_t DRV_GPIO_Port_Init(drv_gpio_port_t port);

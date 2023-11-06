@@ -11,7 +11,23 @@
 #include "main.h"
 
 
-static drv_gpio_port_handle_t prvDRV_GPIO_PORTS[DRV_GPIO_PORT_MAX_NUMBER];
+static drv_gpio_port_handle_t 		prvDRV_GPIO_PORTS[DRV_GPIO_PORT_MAX_NUMBER];
+static drv_gpio_pin_isr_callback	prvDRV_GPIO_PINS_INTERRUPTS[DRV_GPIO_INTERRUPTS_MAX_NUMBER];
+
+void 	HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	uint32_t 	i = 0;
+	uint16_t	pinNo = GPIO_Pin;
+	while(pinNo != 0x01)
+	{
+		pinNo = pinNo >> 1;
+		i++;
+	}
+	if(i < DRV_GPIO_INTERRUPTS_MAX_NUMBER)
+	{
+		prvDRV_GPIO_PINS_INTERRUPTS[i](GPIO_Pin);
+	}
+}
 
 static uint32_t	prvDRV_GPIO_Pin_GetModeCode(drv_gpio_pin_mode_t mode)
 {
@@ -47,6 +63,7 @@ static uint32_t	prvDRV_GPIO_Pin_GetModeCode(drv_gpio_pin_mode_t mode)
 drv_gpio_status_t DRV_GPIO_Init()
 {
 	memset(prvDRV_GPIO_PORTS, 0, DRV_GPIO_PORT_MAX_NUMBER*sizeof(drv_gpio_port_handle_t));
+	memset(prvDRV_GPIO_PINS_INTERRUPTS, 0, DRV_GPIO_INTERRUPTS_MAX_NUMBER*sizeof(drv_gpio_pin_isr_callback));
 	return DRV_GPIO_STATUS_OK;
 }
 
@@ -140,15 +157,22 @@ drv_gpio_status_t DRV_GPIO_Pin_EnableInt(drv_gpio_port_t port, drv_gpio_pin pin,
 {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 	if(prvDRV_GPIO_PORTS[port].initState != DRV_GPIO_PORT_INIT_STATUS_INITIALIZED || prvDRV_GPIO_PORTS[port].lock == NULL) return DRV_GPIO_STATUS_ERROR;
-	if(pin > DRV_GPIO_PIN_MAX_NUMBER) return DRV_GPIO_STATUS_ERROR;
+	if(pin > DRV_GPIO_PIN_MAX_NUMBER || pin > DRV_GPIO_INTERRUPTS_MAX_NUMBER) return DRV_GPIO_STATUS_ERROR;
 
 	if(xSemaphoreTake(prvDRV_GPIO_PORTS[port].lock, portMAX_DELAY) == pdFALSE ) return DRV_GPIO_STATUS_ERROR;
 
 	/*Configure GPIO pin : PC13 */
-	GPIO_InitStruct.Pin = 1 << pin;
+	GPIO_InitStruct.Pin  = 1 << pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init((GPIO_TypeDef*)prvDRV_GPIO_PORTS[port].portInstance, &GPIO_InitStruct);
+
+	prvDRV_GPIO_PINS_INTERRUPTS[pin] = callback;
+
+	if(pin >= 10  || pin <= 15){
+		HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+		HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+	}
 
 	if(xSemaphoreGive(prvDRV_GPIO_PORTS[port].lock) == pdFALSE ) return DRV_GPIO_STATUS_ERROR;
 

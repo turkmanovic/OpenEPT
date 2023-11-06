@@ -379,6 +379,10 @@ static void MX_DMA_Init(void)
 
 }
 
+void	a(drv_gpio_pin pin)
+{
+
+}
 
 /**
   * @brief  Function implementing the defaultTask thread.
@@ -399,7 +403,9 @@ void StartDefaultTask(void *argument)
 
 	DRV_GPIO_Init();
 	DRV_GPIO_Port_Init(DRV_GPIO_PORT_E);
+	DRV_GPIO_Port_Init(DRV_GPIO_PORT_C);
 	DRV_GPIO_Pin_Init(DRV_GPIO_PORT_E, 1, &userLedConf);
+	DRV_GPIO_Pin_EnableInt(DRV_GPIO_PORT_C, 13, a);
 	/* USER CODE BEGIN 5 */
 	/* Infinite loop */
 	for(;;)
