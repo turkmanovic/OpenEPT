@@ -18,6 +18,8 @@
 #include "cmsis_os.h"
 #include "lwip.h"
 
+#include "drv_gpio.h"
+
 #ifndef HSEM_ID_0
 #define HSEM_ID_0 (0U) /* HW semaphore 0*/
 #endif
@@ -41,7 +43,6 @@ const osThreadAttr_t defaultTask_attributes = {
 void SystemClock_Config(void);   //System
 static void MPU_Initialize(void); //System
 static void MPU_Config(void);   //System
-static void MX_GPIO_Init(void); //GPIO
 static void MX_DMA_Init(void); //AnalogIN
 static void MX_USART3_Init(void); //UART
 static void MX_ADC1_Init(void);	//AnalogIN
@@ -111,7 +112,6 @@ Error_Handler();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();	//GPIO
   MX_DMA_Init();	//AnalogIN
   MX_USART3_Init();	//UART
   MX_ADC1_Init();	//AnalogIN
@@ -379,34 +379,7 @@ static void MX_DMA_Init(void)
 
 }
 
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
 
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOF_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOG_CLK_ENABLE();
-
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-/* USER CODE END MX_GPIO_Init_2 */
-}
-
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
-
-/* USER CODE BEGIN Header_StartDefaultTask */
 /**
   * @brief  Function implementing the defaultTask thread.
   * @param  argument: Not used
@@ -415,15 +388,27 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
-  /* init code for LWIP */
-  MX_LWIP_Init();
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(100);
-  }
-  /* USER CODE END 5 */
+	drv_gpio_pin_init_conf_t userLedConf;
+
+	userLedConf.mode = DRV_GPIO_PIN_MODE_OUTPUT_PP;
+	userLedConf.pullState = DRV_GPIO_PIN_PULL_NOPULL;
+	uint32_t	state = 0x01;
+
+	/* init code for LWIP */
+	MX_LWIP_Init();
+
+	DRV_GPIO_Init();
+	DRV_GPIO_Port_Init(DRV_GPIO_PORT_E);
+	DRV_GPIO_Pin_Init(DRV_GPIO_PORT_E, 1, &userLedConf);
+	/* USER CODE BEGIN 5 */
+	/* Infinite loop */
+	for(;;)
+	{
+		osDelay(1000);
+		state ^= 0x01;
+		DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_E, 1, state);
+	}
+	/* USER CODE END 5 */
 }
 
 /* MPU Configuration */

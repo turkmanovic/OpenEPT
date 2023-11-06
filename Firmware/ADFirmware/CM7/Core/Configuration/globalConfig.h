@@ -10,8 +10,13 @@
 
 
 /*Driver layer connfiguration*/
-
+/* AnalogIN configuration*/
 #define CONF_AIN_MAX_BUFFER_SIZE	1500
+
+
+/* GPIO configuration*/
+#define CONF_GPIO_PORT_MAX_NUMBER	10
+#define CONF_GPIO_PIN_MAX_NUMBER	16
 
 
 
