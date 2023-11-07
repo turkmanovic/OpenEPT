@@ -17,8 +17,11 @@
 
 #include "lwip.h"
 
-#include "system.h"
+
 #include "drv_gpio.h"
+
+#include "system.h"
+#include "network.h"
 
 
 #include <stdint.h>
@@ -45,15 +48,12 @@ static void prvSYSTEM_Task()
 {
 	drv_gpio_pin_init_conf_t userLedConf;
 
-
-
 	for(;;)
 	{
 		switch(prvSYSTEM_DATA.state)
 		{
 		case SYSTEM_STATE_INIT:
 			/* init code for LWIP */
-			MX_LWIP_Init();
 
 			userLedConf.mode = DRV_GPIO_PIN_MODE_OUTPUT_PP;
 			userLedConf.pullState = DRV_GPIO_PIN_PULL_NOPULL;
@@ -67,15 +67,24 @@ static void prvSYSTEM_Task()
 			DRV_GPIO_Pin_EnableInt(DRV_GPIO_PORT_C, 13, 5, prvBUTTON_Callback);
 			SYSTEM_ReportError(SYSTEM_ERROR_LEVEL_LOW);
 
+			if(NETWORK_Init(2000) != NETWORK_STATUS_OK)
+			{
+				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
+				break;
+			}
+
 			xSemaphoreGive(prvSYSTEM_DATA.initSig);
 			prvSYSTEM_DATA.state = SYSTEM_STATE_SERVICE;
 			break;
 		case SYSTEM_STATE_SERVICE:
+			vTaskDelay(pdMS_TO_TICKS(portMAX_DELAY));
 			state ^= 0x01;
 			DRV_GPIO_Pin_SetState(SYSTEM_LINK_STATUS_DIODE_PORT, SYSTEM_LINK_STATUS_DIODE_PIN, state);
 			osDelay(1000);
 			break;
 		case SYSTEM_STATE_ERROR:
+			SYSTEM_ReportError(SYSTEM_ERROR_LEVEL_LOW);
+			vTaskDelay(pdMS_TO_TICKS(portMAX_DELAY));
 			break;
 		}
 

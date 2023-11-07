@@ -45,7 +45,7 @@
 /* USER CODE END 0 */
 
 /* Global Variables ----------------------------------------------------------*/
-extern ETH_HandleTypeDef heth;
+extern ETH_HandleTypeDef HETH;
 
 /* LWIP init function */
 void MX_LWIP_Init(void);

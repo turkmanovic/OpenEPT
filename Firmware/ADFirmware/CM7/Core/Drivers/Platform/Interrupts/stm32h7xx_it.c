@@ -55,7 +55,7 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern ETH_HandleTypeDef heth;
+extern ETH_HandleTypeDef HETH;
 extern DMA_HandleTypeDef hdma_adc1;
 extern DAC_HandleTypeDef hdac1;
 extern TIM_HandleTypeDef htim6;
@@ -199,7 +199,7 @@ void ETH_IRQHandler(void)
   /* USER CODE BEGIN ETH_IRQn 0 */
 
   /* USER CODE END ETH_IRQn 0 */
-  HAL_ETH_IRQHandler(&heth);
+  HAL_ETH_IRQHandler(&HETH);
   /* USER CODE BEGIN ETH_IRQn 1 */
 
   /* USER CODE END ETH_IRQn 1 */
