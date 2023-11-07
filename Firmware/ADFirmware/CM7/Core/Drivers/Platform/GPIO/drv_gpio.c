@@ -13,6 +13,7 @@
 
 static drv_gpio_port_handle_t 		prvDRV_GPIO_PORTS[DRV_GPIO_PORT_MAX_NUMBER];
 static drv_gpio_pin_isr_callback	prvDRV_GPIO_PINS_INTERRUPTS[DRV_GPIO_INTERRUPTS_MAX_NUMBER];
+static drv_gpio_init_status_t		prvDRV_GPIO_INIT_STATUS;
 
 void 	HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
@@ -64,6 +65,7 @@ drv_gpio_status_t DRV_GPIO_Init()
 {
 	memset(prvDRV_GPIO_PORTS, 0, DRV_GPIO_PORT_MAX_NUMBER*sizeof(drv_gpio_port_handle_t));
 	memset(prvDRV_GPIO_PINS_INTERRUPTS, 0, DRV_GPIO_INTERRUPTS_MAX_NUMBER*sizeof(drv_gpio_pin_isr_callback));
+	prvDRV_GPIO_INIT_STATUS = DRV_GPIO_INIT_STATUS_INIT;
 	return DRV_GPIO_STATUS_OK;
 }
 
@@ -82,34 +84,42 @@ drv_gpio_status_t DRV_GPIO_Port_Init(drv_gpio_port_t port)
 	case DRV_GPIO_PORT_A:
 		  __HAL_RCC_GPIOA_CLK_ENABLE();
 		  prvDRV_GPIO_PORTS[port].portInstance = GPIOA;
+		  prvDRV_GPIO_PORTS[port].port = DRV_GPIO_PORT_A;
 		break;
 	case DRV_GPIO_PORT_B:
 		  __HAL_RCC_GPIOB_CLK_ENABLE();
 		  prvDRV_GPIO_PORTS[port].portInstance = GPIOB;
+		  prvDRV_GPIO_PORTS[port].port = DRV_GPIO_PORT_B;
 		break;
 	case DRV_GPIO_PORT_C:
 		  __HAL_RCC_GPIOC_CLK_ENABLE();
 		  prvDRV_GPIO_PORTS[port].portInstance = GPIOC;
+		  prvDRV_GPIO_PORTS[port].port = DRV_GPIO_PORT_C;
 		break;
 	case DRV_GPIO_PORT_D:
 		  __HAL_RCC_GPIOD_CLK_ENABLE();
 		  prvDRV_GPIO_PORTS[port].portInstance = GPIOD;
+		  prvDRV_GPIO_PORTS[port].port = DRV_GPIO_PORT_D;
 		break;
 	case DRV_GPIO_PORT_E:
 		  __HAL_RCC_GPIOE_CLK_ENABLE();
 		  prvDRV_GPIO_PORTS[port].portInstance = GPIOE;
+		  prvDRV_GPIO_PORTS[port].port = DRV_GPIO_PORT_E;
 		break;
 	case DRV_GPIO_PORT_F:
 		  __HAL_RCC_GPIOF_CLK_ENABLE();
 		  prvDRV_GPIO_PORTS[port].portInstance = GPIOF;
+		  prvDRV_GPIO_PORTS[port].port = DRV_GPIO_PORT_F;
 		break;
 	case DRV_GPIO_PORT_G:
 		  __HAL_RCC_GPIOG_CLK_ENABLE();
 		  prvDRV_GPIO_PORTS[port].portInstance = GPIOG;
+		  prvDRV_GPIO_PORTS[port].port = DRV_GPIO_PORT_G;
 		break;
 	case DRV_GPIO_PORT_H:
 		  __HAL_RCC_GPIOH_CLK_ENABLE();
 		  prvDRV_GPIO_PORTS[port].portInstance = GPIOH;
+		  prvDRV_GPIO_PORTS[port].port = DRV_GPIO_PORT_H;
 		break;
 	default:
 		return DRV_GPIO_STATUS_ERROR;

@@ -5,6 +5,8 @@
  *      Author: Haris
  */
 
+#include "drv_gpio.h"
+
 #ifndef CORE_CONFIGURATION_GLOBALCONFIG_H_
 #define CORE_CONFIGURATION_GLOBALCONFIG_H_
 
@@ -22,16 +24,20 @@
 
 
 /*Middleware layer configuration*/
+#define CONF_SSTREAM_TASK_NAME				"Sample stream"
+#define CONF_SSTREAM_TASK_PRIO				4
+#define CONF_SSTREAM_TASK_STACK_SIZE		1024
+#define CONF_SSTREAM_UDP_PORT				5100
 
+#define CONF_SYSTEM_TASK_NAME				"System task"
+#define CONF_SYSTEM_TASK_PRIO				5
+#define CONF_SYSTEM_TASK_STACK_SIZE			1024
 
-#define CONF_SSTREAM_TASK_NAME			"Sample stream"
-#define CONF_SSTREAM_TASK_PRIO			4
-#define CONF_SSTREAM_TASK_STACK_SIZE	1024
-#define CONF_SSTREAM_UDP_PORT			5100
+#define	CONF_SYSTEM_ERROR_STATUS_DIODE_PORT		1	//Port B
+#define	CONF_SYSTEM_ERROR_STATUS_DIODE_PIN		14
 
-#define CONF_SYSTEM_TASK_NAME			"System task"
-#define CONF_SYSTEM_TASK_PRIO			5
-#define CONF_SYSTEM_TASK_SIZE			1024
+#define	CONF_SYSTEM_LINK_STATUS_DIODE_PORT		4	//Port E
+#define	CONF_SYSTEM_LINK_STATUS_DIODE_PIN		1
 
 
 

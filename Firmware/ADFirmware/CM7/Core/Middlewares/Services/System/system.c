@@ -45,30 +45,34 @@ static void prvSYSTEM_Task()
 {
 	drv_gpio_pin_init_conf_t userLedConf;
 
-	userLedConf.mode = DRV_GPIO_PIN_MODE_OUTPUT_PP;
-	userLedConf.pullState = DRV_GPIO_PIN_PULL_NOPULL;
-	uint32_t	state = 0x01;
 
-	/* init code for LWIP */
-	MX_LWIP_Init();
 
-	DRV_GPIO_Init();
-	DRV_GPIO_Port_Init(DRV_GPIO_PORT_E);
-	DRV_GPIO_Port_Init(DRV_GPIO_PORT_C);
-	DRV_GPIO_Pin_Init(DRV_GPIO_PORT_E, 1, &userLedConf);
-	DRV_GPIO_Pin_EnableInt(DRV_GPIO_PORT_C, 13, 5, prvBUTTON_Callback);
 	for(;;)
 	{
 		switch(prvSYSTEM_DATA.state)
 		{
 		case SYSTEM_STATE_INIT:
+			/* init code for LWIP */
+			MX_LWIP_Init();
+
+			userLedConf.mode = DRV_GPIO_PIN_MODE_OUTPUT_PP;
+			userLedConf.pullState = DRV_GPIO_PIN_PULL_NOPULL;
+			uint32_t	state = 0x01;
+
+			DRV_GPIO_Init();
+			DRV_GPIO_Port_Init(SYSTEM_LINK_STATUS_DIODE_PORT);
+			DRV_GPIO_Port_Init(SYSTEM_ERROR_STATUS_DIODE_PORT);
+			DRV_GPIO_Pin_Init(SYSTEM_LINK_STATUS_DIODE_PORT, SYSTEM_LINK_STATUS_DIODE_PIN, &userLedConf);
+			DRV_GPIO_Pin_Init(SYSTEM_ERROR_STATUS_DIODE_PORT, SYSTEM_ERROR_STATUS_DIODE_PIN, &userLedConf);
+			DRV_GPIO_Pin_EnableInt(DRV_GPIO_PORT_C, 13, 5, prvBUTTON_Callback);
+			SYSTEM_ReportError(SYSTEM_ERROR_LEVEL_LOW);
 
 			xSemaphoreGive(prvSYSTEM_DATA.initSig);
 			prvSYSTEM_DATA.state = SYSTEM_STATE_SERVICE;
 			break;
 		case SYSTEM_STATE_SERVICE:
 			state ^= 0x01;
-			DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_E, 1, state);
+			DRV_GPIO_Pin_SetState(SYSTEM_LINK_STATUS_DIODE_PORT, SYSTEM_LINK_STATUS_DIODE_PIN, state);
 			osDelay(1000);
 			break;
 		case SYSTEM_STATE_ERROR:
@@ -107,5 +111,34 @@ system_status_t SYSTEM_Start()
 	return SYSTEM_STATUS_ERROR;
 }
 
+system_status_t SYSTEM_ReportError(system_error_level_t errorLevel)
+{
+	switch(errorLevel)
+	{
+	case SYSTEM_ERROR_LEVEL_LOW:
+		if(DRV_GPIO_Pin_SetState(SYSTEM_ERROR_STATUS_DIODE_PORT, SYSTEM_ERROR_STATUS_DIODE_PIN, DRV_GPIO_PIN_STATE_SET) != DRV_GPIO_STATUS_OK) return SYSTEM_STATUS_ERROR;
+		break;
+	case SYSTEM_ERROR_LEVEL_MEDIUM:
+		if(DRV_GPIO_Pin_SetState(SYSTEM_ERROR_STATUS_DIODE_PORT, SYSTEM_ERROR_STATUS_DIODE_PIN, DRV_GPIO_PIN_STATE_SET) != DRV_GPIO_STATUS_OK) return SYSTEM_STATUS_ERROR;
+		break;
+	case SYSTEM_ERROR_LEVEL_HIGH:
+		if(DRV_GPIO_Pin_SetState(SYSTEM_ERROR_STATUS_DIODE_PORT, SYSTEM_ERROR_STATUS_DIODE_PIN, DRV_GPIO_PIN_STATE_SET) != DRV_GPIO_STATUS_OK) return SYSTEM_STATUS_ERROR;
+		break;
+	}
+	return SYSTEM_STATUS_OK;
+}
+
+system_status_t SYSTEM_SetLinkStatus(system_link_status_t linkStatus)
+{
+	if(linkStatus == SYSTEM_LINK_STATUS_UP)
+	{
+		if(DRV_GPIO_Pin_SetState(SYSTEM_LINK_STATUS_DIODE_PORT, SYSTEM_LINK_STATUS_DIODE_PIN, DRV_GPIO_PIN_STATE_SET) != DRV_GPIO_STATUS_OK) return SYSTEM_STATUS_ERROR;
+	}
+	else
+	{
+		if(DRV_GPIO_Pin_SetState(SYSTEM_LINK_STATUS_DIODE_PORT, SYSTEM_LINK_STATUS_DIODE_PIN, DRV_GPIO_PIN_STATE_RESET) != DRV_GPIO_STATUS_OK) return SYSTEM_STATUS_ERROR;
+	}
+	return SYSTEM_STATUS_OK;
+}
 
 #endif /* CORE_MIDDLEWARES_SERVICES_SYSTEM_SYSTEM_C_ */

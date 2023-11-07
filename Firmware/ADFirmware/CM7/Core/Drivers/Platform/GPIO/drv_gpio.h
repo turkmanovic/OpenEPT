@@ -32,6 +32,12 @@ typedef  uint16_t	drv_gpio_pin;
 
 typedef enum
 {
+	DRV_GPIO_INIT_STATUS_INIT,
+	DRV_GPIO_INIT_STATUS_NOINIT
+}drv_gpio_init_status_t;
+
+typedef enum
+{
 	DRV_GPIO_PORT_A = 0,
 	DRV_GPIO_PORT_B	= 1,
 	DRV_GPIO_PORT_C	= 2,
