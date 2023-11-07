@@ -15,10 +15,10 @@ typedef enum
 {
 	DRV_SYSTEM_STATUS_OK,
 	DRV_SYSTEM_STATUS_ERROR
-}drv_system_status;
+}drv_system_status_t;
 
-drv_system_status	DRV_SYSTEM_InitCoreFunc();
-drv_system_status	DRV_SYSTEM_InitDrivers();
+drv_system_status_t	DRV_SYSTEM_InitCoreFunc();
+drv_system_status_t	DRV_SYSTEM_InitDrivers();
 
 
 
