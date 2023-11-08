@@ -43,7 +43,7 @@ static void MX_DAC1_Init(void);	//AnalogOUT
 int main(void)
 {
 
-	if(DRV_SYSTEM_InitCoreFunc() != DRV_SYSTEM_STATUS_OK)
+    if(DRV_SYSTEM_InitCoreFunc() != DRV_SYSTEM_STATUS_OK)
 	{
 		while(1);
 	}

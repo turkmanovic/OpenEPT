@@ -115,7 +115,7 @@ __attribute__((at(0x30000200))) ETH_DMADescTypeDef  DMATxDscrTab[ETH_TX_DESC_CNT
 
 ETH_DMADescTypeDef DMARxDscrTab[ETH_RX_DESC_CNT] __attribute__((section(".RxDecripSection"))); /* Ethernet Rx DMA Descriptors */
 ETH_DMADescTypeDef DMATxDscrTab[ETH_TX_DESC_CNT] __attribute__((section(".TxDecripSection")));   /* Ethernet Tx DMA Descriptors */
-
+__attribute__((section(".Rx_PoolSection"))) extern u8_t memp_memory_RX_POOL_base[];
 #endif
 
 /* USER CODE BEGIN 2 */
@@ -218,7 +218,7 @@ static void low_level_init(struct netif *netif)
   HETH.Init.MediaInterface = HAL_ETH_RMII_MODE;
   HETH.Init.TxDesc = DMATxDscrTab;
   HETH.Init.RxDesc = DMARxDscrTab;
-  HETH.Init.RxBuffLen = 1536;
+  HETH.Init.RxBuffLen = ETH_RX_BUFFER_SIZE;
 
   /* USER CODE BEGIN MACADDRESS */
 

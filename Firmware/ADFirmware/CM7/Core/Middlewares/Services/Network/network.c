@@ -15,6 +15,7 @@
 #include "lwip/netif.h"
 #include "lwip/sockets.h"
 #include "ethernetif.h"
+#include "lwip/apps/lwiperf.h"
 #include "lan8742.h"
 
 #include "system.h"
@@ -38,6 +39,13 @@ static network_data_t 		prvNETWORK_DATA;
 static TaskHandle_t 		prvNETWORK_TASK_HANDLE;
 extern ETH_HandleTypeDef 	HETH;
 extern lan8742_Object_t 	LAN8742;
+
+lwiperf_report_fn a(void *arg, enum lwiperf_report_type report_type,
+		  const ip_addr_t* local_addr, u16_t local_port, const ip_addr_t* remote_addr, u16_t remote_port,
+		  u32_t bytes_transferred, u32_t ms_duration, u32_t bandwidth_kbitpsec)
+{
+
+};
 
 static void prvNETWORK_LinkStatusUpdated(struct netif *netif)
 {
@@ -97,6 +105,8 @@ static void prvNETWORK_Task()
 			/* Set the link callback function, this function is called on change of link status*/
 			netif_set_link_callback(&prvNETWORK_DATA.gnetif, prvNETWORK_LinkStatusUpdated);
 
+
+			lwiperf_start_tcp_server_default(NULL, NULL);
 			xSemaphoreGive(prvNETWORK_DATA.initSig);
 			prvNETWORK_DATA.state = NETWORK_STATE_SERVICE;
 			break;
