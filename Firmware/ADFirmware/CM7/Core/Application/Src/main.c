@@ -18,6 +18,7 @@
 #include "cmsis_os.h"
 #include "lwip.h"
 #include "drv_system.h"
+#include "system.h"
 
 #include "drv_gpio.h"
 
@@ -47,11 +48,11 @@ int main(void)
 	{
 		while(1);
 	}
-	if(SYSTEM_Init() != DRV_SYSTEM_STATUS_OK)
+	if(SYSTEM_Init() != SYSTEM_STATUS_OK)
 	{
 		while(1);
 	}
-	if(SYSTEM_Start() != DRV_SYSTEM_STATUS_OK)
+	if(SYSTEM_Start() != SYSTEM_STATUS_OK)
 	{
 		while(1);
 	}
