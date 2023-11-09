@@ -9,6 +9,8 @@
  */
 #include "main.h"
 #include "drv_system.h"
+#include "drv_gpio.h"
+#include "drv_uart.h"
 
 #ifndef HSEM_ID_0
 #define HSEM_ID_0 (0U) /* HW semaphore 0*/
@@ -155,6 +157,7 @@ drv_system_status_t	DRV_SYSTEM_InitCoreFunc()
 }
 drv_system_status_t	DRV_SYSTEM_InitDrivers()
 {
-
+	if(DRV_GPIO_Init() != DRV_GPIO_STATUS_OK) return DRV_SYSTEM_STATUS_ERROR;
+	if(DRV_UART_Init() != DRV_UART_STATUS_OK) return DRV_SYSTEM_STATUS_ERROR;
 	return DRV_SYSTEM_STATUS_OK;
 }

@@ -5,8 +5,6 @@
  *      Author: Haris
  */
 
-#include "drv_gpio.h"
-
 #ifndef CORE_CONFIGURATION_GLOBALCONFIG_H_
 #define CORE_CONFIGURATION_GLOBALCONFIG_H_
 
@@ -20,6 +18,9 @@
 #define CONF_GPIO_PORT_MAX_NUMBER			10
 #define CONF_GPIO_PIN_MAX_NUMBER			16
 #define	CONF_GPIO_INTERRUPTS_MAX_NUMBER		15
+
+
+#define	CONF_UART_INSTANCES_MAX_NUMBER		2
 
 
 
