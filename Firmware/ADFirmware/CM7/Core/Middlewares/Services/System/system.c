@@ -77,12 +77,13 @@ static void prvSYSTEM_Task()
 				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
 				break;
 			}
-			LOGGING_Write("System", LOGGING_MSG_TYPE_INFO, "Logging service successfully initialized");
+			LOGGING_Write("System", LOGGING_MSG_TYPE_INFO, "Logging service successfully initialized\r\n");
 			if(NETWORK_Init(2000) != NETWORK_STATUS_OK)
 			{
 				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
 				break;
 			}
+			LOGGING_Write("System", LOGGING_MSG_TYPE_INFO, "Network service successfully initialized\r\n");
 
 			xSemaphoreGive(prvSYSTEM_DATA.initSig);
 			prvSYSTEM_DATA.state = SYSTEM_STATE_SERVICE;
