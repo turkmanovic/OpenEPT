@@ -22,6 +22,7 @@
 
 
 #include "system.h"
+#include "logging.h"
 #include "network.h"
 
 
@@ -71,6 +72,12 @@ static void prvSYSTEM_Task()
 			DRV_GPIO_Pin_Init(SYSTEM_ERROR_STATUS_DIODE_PORT, SYSTEM_ERROR_STATUS_DIODE_PIN, &userLedConf);
 			DRV_GPIO_Pin_EnableInt(DRV_GPIO_PORT_C, 13, 5, prvBUTTON_Callback);
 
+			if(LOGGING_Init(2000) != LOGGING_STATUS_OK)
+			{
+				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
+				break;
+			}
+			LOGGING_Write("System", LOGGING_MSG_TYPE_INFO, "Logging service successfully initialized");
 			if(NETWORK_Init(2000) != NETWORK_STATUS_OK)
 			{
 				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;

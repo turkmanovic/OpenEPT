@@ -1,8 +1,11 @@
-/*
- * system.h
- *
- *  Created on: Nov 5, 2023
- *      Author: Haris
+/**
+ ******************************************************************************
+ * @file   	system.h
+ * @brief  	...
+ * @author	Haris Turkmanovic
+ * @email	haris.turkmanovic@gmail.com
+ * @date	November 2022
+ ******************************************************************************
  */
 
 #ifndef CORE_MIDDLEWARES_SERVICES_SYSTEM_SYSTEM_H_
