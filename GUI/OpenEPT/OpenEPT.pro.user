@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 11.0.3, 2023-11-11T20:32:47. -->
+<!-- Written by QtCreator 11.0.3, 2023-11-11T21:51:07. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -243,7 +243,7 @@
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">D:/prof_Hari/OpenEPT/GUI/build-OpenEPT-Desktop_Qt_6_2_4_MSVC2019_64bit-Debug</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">D:/prof_Hari/build-OpenEPT-Desktop_Qt_6_2_4_MSVC2019_64bit-Debug</value>
    </valuemap>
    <value type="qlonglong" key="ProjectExplorer.Target.RunConfigurationCount">1</value>
   </valuemap>
