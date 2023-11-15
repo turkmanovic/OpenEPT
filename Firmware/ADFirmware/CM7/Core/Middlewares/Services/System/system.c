@@ -17,10 +17,12 @@
 
 #include "lwip.h"
 
-
+#include "drv_system.h"
 #include "drv_gpio.h"
 
+
 #include "system.h"
+#include "logging.h"
 #include "network.h"
 
 
@@ -59,18 +61,29 @@ static void prvSYSTEM_Task()
 			userLedConf.pullState = DRV_GPIO_PIN_PULL_NOPULL;
 			uint32_t	state = 0x01;
 
-			DRV_GPIO_Init();
+			if(DRV_SYSTEM_InitDrivers() != DRV_SYSTEM_STATUS_OK)
+			{
+				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
+				break;
+			}
 			DRV_GPIO_Port_Init(SYSTEM_LINK_STATUS_DIODE_PORT);
 			DRV_GPIO_Port_Init(SYSTEM_ERROR_STATUS_DIODE_PORT);
 			DRV_GPIO_Pin_Init(SYSTEM_LINK_STATUS_DIODE_PORT, SYSTEM_LINK_STATUS_DIODE_PIN, &userLedConf);
 			DRV_GPIO_Pin_Init(SYSTEM_ERROR_STATUS_DIODE_PORT, SYSTEM_ERROR_STATUS_DIODE_PIN, &userLedConf);
 			DRV_GPIO_Pin_EnableInt(DRV_GPIO_PORT_C, 13, 5, prvBUTTON_Callback);
 
+			if(LOGGING_Init(2000) != LOGGING_STATUS_OK)
+			{
+				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
+				break;
+			}
+			LOGGING_Write("System", LOGGING_MSG_TYPE_INFO, "Logging service successfully initialized\r\n");
 			if(NETWORK_Init(2000) != NETWORK_STATUS_OK)
 			{
 				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
 				break;
 			}
+			LOGGING_Write("System", LOGGING_MSG_TYPE_INFO, "Network service successfully initialized\r\n");
 
 			xSemaphoreGive(prvSYSTEM_DATA.initSig);
 			prvSYSTEM_DATA.state = SYSTEM_STATE_SERVICE;

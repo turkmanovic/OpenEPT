@@ -30,10 +30,8 @@ DMA_HandleTypeDef hdma_adc1;
 
 DAC_HandleTypeDef hdac1;
 
-USART_HandleTypeDef husart3;
 
 static void MX_DMA_Init(void); //AnalogIN
-static void MX_USART3_Init(void); //UART
 static void MX_ADC1_Init(void);	//AnalogIN
 static void MX_DAC1_Init(void);	//AnalogOUT
 
@@ -60,7 +58,6 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_DMA_Init();	//AnalogIN
-  MX_USART3_Init();	//UART
   MX_ADC1_Init();	//AnalogIN
   MX_DAC1_Init();	//AnalogOut
   /* USER CODE BEGIN 2 */
@@ -200,53 +197,7 @@ static void MX_DAC1_Init(void)
 
 }
 
-/**
-  * @brief USART3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART3_Init(void)
-{
 
-  /* USER CODE BEGIN USART3_Init 0 */
-
-  /* USER CODE END USART3_Init 0 */
-
-  /* USER CODE BEGIN USART3_Init 1 */
-
-  /* USER CODE END USART3_Init 1 */
-  husart3.Instance = USART3;
-  husart3.Init.BaudRate = 115200;
-  husart3.Init.WordLength = USART_WORDLENGTH_8B;
-  husart3.Init.StopBits = USART_STOPBITS_1;
-  husart3.Init.Parity = USART_PARITY_NONE;
-  husart3.Init.Mode = USART_MODE_TX_RX;
-  husart3.Init.CLKPolarity = USART_POLARITY_LOW;
-  husart3.Init.CLKPhase = USART_PHASE_1EDGE;
-  husart3.Init.CLKLastBit = USART_LASTBIT_DISABLE;
-  husart3.Init.ClockPrescaler = USART_PRESCALER_DIV1;
-  husart3.SlaveMode = USART_SLAVEMODE_DISABLE;
-  if (HAL_USART_Init(&husart3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_USARTEx_SetTxFifoThreshold(&husart3, USART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_USARTEx_SetRxFifoThreshold(&husart3, USART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_USARTEx_DisableFifoMode(&husart3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART3_Init 2 */
-
-  /* USER CODE END USART3_Init 2 */
-
-}
 
 /**
   * Enable DMA controller clock

@@ -61,7 +61,19 @@ extern DAC_HandleTypeDef hdac1;
 extern TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN EV */
+/**
+  * @brief This function handles USART1 global interrupt.
+  */
+void USART3_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART1_IRQn 0 */
 
+  /* USER CODE END USART1_IRQn 0 */
+  //HAL_UART_IRQHandler(&HUART3);
+  /* USER CODE BEGIN USART1_IRQn 1 */
+
+  /* USER CODE END USART1_IRQn 1 */
+}
 /* USER CODE END EV */
 
 /******************************************************************************/

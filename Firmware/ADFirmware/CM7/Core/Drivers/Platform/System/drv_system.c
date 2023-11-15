@@ -9,6 +9,8 @@
  */
 #include "main.h"
 #include "drv_system.h"
+#include "drv_gpio.h"
+#include "drv_uart.h"
 
 #ifndef HSEM_ID_0
 #define HSEM_ID_0 (0U) /* HW semaphore 0*/
@@ -83,6 +85,9 @@ static drv_system_status_t prvDRV_SYSTEM_MPU_Init()
 {
 	MPU_Region_InitTypeDef MPU_InitStruct = {0};
 
+	/* Disables the MPU */
+	HAL_MPU_Disable();
+
 	/** Initializes and configures the Region and the memory to be protected
 	*/
 	MPU_InitStruct.Enable = MPU_REGION_ENABLE;
@@ -91,7 +96,7 @@ static drv_system_status_t prvDRV_SYSTEM_MPU_Init()
 	MPU_InitStruct.Size = MPU_REGION_SIZE_4GB;
 	MPU_InitStruct.SubRegionDisable = 0x87;
 	MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
-	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+	MPU_InitStruct.AccessPermission = MPU_REGION_NO_ACCESS;
 	MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
 	MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
 	MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
@@ -102,15 +107,12 @@ static drv_system_status_t prvDRV_SYSTEM_MPU_Init()
 	/** Initializes and configures the Region and the memory to be protected
 	*/
 	MPU_InitStruct.Number = MPU_REGION_NUMBER1;
-	MPU_InitStruct.BaseAddress = 0x30044000;
-	MPU_InitStruct.Size = MPU_REGION_SIZE_16KB;
+	MPU_InitStruct.BaseAddress = 0x30020000;
+	MPU_InitStruct.Size = MPU_REGION_SIZE_128KB;
 	MPU_InitStruct.SubRegionDisable = 0x0;
-	MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+	MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL1;
 	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
-	MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
-	MPU_InitStruct.IsCacheable = MPU_ACCESS_CACHEABLE;
 	MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
-	MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
 
 	HAL_MPU_ConfigRegion(&MPU_InitStruct);
 
@@ -120,11 +122,8 @@ static drv_system_status_t prvDRV_SYSTEM_MPU_Init()
 	MPU_InitStruct.BaseAddress = 0x30040000;
 	MPU_InitStruct.Size = MPU_REGION_SIZE_512B;
 	MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
-	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+	MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
 	MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
-	MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
-	MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
-	MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
 
 	HAL_MPU_ConfigRegion(&MPU_InitStruct);
 	/* Enables the MPU */
@@ -155,6 +154,7 @@ drv_system_status_t	DRV_SYSTEM_InitCoreFunc()
 }
 drv_system_status_t	DRV_SYSTEM_InitDrivers()
 {
-
+	if(DRV_GPIO_Init() != DRV_GPIO_STATUS_OK) return DRV_SYSTEM_STATUS_ERROR;
+	if(DRV_UART_Init() != DRV_UART_STATUS_OK) return DRV_SYSTEM_STATUS_ERROR;
 	return DRV_SYSTEM_STATUS_OK;
 }
