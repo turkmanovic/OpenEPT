@@ -28,22 +28,32 @@ OpenEPT::OpenEPT(QWidget *parent)
         return;
     }
 
-//    // Find the grid layout in the loaded UI
-//    QGridLayout *deviceWndGridLayout = childWidget->findChild<QGridLayout*>("DeviceWndGrid");
-
-//    if (!deviceWndGridLayout) {
-//        QMessageBox::warning(this, "Error", "Could not find DeviceWndGrid layout");
-//        return;
-//    }
-
-    // Set size policy for the grid layout
-    //deviceWndGridLayout->setSizeConstraint(QLayout::SetFixedSize);
-
-
     // Add the child window to the MDI area
     QMdiSubWindow *subWindow = mdiArea->addSubWindow(childWidget);
     subWindow->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     subWindow->show();
+
+    // Create the menu bar
+    QMenuBar *menuBar = new QMenuBar(this);
+    setMenuBar(menuBar);
+
+    // Create File menu
+    QMenu *fileMenu = menuBar->addMenu("File");
+
+    QAction *openAction = new QAction("Open", this);
+    fileMenu->addAction(openAction);
+
+    QAction *saveAction = new QAction("Save", this);
+    fileMenu->addAction(saveAction);
+
+    // Create Devices menu
+    QMenu *devicesMenu = menuBar->addMenu("Devices");
+
+    // Create About menu
+    QMenu *aboutMenu = menuBar->addMenu("About");
+
+    QAction *aboutAction = new QAction("About OpenEPT", this);
+    aboutMenu->addAction(aboutAction);
 }
 
 OpenEPT::~OpenEPT()
