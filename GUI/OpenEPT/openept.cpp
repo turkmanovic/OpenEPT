@@ -1,6 +1,7 @@
 #include "openept.h"
 #include "ui_openept.h"
 #include "ui_devicewnd.h"  // Include the generated UI header for the devicewnd.ui file
+#include "devicewnd.h"
 
 OpenEPT::OpenEPT(QWidget *parent)
     : QMainWindow(parent)
@@ -13,23 +14,27 @@ OpenEPT::OpenEPT(QWidget *parent)
     setCentralWidget(mdiArea);
 
     // Load the UI file for the child window
-    QUiLoader loader;
-    QFile file("D:/prof_Hari/OpenEPT/GUI/OpenEPT/devicewnd.ui");  // Adjust the path to your devicewnd.ui file
-    if (!file.open(QFile::ReadOnly)) {
-        QMessageBox::warning(this, "Error", "Could not open UI file");
-        return;
-    }
+//    QUiLoader loader;
+//    QFile file("D:/prof_Hari/OpenEPT/GUI/OpenEPT/devicewnd.ui");  // Adjust the path to your devicewnd.ui file
+//    if (!file.open(QFile::ReadOnly)) {
+//        QMessageBox::warning(this, "Error", "Could not open UI file");
+//        return;
+//    }
 
-    QWidget *childWidget = loader.load(&file, this);
-    file.close();
+//    QWidget *childWidget = loader.load(&file, this);
+//    file.close();
 
-    if (!childWidget) {
-        QMessageBox::warning(this, "Error", "Could not create widget from UI file");
-        return;
-    }
+//    if (!childWidget) {
+//        QMessageBox::warning(this, "Error", "Could not create widget from UI file");
+//        return;
+//    }
+    DeviceWnd* deviceWnd = new DeviceWnd();
+
+
+
 
     // Add the child window to the MDI area
-    QMdiSubWindow *subWindow = mdiArea->addSubWindow(childWidget);
+    QMdiSubWindow *subWindow = mdiArea->addSubWindow(deviceWnd);
     subWindow->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     subWindow->show();
 

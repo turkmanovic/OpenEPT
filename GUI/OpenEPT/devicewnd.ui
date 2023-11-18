@@ -15,27 +15,27 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
-    <layout class="QGridLayout" name="DeviceWndGrid">
+    <layout class="QGridLayout" name="mainGril">
      <property name="sizeConstraint">
       <enum>QLayout::SetMaximumSize</enum>
      </property>
-     <item row="1" column="0">
-      <layout class="QVBoxLayout" name="DeviceWndVLayot">
+     <item row="0" column="0">
+      <layout class="QVBoxLayout" name="mainGrilFullVerl">
        <property name="sizeConstraint">
         <enum>QLayout::SetMaximumSize</enum>
        </property>
        <item>
-        <layout class="QHBoxLayout" name="loutMainTop">
+        <layout class="QHBoxLayout" name="FullVerlTopVerl">
          <property name="sizeConstraint">
           <enum>QLayout::SetMaximumSize</enum>
          </property>
          <item>
-          <layout class="QVBoxLayout" name="VLayoutGraphs">
+          <layout class="QVBoxLayout" name="topVerlGraphsVerl">
            <property name="sizeConstraint">
             <enum>QLayout::SetDefaultConstraint</enum>
            </property>
            <item>
-            <widget class="QTextEdit" name="textEdit_3">
+            <widget class="QTextEdit" name="graph1Texe">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                <horstretch>0</horstretch>
@@ -57,7 +57,7 @@
             </widget>
            </item>
            <item>
-            <spacer name="verticalSpacer">
+            <spacer name="graphsVers">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -73,7 +73,7 @@
             </spacer>
            </item>
            <item>
-            <widget class="QTextEdit" name="textEdit_2">
+            <widget class="QTextEdit" name="graph2Texe">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                <horstretch>0</horstretch>
@@ -97,17 +97,17 @@
           </layout>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="VLayoutSettings">
+          <layout class="QVBoxLayout" name="topVerlSettingVerl">
            <property name="sizeConstraint">
             <enum>QLayout::SetMaximumSize</enum>
            </property>
            <item>
-            <layout class="QVBoxLayout" name="VlayoutDevice">
+            <layout class="QVBoxLayout" name="settingsVerlDeviceVerl">
              <property name="sizeConstraint">
               <enum>QLayout::SetMaximumSize</enum>
              </property>
              <item>
-              <widget class="Line" name="LiDevice">
+              <widget class="Line" name="deviceHoli">
                <property name="maximumSize">
                 <size>
                  <width>200</width>
@@ -120,7 +120,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLabel" name="LDevice">
+              <widget class="QLabel" name="deviceLabe">
                <property name="minimumSize">
                 <size>
                  <width>80</width>
@@ -139,9 +139,9 @@
               </widget>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="HLayoutResolution">
+              <layout class="QHBoxLayout" name="deviceVerlResolutionHorl">
                <item>
-                <widget class="QLabel" name="LResolution">
+                <widget class="QLabel" name="resolutionLabe">
                  <property name="minimumSize">
                   <size>
                    <width>120</width>
@@ -160,7 +160,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QComboBox" name="CBREsolution">
+                <widget class="QComboBox" name="resolutionComb">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -192,7 +192,7 @@
                 </widget>
                </item>
                <item>
-                <spacer name="horizontalSpacer">
+                <spacer name="resolutionHors">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -210,9 +210,9 @@
               </layout>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="HLayoutSampleTime">
+              <layout class="QHBoxLayout" name="deviceVerlSampleTimeHorl">
                <item>
-                <widget class="QLabel" name="LSampleTime">
+                <widget class="QLabel" name="sampleTimeLabe">
                  <property name="minimumSize">
                   <size>
                    <width>120</width>
@@ -231,7 +231,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QComboBox" name="CBSampleTime">
+                <widget class="QComboBox" name="sampleTimeComb">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -263,7 +263,7 @@
                 </widget>
                </item>
                <item>
-                <spacer name="horizontalSpacer_2">
+                <spacer name="sampleTimeHors">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -281,9 +281,9 @@
               </layout>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="HLayoutClockdiv">
+              <layout class="QHBoxLayout" name="deviceVerlClockDivHorl">
                <item>
-                <widget class="QLabel" name="LClockdiv">
+                <widget class="QLabel" name="clockDivLabe">
                  <property name="minimumSize">
                   <size>
                    <width>120</width>
@@ -302,7 +302,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QComboBox" name="CBClockdiv">
+                <widget class="QComboBox" name="clockDivComb">
                  <property name="minimumSize">
                   <size>
                    <width>80</width>
@@ -328,7 +328,7 @@
                 </widget>
                </item>
                <item>
-                <spacer name="horizontalSpacer_3">
+                <spacer name="clockDivHors">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -348,9 +348,9 @@
             </layout>
            </item>
            <item>
-            <layout class="QVBoxLayout" name="VLayoutSystem">
+            <layout class="QVBoxLayout" name="settingsVerlSystemVerl">
              <item>
-              <widget class="Line" name="LiSystem">
+              <widget class="Line" name="systemHoli">
                <property name="maximumSize">
                 <size>
                  <width>200</width>
@@ -363,7 +363,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLabel" name="LSystem">
+              <widget class="QLabel" name="systemLabe">
                <property name="minimumSize">
                 <size>
                  <width>80</width>
@@ -382,9 +382,9 @@
               </widget>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_6">
+              <layout class="QHBoxLayout" name="systemVerlAcquisitionTypeConAverHorl">
                <item>
-                <widget class="QLabel" name="label_6">
+                <widget class="QLabel" name="acquisitionTypeLabe">
                  <property name="minimumSize">
                   <size>
                    <width>120</width>
@@ -403,9 +403,9 @@
                 </widget>
                </item>
                <item>
-                <layout class="QVBoxLayout" name="verticalLayout_6">
+                <layout class="QVBoxLayout" name="acquisitionTypeConAverHorlConAverVerl">
                  <item>
-                  <widget class="QRadioButton" name="radioButton">
+                  <widget class="QRadioButton" name="continousRadb">
                    <property name="minimumSize">
                     <size>
                      <width>80</width>
@@ -424,7 +424,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QRadioButton" name="radioButton_2">
+                  <widget class="QRadioButton" name="averagingRadb">
                    <property name="minimumSize">
                     <size>
                      <width>80</width>
@@ -445,7 +445,7 @@
                 </layout>
                </item>
                <item>
-                <spacer name="horizontalSpacer_4">
+                <spacer name="acquisitionTypeHors">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -463,9 +463,9 @@
               </layout>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <layout class="QHBoxLayout" name="systemVerlMeasurementTypeHorl">
                <item>
-                <widget class="QLabel" name="label_7">
+                <widget class="QLabel" name="measurementTypeLabe">
                  <property name="minimumSize">
                   <size>
                    <width>120</width>
@@ -484,9 +484,9 @@
                 </widget>
                </item>
                <item>
-                <layout class="QVBoxLayout" name="verticalLayout_8">
+                <layout class="QVBoxLayout" name="measurementTypeHorlVolCurrVerl">
                  <item>
-                  <widget class="QRadioButton" name="radioButton_3">
+                  <widget class="QRadioButton" name="measurementTypeVoltageRadb">
                    <property name="minimumSize">
                     <size>
                      <width>80</width>
@@ -505,7 +505,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QRadioButton" name="radioButton_4">
+                  <widget class="QRadioButton" name="measurementTypeCurrentRadb">
                    <property name="minimumSize">
                     <size>
                      <width>80</width>
@@ -526,7 +526,7 @@
                 </layout>
                </item>
                <item>
-                <spacer name="horizontalSpacer_5">
+                <spacer name="measurementTypeHorlHors">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -544,9 +544,9 @@
               </layout>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_8">
+              <layout class="QHBoxLayout" name="systemVerlMaxNumOfPacketsHorl">
                <item>
-                <widget class="QLabel" name="label_8">
+                <widget class="QLabel" name="maxNumOfPacketsLabe">
                  <property name="minimumSize">
                   <size>
                    <width>120</width>
@@ -565,7 +565,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="lineEdit_2">
+                <widget class="QLineEdit" name="maxNumOfPacketsLine">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -587,7 +587,7 @@
                 </widget>
                </item>
                <item>
-                <spacer name="horizontalSpacer_6">
+                <spacer name="maxNumOfPacketsHors">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -605,9 +605,9 @@
               </layout>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_9">
+              <layout class="QHBoxLayout" name="systemVerlSaveToFileHorl">
                <item>
-                <widget class="QLabel" name="label_9">
+                <widget class="QLabel" name="saveToFileLabe">
                  <property name="minimumSize">
                   <size>
                    <width>120</width>
@@ -626,7 +626,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QCheckBox" name="checkBox">
+                <widget class="QCheckBox" name="saveToFileCheb">
                  <property name="minimumSize">
                   <size>
                    <width>80</width>
@@ -645,7 +645,7 @@
                 </widget>
                </item>
                <item>
-                <spacer name="horizontalSpacer_7">
+                <spacer name="saveToFileHors">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -663,14 +663,11 @@
               </layout>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="HlayoutPath"/>
-             </item>
-             <item>
-              <layout class="QVBoxLayout" name="verticalLayout_3">
+              <layout class="QVBoxLayout" name="systemVerlPathVerl">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_4">
+                <layout class="QHBoxLayout" name="pathVerlTopHorl">
                  <item>
-                  <widget class="QLabel" name="LPath">
+                  <widget class="QLabel" name="pathLab">
                    <property name="minimumSize">
                     <size>
                      <width>170</width>
@@ -689,7 +686,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton_4">
+                  <widget class="QPushButton" name="pathPusb">
                    <property name="minimumSize">
                     <size>
                      <width>30</width>
@@ -708,7 +705,7 @@
                   </widget>
                  </item>
                  <item>
-                  <spacer name="horizontalSpacer_8">
+                  <spacer name="pathTopHors">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -726,9 +723,9 @@
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_5">
+                <layout class="QHBoxLayout" name="pathVerlBottomHorl">
                  <item>
-                  <widget class="QLineEdit" name="lineEdit">
+                  <widget class="QLineEdit" name="pathLine">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -750,7 +747,7 @@
                   </widget>
                  </item>
                  <item>
-                  <spacer name="horizontalSpacer_9">
+                  <spacer name="pathBottomHors">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -770,9 +767,9 @@
               </layout>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="HLayoutDischargeControl">
+              <layout class="QHBoxLayout" name="systemVerlDischargeControlHorl">
                <item>
-                <widget class="QLabel" name="LDischargeControl">
+                <widget class="QLabel" name="dischargeControlLabe">
                  <property name="minimumSize">
                   <size>
                    <width>170</width>
@@ -791,7 +788,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="pushButton_3">
+                <widget class="QPushButton" name="dischargeControlPusb">
                  <property name="minimumSize">
                   <size>
                    <width>30</width>
@@ -810,7 +807,7 @@
                 </widget>
                </item>
                <item>
-                <spacer name="horizontalSpacer_10">
+                <spacer name="dischargeControlHors">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -828,7 +825,7 @@
               </layout>
              </item>
              <item>
-              <spacer name="verticalSpacer_3">
+              <spacer name="systemVers">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
                </property>
@@ -841,11 +838,11 @@
               </spacer>
              </item>
              <item>
-              <layout class="QVBoxLayout" name="verticalLayout_4">
+              <layout class="QVBoxLayout" name="systemVerlPlayStopConnVerl">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_10">
+                <layout class="QHBoxLayout" name="playStopConnVerlPlayStopHorl">
                  <item>
-                  <spacer name="horizontalSpacer_13">
+                  <spacer name="playStopHors1">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -861,7 +858,7 @@
                   </spacer>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton_2">
+                  <widget class="QPushButton" name="playPusb">
                    <property name="minimumSize">
                     <size>
                      <width>30</width>
@@ -880,7 +877,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton_6">
+                  <widget class="QPushButton" name="stopPusb">
                    <property name="minimumSize">
                     <size>
                      <width>30</width>
@@ -899,7 +896,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton_5">
+                  <widget class="QPushButton" name="restartPusb">
                    <property name="minimumSize">
                     <size>
                      <width>30</width>
@@ -918,7 +915,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton">
+                  <widget class="QPushButton" name="asdaasdPusb">
                    <property name="minimumSize">
                     <size>
                      <width>30</width>
@@ -937,7 +934,62 @@
                   </widget>
                  </item>
                  <item>
-                  <spacer name="horizontalSpacer_12">
+                  <spacer name="playStopHors2">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeType">
+                    <enum>QSizePolicy::Minimum</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="playStopConnVerlDeviceConnectedHorl">
+                 <item>
+                  <spacer name="deviceConnectedHors1">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeType">
+                    <enum>QSizePolicy::Minimum</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="deviceConnectedLabe">
+                   <property name="minimumSize">
+                    <size>
+                     <width>200</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>200</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>TextLabel</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="deviceConnectedHors2">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -963,14 +1015,14 @@
         </layout>
        </item>
        <item>
-        <layout class="QVBoxLayout" name="loutMainBottom">
+        <layout class="QVBoxLayout" name="FullVerlBottomHorl">
          <property name="sizeConstraint">
           <enum>QLayout::SetMaximumSize</enum>
          </property>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <layout class="QHBoxLayout" name="bottomHorlStatisticsVerl">
            <item>
-            <widget class="QLabel" name="label">
+            <widget class="QLabel" name="statisticsDropRateLabe">
              <property name="minimumSize">
               <size>
                <width>80</width>
@@ -989,7 +1041,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QProgressBar" name="progressBar">
+            <widget class="QProgressBar" name="statisticsDropRateProb">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -1014,7 +1066,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_3">
+            <widget class="QLineEdit" name="statisticsDropRateLine">
              <property name="minimumSize">
               <size>
                <width>30</width>
@@ -1033,7 +1085,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="label_3">
+            <widget class="QLabel" name="statisticsPacketCounterLabe">
              <property name="minimumSize">
               <size>
                <width>140</width>
@@ -1052,7 +1104,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_5">
+            <widget class="QLineEdit" name="statisticsPacketCOunterLine">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -1074,7 +1126,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="label_2">
+            <widget class="QLabel" name="statisticsSamplingTimeLabe">
              <property name="minimumSize">
               <size>
                <width>100</width>
@@ -1093,7 +1145,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_4">
+            <widget class="QLineEdit" name="statisticsSamplingTimeLine">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -1115,7 +1167,7 @@
             </widget>
            </item>
            <item>
-            <spacer name="horizontalSpacer_11">
+            <spacer name="statisticsSpacer1">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -1133,7 +1185,7 @@
           </layout>
          </item>
          <item>
-          <widget class="QTextEdit" name="textEdit">
+          <widget class="QTextEdit" name="loggingTexe">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
              <horstretch>0</horstretch>
@@ -1155,117 +1207,6 @@
           </widget>
          </item>
         </layout>
-       </item>
-      </layout>
-     </item>
-     <item row="0" column="0">
-      <layout class="QHBoxLayout" name="horizontalLayout_11">
-       <item>
-        <widget class="QPushButton" name="pushButton_8">
-         <property name="minimumSize">
-          <size>
-           <width>30</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>30</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../../../ESCAT/images/Add.ico</normaloff>../../../ESCAT/images/Add.ico</iconset>
-         </property>
-         <property name="default">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButton_7">
-         <property name="minimumSize">
-          <size>
-           <width>30</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>30</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="autoFillBackground">
-          <bool>true</bool>
-         </property>
-         <property name="text">
-          <string notr="true"/>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../../images/AddMultiple.png</normaloff>../../images/AddMultiple.png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>25</width>
-           <height>25</height>
-          </size>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButton_9">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../../images/AddMultiple.png</normaloff>../../images/AddMultiple.png</iconset>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButton_10">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../../images/Add.png</normaloff>../../images/Add.png</iconset>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButton_11">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../../images/Add.jpg</normaloff>../../images/Add.jpg</iconset>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_14">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </item>
