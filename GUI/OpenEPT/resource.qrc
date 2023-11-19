@@ -10,5 +10,11 @@
         <file>images/addSingle.png</file>
         <file>images/addMultiple.png</file>
         <file>images/main.png</file>
+        <file>images/expand.png</file>
+        <file>images/moveGraph.png</file>
+        <file>images/zoom_area.png</file>
+        <file>images/zoom_in.png</file>
+        <file>images/zoom_out.png</file>
+        <file>images/tracking_graph.png</file>
     </qresource>
 </RCC>

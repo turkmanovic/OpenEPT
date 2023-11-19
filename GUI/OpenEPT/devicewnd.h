@@ -2,6 +2,7 @@
 #define DEVICEWND_H
 
 #include <QWidget>
+#include "Windows/Plot/plot.h"
 
 namespace Ui {
 class DeviceWnd;
@@ -17,6 +18,10 @@ public:
 
 private:
     Ui::DeviceWnd *ui;
+
+    Plot    *voltageChart;
+    Plot    *currentChart;
+    Plot    *consumptionChart;
 };
 
 #endif // DEVICEWND_H

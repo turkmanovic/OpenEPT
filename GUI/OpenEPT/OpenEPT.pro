@@ -9,11 +9,15 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    Chart/qcustomplot.cpp \
+    Windows/Plot/plot.cpp \
     devicewnd.cpp \
     main.cpp \
     openept.cpp
 
 HEADERS += \
+    Chart/qcustomplot.h \
+    Windows/Plot/plot.h \
     devicewnd.h \
     openept.h
 
