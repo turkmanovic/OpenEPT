@@ -14,11 +14,17 @@ OpenEPT::OpenEPT(QWidget *parent)
     ui->setupUi(this);
 
     DeviceWnd* deviceWnd = new DeviceWnd();
+    deviceWnd->setWindowTitle("Device 1");
+    DeviceWnd* deviceWnd1 = new DeviceWnd();
+    deviceWnd1->setWindowTitle("Device 2");
 
     // Add the child window to the MDI area
     QMdiSubWindow *subWindow = ui->mdiArea->addSubWindow(deviceWnd);
+    QMdiSubWindow *subWindow1 = ui->mdiArea->addSubWindow(deviceWnd1);
     subWindow->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     subWindow->show();
+    subWindow1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    subWindow1->show();
 
  }
 
