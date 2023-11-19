@@ -57,6 +57,19 @@
             </widget>
            </item>
            <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
             <spacer name="graphsVers">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -108,10 +121,16 @@
              </property>
              <item>
               <widget class="Line" name="deviceHoli">
+               <property name="minimumSize">
+                <size>
+                 <width>225</width>
+                 <height>2</height>
+                </size>
+               </property>
                <property name="maximumSize">
                 <size>
-                 <width>200</width>
-                 <height>50</height>
+                 <width>225</width>
+                 <height>2</height>
                 </size>
                </property>
                <property name="orientation">
@@ -123,18 +142,21 @@
               <widget class="QLabel" name="deviceLabe">
                <property name="minimumSize">
                 <size>
-                 <width>80</width>
+                 <width>200</width>
                  <height>10</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>80</width>
-                 <height>50</height>
+                 <width>200</width>
+                 <height>10</height>
                 </size>
                </property>
                <property name="text">
                 <string>Device</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
                </property>
               </widget>
              </item>
@@ -351,10 +373,16 @@
             <layout class="QVBoxLayout" name="settingsVerlSystemVerl">
              <item>
               <widget class="Line" name="systemHoli">
+               <property name="minimumSize">
+                <size>
+                 <width>225</width>
+                 <height>0</height>
+                </size>
+               </property>
                <property name="maximumSize">
                 <size>
-                 <width>200</width>
-                 <height>50</height>
+                 <width>225</width>
+                 <height>2</height>
                 </size>
                </property>
                <property name="orientation">
@@ -366,18 +394,21 @@
               <widget class="QLabel" name="systemLabe">
                <property name="minimumSize">
                 <size>
-                 <width>80</width>
+                 <width>200</width>
                  <height>10</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>80</width>
-                 <height>50</height>
+                 <width>200</width>
+                 <height>10</height>
                 </size>
                </property>
                <property name="text">
                 <string>System</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
                </property>
               </widget>
              </item>
@@ -670,13 +701,13 @@
                   <widget class="QLabel" name="pathLab">
                    <property name="minimumSize">
                     <size>
-                     <width>170</width>
+                     <width>180</width>
                      <height>10</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>170</width>
+                     <width>180</width>
                      <height>50</height>
                     </size>
                    </property>
@@ -700,7 +731,17 @@
                     </size>
                    </property>
                    <property name="text">
-                    <string>PushButton</string>
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="resource.qrc">
+                     <normaloff>:/images/directory.png</normaloff>:/images/directory.png</iconset>
+                   </property>
+                   <property name="iconSize">
+                    <size>
+                     <width>20</width>
+                     <height>20</height>
+                    </size>
                    </property>
                   </widget>
                  </item>
@@ -734,14 +775,14 @@
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>210</width>
-                     <height>30</height>
+                     <width>225</width>
+                     <height>20</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>210</width>
-                     <height>30</height>
+                     <width>225</width>
+                     <height>20</height>
                     </size>
                    </property>
                   </widget>
@@ -772,13 +813,13 @@
                 <widget class="QLabel" name="dischargeControlLabe">
                  <property name="minimumSize">
                   <size>
-                   <width>170</width>
+                   <width>140</width>
                    <height>10</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>170</width>
+                   <width>140</width>
                    <height>50</height>
                   </size>
                  </property>
@@ -788,7 +829,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="dischargeControlPusb">
+                <widget class="QPushButton" name="dischargeControlPusb1">
                  <property name="minimumSize">
                   <size>
                    <width>30</width>
@@ -802,7 +843,46 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>PushButton</string>
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="resource.qrc">
+                   <normaloff>:/images/dischargeon.png</normaloff>:/images/dischargeon.png</iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>20</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="dischargeControlPusb2">
+                 <property name="minimumSize">
+                  <size>
+                   <width>30</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>30</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="resource.qrc">
+                   <normaloff>:/images/timerOn.png</normaloff>:/images/timerOn.png</iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>20</width>
+                   <height>20</height>
+                  </size>
                  </property>
                 </widget>
                </item>
@@ -872,7 +952,20 @@
                     </size>
                    </property>
                    <property name="text">
-                    <string>PushButton</string>
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="resource.qrc">
+                     <normaloff>:/images/play.png</normaloff>:/images/play.png</iconset>
+                   </property>
+                   <property name="iconSize">
+                    <size>
+                     <width>20</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                   <property name="checkable">
+                    <bool>false</bool>
                    </property>
                   </widget>
                  </item>
@@ -891,7 +984,17 @@
                     </size>
                    </property>
                    <property name="text">
-                    <string>PushButton</string>
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="resource.qrc">
+                     <normaloff>:/images/pause.png</normaloff>:/images/pause.png</iconset>
+                   </property>
+                   <property name="iconSize">
+                    <size>
+                     <width>20</width>
+                     <height>20</height>
+                    </size>
                    </property>
                   </widget>
                  </item>
@@ -910,7 +1013,17 @@
                     </size>
                    </property>
                    <property name="text">
-                    <string>PushButton</string>
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="resource.qrc">
+                     <normaloff>:/images/stop.png</normaloff>:/images/stop.png</iconset>
+                   </property>
+                   <property name="iconSize">
+                    <size>
+                     <width>20</width>
+                     <height>20</height>
+                    </size>
                    </property>
                   </widget>
                  </item>
@@ -929,7 +1042,17 @@
                     </size>
                    </property>
                    <property name="text">
-                    <string>PushButton</string>
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset resource="resource.qrc">
+                     <normaloff>:/images/reload.png</normaloff>:/images/reload.png</iconset>
+                   </property>
+                   <property name="iconSize">
+                    <size>
+                     <width>20</width>
+                     <height>20</height>
+                    </size>
                    </property>
                   </widget>
                  </item>
@@ -1066,25 +1189,6 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="statisticsDropRateLabe2">
-             <property name="minimumSize">
-              <size>
-               <width>50</width>
-               <height>20</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>50</width>
-               <height>20</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>0%</string>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="QLabel" name="statisticsPacketCounterLabe">
              <property name="minimumSize">
               <size>
@@ -1214,6 +1318,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections/>
 </ui>
