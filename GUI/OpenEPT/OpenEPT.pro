@@ -11,6 +11,7 @@ CONFIG += c++17
 SOURCES += \
     Chart/qcustomplot.cpp \
     Windows/Plot/plot.cpp \
+    adddevicewnd.cpp \
     devicewnd.cpp \
     main.cpp \
     openept.cpp
@@ -18,10 +19,12 @@ SOURCES += \
 HEADERS += \
     Chart/qcustomplot.h \
     Windows/Plot/plot.h \
+    adddevicewnd.h \
     devicewnd.h \
     openept.h
 
 FORMS += \
+    adddevicewnd.ui \
     devicewnd.ui \
     openept.ui
 

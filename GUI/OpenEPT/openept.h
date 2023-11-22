@@ -10,7 +10,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QFile>
-
+#include <adddevicewnd.h>
 QT_BEGIN_NAMESPACE
 namespace Ui { class OpenEPT; }
 QT_END_NAMESPACE
@@ -25,6 +25,7 @@ public:
 
 private:
     Ui::OpenEPT *ui;
-    QMdiArea *mdiArea;
+    //QMdiArea *mdiArea;
+    adddevicewnd *AddDeviceWnd;
 };
 #endif // OPENEPT_H
