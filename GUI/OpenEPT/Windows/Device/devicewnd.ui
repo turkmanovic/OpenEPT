@@ -328,18 +328,22 @@
                 <widget class="QPushButton" name="advanceOptionPusb">
                  <property name="minimumSize">
                   <size>
-                   <width>80</width>
-                   <height>10</height>
+                   <width>30</width>
+                   <height>30</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>80</width>
-                   <height>50</height>
+                   <width>30</width>
+                   <height>30</height>
                   </size>
                  </property>
                  <property name="text">
-                  <string>PushButton</string>
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="../../resource.qrc">
+                   <normaloff>:/images/setting.png</normaloff>:/images/setting.png</iconset>
                  </property>
                 </widget>
                </item>
@@ -728,7 +732,7 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset resource="resource.qrc">
+                    <iconset resource="../../resource.qrc">
                      <normaloff>:/images/directory.png</normaloff>:/images/directory.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -840,7 +844,7 @@
                   <string/>
                  </property>
                  <property name="icon">
-                  <iconset resource="resource.qrc">
+                  <iconset resource="../../resource.qrc">
                    <normaloff>:/images/dischargeon.png</normaloff>:/images/dischargeon.png</iconset>
                  </property>
                  <property name="iconSize">
@@ -869,7 +873,7 @@
                   <string/>
                  </property>
                  <property name="icon">
-                  <iconset resource="resource.qrc">
+                  <iconset resource="../../resource.qrc">
                    <normaloff>:/images/timerOn.png</normaloff>:/images/timerOn.png</iconset>
                  </property>
                  <property name="iconSize">
@@ -949,7 +953,7 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset resource="resource.qrc">
+                    <iconset resource="../../resource.qrc">
                      <normaloff>:/images/play.png</normaloff>:/images/play.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -981,7 +985,7 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset resource="resource.qrc">
+                    <iconset resource="../../resource.qrc">
                      <normaloff>:/images/pause.png</normaloff>:/images/pause.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -1010,7 +1014,7 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset resource="resource.qrc">
+                    <iconset resource="../../resource.qrc">
                      <normaloff>:/images/stop.png</normaloff>:/images/stop.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -1039,7 +1043,7 @@
                     <string/>
                    </property>
                    <property name="icon">
-                    <iconset resource="resource.qrc">
+                    <iconset resource="../../resource.qrc">
                      <normaloff>:/images/reload.png</normaloff>:/images/reload.png</iconset>
                    </property>
                    <property name="iconSize">
@@ -1313,7 +1317,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="resource.qrc"/>
+  <include location="../../resource.qrc"/>
  </resources>
  <connections/>
 </ui>

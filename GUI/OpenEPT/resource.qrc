@@ -16,5 +16,6 @@
         <file>images/zoom_in.png</file>
         <file>images/zoom_out.png</file>
         <file>images/tracking_graph.png</file>
+        <file>images/setting.png</file>
     </qresource>
 </RCC>

@@ -2,15 +2,8 @@
 #define OPENEPT_H
 
 #include <QMainWindow>
-#include <QMdiArea>
-#include <QFile>
-#include <QUiLoader>
-#include <QMdiSubWindow>
-#include <QMessageBox>
-#include <QMenu>
-#include <QAction>
-#include <QFile>
-#include <adddevicewnd.h>
+#include "Windows/AddDevice/adddevicewnd.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class OpenEPT; }
 QT_END_NAMESPACE

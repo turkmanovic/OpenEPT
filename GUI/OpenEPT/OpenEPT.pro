@@ -10,22 +10,29 @@ CONFIG += c++17
 
 SOURCES += \
     Chart/qcustomplot.cpp \
+    Windows/AddDevice/adddevicewnd.cpp \
+    Windows/Device/advanceconfigurationwnd.cpp \
+    Windows/Device/devicewnd.cpp \
     Windows/Plot/plot.cpp \
-    adddevicewnd.cpp \
-    devicewnd.cpp \
+    container.cpp \
+    device.cpp \
     main.cpp \
     openept.cpp
 
 HEADERS += \
     Chart/qcustomplot.h \
+    Windows/AddDevice/adddevicewnd.h \
+    Windows/Device/advanceconfigurationwnd.h \
+    Windows/Device/devicewnd.h \
     Windows/Plot/plot.h \
-    adddevicewnd.h \
-    devicewnd.h \
+    container.h \
+    device.h \
     openept.h
 
 FORMS += \
-    adddevicewnd.ui \
-    devicewnd.ui \
+    Windows/AddDevice/adddevicewnd.ui \
+    Windows/Device/advanceconfigurationwnd.ui \
+    Windows/Device/devicewnd.ui \
     openept.ui
 
 QTPLUGIN += qjpeg

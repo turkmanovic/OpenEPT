@@ -12,6 +12,10 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    advanceConfigurationWnd  = new AdvanceConfigurationWnd();
+    advanceConfigurationWnd->hide();
+    connect(ui->advanceOptionPusb, SIGNAL(clicked(bool)), this, SLOT(onAdvanceConfigurationButtonPressed(bool)));
+
     voltageChart             = new Plot(PLOT_MINIMUM_SIZE_WIDTH/2, PLOT_MINIMUM_SIZE_HEIGHT);
     voltageChart->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     voltageChart->setTitle("Voltage");
@@ -36,6 +40,10 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     ui->GraphicsBottomVerl->addWidget(consumptionChart, Qt::AlignCenter);
 }
 
+void    DeviceWnd::onAdvanceConfigurationButtonPressed(bool pressed)
+{
+    advanceConfigurationWnd->show();
+}
 DeviceWnd::~DeviceWnd()
 {
     delete ui;

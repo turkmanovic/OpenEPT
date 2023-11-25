@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "Windows/Plot/plot.h"
+#include "Windows/Device/advanceconfigurationwnd.h"
 
 namespace Ui {
 class DeviceWnd;
@@ -16,8 +17,13 @@ public:
     explicit DeviceWnd(QWidget *parent = nullptr);
     ~DeviceWnd();
 
+public slots:
+    void    onAdvanceConfigurationButtonPressed(bool pressed);
+
 private:
     Ui::DeviceWnd *ui;
+
+    AdvanceConfigurationWnd* advanceConfigurationWnd;
 
     Plot    *voltageChart;
     Plot    *currentChart;
