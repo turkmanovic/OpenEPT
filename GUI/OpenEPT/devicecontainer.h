@@ -12,6 +12,10 @@ public:
     explicit DeviceContainer(QObject *parent = nullptr,  DeviceWnd* aDeviceWnd = nullptr, Device* aDevice = nullptr);
 
 signals:
+    void    sigDeviceClosed(Device* device);
+
+public slots:
+    void    onDeviceClosed();
 
 private:
     DeviceWnd*  deviceWnd;

@@ -56,15 +56,23 @@ void OpenEPT::onAddDeviceWndAddDevice(QString aIpAddress, QString aPort)
     }
 }
 
+
 bool OpenEPT::addNewDevice(QString aIpAddress, QString aPort)
 {
+    /* Name for testing purposes only*/
+    QString deviceName = "Device Name " + QString::number(deviceList.size());
+    /* Create device */
+    Device  *tmpDevice = new Device();
+    tmpDevice->setName(deviceName);
+
     /* Create corresponding device window*/
     DeviceWnd *tmpdeviceWnd = new DeviceWnd();
-    QString deviceName = "Device Name " + QString::number(deviceList.size());
     tmpdeviceWnd->setWindowTitle(deviceName);
 
     /* Create device container */
-    DeviceContainer *tmpDeviceContainer = new DeviceContainer(NULL,tmpdeviceWnd);
+    DeviceContainer *tmpDeviceContainer = new DeviceContainer(NULL,tmpdeviceWnd,tmpDevice);
+
+    connect(tmpDeviceContainer, SIGNAL(sigDeviceClosed(Device*)), this, SLOT(onDeviceContainerDeviceWndClosed(Device*)));
 
     /* Add device to menu bar */
     QAction* tmpDeviceAction = new QAction(deviceName);
@@ -78,5 +86,23 @@ bool OpenEPT::addNewDevice(QString aIpAddress, QString aPort)
     deviceList.append(tmpDeviceContainer);
 
     return true;
+}
+
+
+void OpenEPT::onDeviceContainerDeviceWndClosed(Device *aDevice)
+{
+    QString name;
+    aDevice->getName(&name);
+    QList<QAction*> actionList = connectedDevicesMenu->actions();
+    for(int i = 0; i < actionList.size(); i++)
+    {
+        if(actionList[i]->text() == name)
+        {
+            connectedDevicesMenu->removeAction(actionList[i]);
+            deviceList.removeAt(i);
+            return;
+        }
+    }
+
 }
 

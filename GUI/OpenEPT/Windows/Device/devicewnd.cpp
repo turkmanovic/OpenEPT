@@ -44,6 +44,12 @@ void    DeviceWnd::onAdvanceConfigurationButtonPressed(bool pressed)
 {
     advanceConfigurationWnd->show();
 }
+
+void    DeviceWnd::closeEvent(QCloseEvent *event)
+{
+    emit sigWndClosed();
+}
+
 DeviceWnd::~DeviceWnd()
 {
     delete ui;

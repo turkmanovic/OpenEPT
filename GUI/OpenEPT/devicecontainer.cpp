@@ -6,4 +6,12 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     deviceWnd   = aDeviceWnd;
     device      = aDevice;
 
+    connect(deviceWnd, SIGNAL(sigWndClosed()), this, SLOT(onDeviceClosed()));
+
+
+}
+
+void DeviceContainer::onDeviceClosed()
+{
+    emit sigDeviceClosed(device);
 }
