@@ -40,5 +40,8 @@ private:
     /**/
     bool                        addNewDevice(QString aIpAddress, QString aPort);
 
+    /**/
+    void                        setTheme();
+
 };
 #endif // OPENEPT_H

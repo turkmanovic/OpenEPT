@@ -24,6 +24,7 @@ OpenEPT::OpenEPT(QWidget *parent)
 
 
     connectedDevicesMenu = new QMenu("Connected devices");
+    connectedDevicesMenu->setStyleSheet("background-color: rgb(186, 59, 10);");
     ui->menuDevices->addMenu(connectedDevicesMenu);
 
 
@@ -85,7 +86,14 @@ bool OpenEPT::addNewDevice(QString aIpAddress, QString aPort)
 
     deviceList.append(tmpDeviceContainer);
 
+    setTheme();
+
     return true;
+}
+
+void OpenEPT::setTheme()
+{
+    //setStyleSheet("color:white;background-color:#404241;border-color:#404241");
 }
 
 

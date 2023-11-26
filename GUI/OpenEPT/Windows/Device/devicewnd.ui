@@ -349,7 +349,7 @@
                  </property>
                  <property name="icon">
                   <iconset resource="../../resource.qrc">
-                   <normaloff>:/images/setting.png</normaloff>:/images/setting.png</iconset>
+                   <normaloff>:/images/NewSet/setting.png</normaloff>:/images/NewSet/setting.png</iconset>
                  </property>
                 </widget>
                </item>
@@ -851,7 +851,7 @@
                  </property>
                  <property name="icon">
                   <iconset resource="../../resource.qrc">
-                   <normaloff>:/images/dischargeon.png</normaloff>:/images/dischargeon.png</iconset>
+                   <normaloff>:/images/NewSet/dischargeon.png</normaloff>:/images/NewSet/dischargeon.png</iconset>
                  </property>
                  <property name="iconSize">
                   <size>
@@ -960,7 +960,7 @@
                    </property>
                    <property name="icon">
                     <iconset resource="../../resource.qrc">
-                     <normaloff>:/images/play.png</normaloff>:/images/play.png</iconset>
+                     <normaloff>:/images/NewSet/play.png</normaloff>:/images/NewSet/play.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -992,7 +992,7 @@
                    </property>
                    <property name="icon">
                     <iconset resource="../../resource.qrc">
-                     <normaloff>:/images/pause.png</normaloff>:/images/pause.png</iconset>
+                     <normaloff>:/images/NewSet/pause.png</normaloff>:/images/NewSet/pause.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -1021,7 +1021,7 @@
                    </property>
                    <property name="icon">
                     <iconset resource="../../resource.qrc">
-                     <normaloff>:/images/stop.png</normaloff>:/images/stop.png</iconset>
+                     <normaloff>:/images/NewSet/stop.png</normaloff>:/images/NewSet/stop.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
@@ -1050,7 +1050,7 @@
                    </property>
                    <property name="icon">
                     <iconset resource="../../resource.qrc">
-                     <normaloff>:/images/reload.png</normaloff>:/images/reload.png</iconset>
+                     <normaloff>:/images/NewSet/reload.png</normaloff>:/images/NewSet/reload.png</iconset>
                    </property>
                    <property name="iconSize">
                     <size>
