@@ -16,9 +16,14 @@ public:
     OpenEPT(QWidget *parent = nullptr);
     ~OpenEPT();
 
+
+private slots:
+    void onActionAddSingleDeviceTriggered();
+    void onAddDeviceWndAddDevice(QString aIpAddress, QString aPort);
+
 private:
     Ui::OpenEPT *ui;
     //QMdiArea *mdiArea;
-    adddevicewnd *AddDeviceWnd;
+    AddDeviceWnd *addDeviceWnd;
 };
 #endif // OPENEPT_H

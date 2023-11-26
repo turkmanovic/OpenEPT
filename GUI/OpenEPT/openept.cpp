@@ -13,6 +13,30 @@ OpenEPT::OpenEPT(QWidget *parent)
 {
     ui->setupUi(this);
 
+
+
+    addDeviceWnd = new AddDeviceWnd(this);
+    addDeviceWnd->setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
+    addDeviceWnd->setWindowModality(Qt::WindowModal);
+    connect(addDeviceWnd, SIGNAL(sigAddDevice(QString,QString)), this, SLOT(onAddDeviceWndAddDevice(QString,QString)), Qt::QueuedConnection);
+
+    connect(ui->actionAddSingleDevice, &QAction::triggered, this,  &OpenEPT::onActionAddSingleDeviceTriggered);
+
+
+ }
+
+OpenEPT::~OpenEPT()
+{
+    delete ui;
+}
+
+void OpenEPT::onActionAddSingleDeviceTriggered()
+{
+    addDeviceWnd->show();
+}
+
+void OpenEPT::onAddDeviceWndAddDevice(QString aIpAddress, QString aPort)
+{
     DeviceWnd* deviceWnd = new DeviceWnd();
     deviceWnd->setWindowTitle("Device 1");
     DeviceWnd* deviceWnd1 = new DeviceWnd();
@@ -25,15 +49,5 @@ OpenEPT::OpenEPT(QWidget *parent)
     subWindow->show();
     subWindow1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     subWindow1->show();
-
-//    AddDeviceWnd = new adddevicewnd();
-//    AddDeviceWnd->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-//    AddDeviceWnd->show();
-
-
- }
-
-OpenEPT::~OpenEPT()
-{
-    delete ui;
 }
+

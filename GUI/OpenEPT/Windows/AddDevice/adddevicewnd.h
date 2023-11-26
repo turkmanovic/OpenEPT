@@ -4,19 +4,26 @@
 #include <QWidget>
 
 namespace Ui {
-class adddevicewnd;
+class AddDeviceWnd;
 }
 
-class adddevicewnd : public QWidget
+class AddDeviceWnd : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit adddevicewnd(QWidget *parent = nullptr);
-    ~adddevicewnd();
+    explicit AddDeviceWnd(QWidget *parent = nullptr);
+    ~AddDeviceWnd();
+
+signals:
+    void    sigAddDevice(QString aIpAddress, QString aPort);
+
+public slots:
+    void    onClosePusbPressed();
+    void    onAddDevicePusbPressed();
 
 private:
-    Ui::adddevicewnd *ui;
+    Ui::AddDeviceWnd *ui;
 };
 
 #endif // ADDDEVICEWND_H

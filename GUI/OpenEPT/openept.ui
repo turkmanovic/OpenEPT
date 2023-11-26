@@ -107,16 +107,6 @@
    <addaction name="actionAddSingleDevice"/>
    <addaction name="actionAddMultipleDevices"/>
   </widget>
-  <action name="actionAdd_Device">
-   <property name="text">
-    <string>Add Device</string>
-   </property>
-  </action>
-  <action name="actionAdd_Multiple_Devices">
-   <property name="text">
-    <string>Add Multiple Devices</string>
-   </property>
-  </action>
   <action name="actionConnected_devices">
    <property name="text">
     <string>Connected devices</string>
