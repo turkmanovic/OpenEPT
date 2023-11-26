@@ -82,7 +82,6 @@
     <addaction name="actionAddSingleDevice"/>
     <addaction name="actionAddMultipleDevices"/>
     <addaction name="separator"/>
-    <addaction name="actionConnected_devices"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
@@ -107,11 +106,6 @@
    <addaction name="actionAddSingleDevice"/>
    <addaction name="actionAddMultipleDevices"/>
   </widget>
-  <action name="actionConnected_devices">
-   <property name="text">
-    <string>Connected devices</string>
-   </property>
-  </action>
   <action name="actionAddMultipleDevices">
    <property name="icon">
     <iconset theme="audio-card" resource="resource.qrc">

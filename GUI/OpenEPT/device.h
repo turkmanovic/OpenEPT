@@ -2,6 +2,7 @@
 #define DEVICE_H
 
 #include <QObject>
+#include <QString>
 
 typedef enum{
     DEVICE_ADC_RESOLUTION_UKNOWN       = 0,
@@ -60,9 +61,13 @@ class Device : public QObject
 public:
     explicit Device(QObject *parent = nullptr);
 
+    bool        setName(QString aNewDeviceName);
+    bool        getName(QString* aDeviceName);
+
 signals:
 
 private:
+    QString                     deviceName;
     device_adc_resolution_t     adcResolution;
     device_adc_sampling_speed_t adcSamplingSpeed;
     device_adc_clock_div_t      adcClockingDiv;
