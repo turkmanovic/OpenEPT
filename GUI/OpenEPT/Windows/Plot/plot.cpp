@@ -20,6 +20,8 @@ Plot::Plot(int mw, int mh, QWidget *parent)
     plot->setInteraction(QCP::iRangeDrag, true);
     plot->setInteraction(QCP::iRangeZoom, true);
 
+    //plot->setBackground(QBrush(QColor("#7a7d7c")));
+
     zoomIn      = new QPushButton();
     zoomOut     = new QPushButton();
     zoomExpand  = new QPushButton();
@@ -27,7 +29,7 @@ Plot::Plot(int mw, int mh, QWidget *parent)
     moveGraph   = new QPushButton();
     trackGraph  = new QPushButton();
 
-    QPixmap zoomInPng(":/images/zoom_in.png");
+    QPixmap zoomInPng(":/images/NewSet/zoom_in.png");
     QIcon zoomInIcon(zoomInPng);
     zoomIn->setIcon(zoomInIcon);
     zoomIn->setIconSize(QSize(15,15));
@@ -35,35 +37,35 @@ Plot::Plot(int mw, int mh, QWidget *parent)
     zoomIn->setFixedSize(BUTTONS_SIZE, BUTTONS_SIZE);
 
 
-    QPixmap zoomOutPng(":/images/zoom_out.png");
+    QPixmap zoomOutPng(":/images/NewSet/zoom_out.png");
     QIcon zoomOutIcon(zoomOutPng);
     zoomOut->setIcon(zoomOutIcon);
     zoomOut->setIconSize(QSize(15,15));
     zoomOut->setToolTip("Zoom out");
     zoomOut->setFixedSize(BUTTONS_SIZE, BUTTONS_SIZE);
 
-    QPixmap zoomExpandPng(":/images/expand.png");
+    QPixmap zoomExpandPng(":/images/NewSet/expand.png");
     QIcon zoomExpandIcon(zoomExpandPng);
     zoomExpand->setIcon(zoomExpandIcon);
     zoomExpand->setIconSize(QSize(15,15));
     zoomExpand->setToolTip("Zoom out");
     zoomExpand->setFixedSize(BUTTONS_SIZE, BUTTONS_SIZE);
 
-    QPixmap zoomAreaPng(":/images/zoom_area.png");
+    QPixmap zoomAreaPng(":/images/NewSet/zoom_area.png");
     QIcon zoomAreaIcon(zoomAreaPng);
     zoomArea->setIcon(zoomAreaIcon);
     zoomArea->setIconSize(QSize(15,15));
     zoomArea->setToolTip("Zoom out");
     zoomArea->setFixedSize(BUTTONS_SIZE, BUTTONS_SIZE);
 
-    QPixmap moveGraphPng(":/images/moveGraph.png");
+    QPixmap moveGraphPng(":/images/NewSet/moveGraph.png");
     QIcon moveGraphIcon(moveGraphPng);
     moveGraph->setIcon(moveGraphIcon);
     moveGraph->setIconSize(QSize(15,15));
     moveGraph->setToolTip("Zoom out");
     moveGraph->setFixedSize(BUTTONS_SIZE, BUTTONS_SIZE);
 
-    QPixmap trackGraphPng(":/images/tracking_graph.png");
+    QPixmap trackGraphPng(":/images/NewSet/tracking_graph.png");
     QIcon trackGraphIcon(trackGraphPng);
     trackGraph->setIcon(trackGraphIcon);
     trackGraph->setIconSize(QSize(15,15));

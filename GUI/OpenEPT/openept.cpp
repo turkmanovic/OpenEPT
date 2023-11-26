@@ -1,4 +1,6 @@
 #include <QPushButton>
+#include <QAction>
+#include <QMenu>
 #include "openept.h"
 #include "Windows/Device/devicewnd.h"
 #include "ui_openept.h"
@@ -13,22 +15,20 @@ OpenEPT::OpenEPT(QWidget *parent)
 {
     ui->setupUi(this);
 
-    DeviceWnd* deviceWnd = new DeviceWnd();
-    deviceWnd->setWindowTitle("Device 1");
-    DeviceWnd* deviceWnd1 = new DeviceWnd();
-    deviceWnd1->setWindowTitle("Device 2");
 
-    // Add the child window to the MDI area
-    QMdiSubWindow *subWindow = ui->mdiArea->addSubWindow(deviceWnd);
-    QMdiSubWindow *subWindow1 = ui->mdiArea->addSubWindow(deviceWnd1);
-    subWindow->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    subWindow->show();
-    subWindow1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    subWindow1->show();
 
-//    AddDeviceWnd = new adddevicewnd();
-//    AddDeviceWnd->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-//    AddDeviceWnd->show();
+    addDeviceWnd = new AddDeviceWnd(this);
+    addDeviceWnd->setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
+    addDeviceWnd->setWindowModality(Qt::WindowModal);
+    connect(addDeviceWnd, SIGNAL(sigAddDevice(QString,QString)), this, SLOT(onAddDeviceWndAddDevice(QString,QString)), Qt::QueuedConnection);
+
+
+    connectedDevicesMenu = new QMenu("Connected devices");
+    connectedDevicesMenu->setStyleSheet("background-color: rgb(186, 59, 10);");
+    ui->menuDevices->addMenu(connectedDevicesMenu);
+
+
+    connect(ui->actionAddSingleDevice, &QAction::triggered, this,  &OpenEPT::onActionAddSingleDeviceTriggered);
 
 
  }
@@ -37,3 +37,80 @@ OpenEPT::~OpenEPT()
 {
     delete ui;
 }
+
+void OpenEPT::onActionAddSingleDeviceTriggered()
+{
+    addDeviceWnd->show();
+}
+
+void OpenEPT::onAddDeviceWndAddDevice(QString aIpAddress, QString aPort)
+{
+    if(addNewDevice(aIpAddress, aPort))
+    {
+        msgBox.setText("Device sucessfully added");
+        msgBox.exec();
+    }
+    else
+    {
+        msgBox.setText("Unable to add device");
+        msgBox.exec();
+    }
+}
+
+
+bool OpenEPT::addNewDevice(QString aIpAddress, QString aPort)
+{
+    /* Name for testing purposes only*/
+    QString deviceName = "Device Name " + QString::number(deviceList.size());
+    /* Create device */
+    Device  *tmpDevice = new Device();
+    tmpDevice->setName(deviceName);
+
+    /* Create corresponding device window*/
+    DeviceWnd *tmpdeviceWnd = new DeviceWnd();
+    tmpdeviceWnd->setWindowTitle(deviceName);
+
+    /* Create device container */
+    DeviceContainer *tmpDeviceContainer = new DeviceContainer(NULL,tmpdeviceWnd,tmpDevice);
+
+    connect(tmpDeviceContainer, SIGNAL(sigDeviceClosed(Device*)), this, SLOT(onDeviceContainerDeviceWndClosed(Device*)));
+
+    /* Add device to menu bar */
+    QAction* tmpDeviceAction = new QAction(deviceName);
+    connectedDevicesMenu->addAction(tmpDeviceAction);
+
+    // Add the child window to the MDI area
+    QMdiSubWindow *subWindow = ui->mdiArea->addSubWindow(tmpdeviceWnd);
+    subWindow->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    subWindow->show();
+
+    deviceList.append(tmpDeviceContainer);
+
+    setTheme();
+
+    return true;
+}
+
+void OpenEPT::setTheme()
+{
+    //setStyleSheet("color:white;background-color:#404241;border-color:#404241");
+}
+
+
+void OpenEPT::onDeviceContainerDeviceWndClosed(Device *aDevice)
+{
+    QString name;
+    aDevice->getName(&name);
+    QList<QAction*> actionList = connectedDevicesMenu->actions();
+    for(int i = 0; i < actionList.size(); i++)
+    {
+        if(actionList[i]->text() == name)
+        {
+            connectedDevicesMenu->removeAction(actionList[i]);
+            deviceList.removeAt(i);
+            return;
+        }
+    }
+
+}
+

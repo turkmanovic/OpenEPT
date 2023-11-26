@@ -17,6 +17,12 @@ public:
     explicit DeviceWnd(QWidget *parent = nullptr);
     ~DeviceWnd();
 
+signals:
+    void    sigWndClosed();
+
+protected:
+    void    closeEvent(QCloseEvent *event);
+
 public slots:
     void    onAdvanceConfigurationButtonPressed(bool pressed);
 
