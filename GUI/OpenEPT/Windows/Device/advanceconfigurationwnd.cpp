@@ -2,8 +2,14 @@
 #include "advanceconfigurationwnd.h"
 #include "ui_advanceconfigurationwnd.h"
 
-#define LINEDIT_WIDTH   50
-#define LABEL_WIDTH     220
+#define LINEDIT_WIDTH                       50
+#define LABEL_WIDTH                         220
+#define ADVANCEWNDCONFIG_ADC_INPUT_CLOCK    100
+#define ADVANCEWNDCONFIG_ADC_CLOCK          100
+#define ADVANCEWNDCONFIG_ADC_CLOCK          100
+#define ADVANCEWNDCONFIG_STREAM_SIZE        100
+#define ADVANCEWNDCONFIG_VOLTAGE_OFFSET     100
+#define ADVANCEWNDCONFIG_CURRENT_OFFSET     100
 
 AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
     QWidget(parent),
@@ -20,6 +26,56 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
     ui->selectProfileComb->addItems(selectProfileOptions);
     connect(ui->selectProfileComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onLoadProfileChanged(int)));
 
+    /* Set default Value for ADC Input Clock Line*/
+    ui->adcInputClockLine->setText(QString::number(ADVANCEWNDCONFIG_ADC_INPUT_CLOCK));
+
+    /* Set default Value for ADC Clock Line*/
+    ui->adcClockLine->setText(QString::number(ADVANCEWNDCONFIG_ADC_CLOCK));
+
+    /* Set default Value for Stream size Line*/
+    ui->streamSizeLine->setText(QString::number(ADVANCEWNDCONFIG_STREAM_SIZE));
+
+    /* Set default Value for Voltage Offset Line*/
+    ui->voltageOffsetLine->setText(QString::number(ADVANCEWNDCONFIG_VOLTAGE_OFFSET));
+
+    /* Set default Value for Current Offset Line*/
+    ui->currentOffsetLine->setText(QString::number(ADVANCEWNDCONFIG_CURRENT_OFFSET));
+
+    /* Set default Value for ADC Resolution Comb*/
+    QStringList adcResolutionOptions=(
+        QStringList()<<
+        ""<<
+        "1"<<
+        "2"
+        );
+    ui->adcResolutionComb->addItems(adcResolutionOptions);
+
+    /* Set default Value for ADC Clock Div Comb*/
+    QStringList adcClockDivOptions=(
+        QStringList()<<
+        ""<<
+        "1"<<
+        "2"
+        );
+    ui->adcClockDivComb->addItems(adcClockDivOptions);
+
+    /* Set default Value for ADC Sample Time Comb*/
+    QStringList adcSampleTimeOptions=(
+        QStringList()<<
+        ""<<
+        "1"<<
+        "2"
+        );
+    ui->adcSampleTimeComb->addItems(adcSampleTimeOptions);
+
+    /* Set default Value for Averaging Ratio Comb*/
+    QStringList averagingRatioOptions=(
+        QStringList()<<
+        ""<<
+        "1"<<
+        "2"
+        );
+    ui->averagingRatioComb->addItems(averagingRatioOptions);
 
     /* Uknown profile layout */
     QLabel*  uknownLabel = new QLabel();
@@ -145,13 +201,13 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
 void    AdvanceConfigurationWnd::SetProfileTypeStatic()
 {
     staticProfileWidg->show();
-    ui->SelectprofileVerlProfileconfigurationHorl->addWidget(staticProfileWidg);
+    ui->selectProfileVerlProfileConfigurationHorl->addWidget(staticProfileWidg);
 }
 
 void    AdvanceConfigurationWnd::RemoveProfileTypeStatic()
 {
     staticProfileWidg->hide();
-    ui->SelectprofileVerlProfileconfigurationHorl->removeWidget(staticProfileWidg);
+    ui->selectProfileVerlProfileConfigurationHorl->removeWidget(staticProfileWidg);
 }
 
 void    AdvanceConfigurationWnd::SetProfileTypeRamp()
@@ -166,12 +222,12 @@ void    AdvanceConfigurationWnd::RemoveProfileTypeRamp()
 void    AdvanceConfigurationWnd::SetProfileTypeUknown()
 {
     uknownProfileWidg->show();
-    ui->SelectprofileVerlProfileconfigurationHorl->addWidget(uknownProfileWidg);
+    ui->selectProfileVerlProfileConfigurationHorl->addWidget(uknownProfileWidg);
 }
 void    AdvanceConfigurationWnd::RemoveProfileTypeUknown()
 {
     uknownProfileWidg->hide();
-    ui->SelectprofileVerlProfileconfigurationHorl->removeWidget(uknownProfileWidg);
+    ui->selectProfileVerlProfileConfigurationHorl->removeWidget(uknownProfileWidg);
 }
 void    AdvanceConfigurationWnd::RemoveProfileType(loadProfileType_t aProfileType)
 {
