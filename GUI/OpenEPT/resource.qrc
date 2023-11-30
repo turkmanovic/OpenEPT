@@ -17,5 +17,20 @@
         <file>images/zoom_out.png</file>
         <file>images/tracking_graph.png</file>
         <file>images/setting.png</file>
+        <file>images/NewSet/addMultiple.png</file>
+        <file>images/NewSet/addSingle.png</file>
+        <file>images/NewSet/directory.png</file>
+        <file>images/NewSet/dischargeon.png</file>
+        <file>images/NewSet/expand.png</file>
+        <file>images/NewSet/moveGraph.png</file>
+        <file>images/NewSet/pause.png</file>
+        <file>images/NewSet/play.png</file>
+        <file>images/NewSet/reload.png</file>
+        <file>images/NewSet/setting.png</file>
+        <file>images/NewSet/stop.png</file>
+        <file>images/NewSet/tracking_graph.png</file>
+        <file>images/NewSet/zoom_area.png</file>
+        <file>images/NewSet/zoom_in.png</file>
+        <file>images/NewSet/zoom_out.png</file>
     </qresource>
 </RCC>

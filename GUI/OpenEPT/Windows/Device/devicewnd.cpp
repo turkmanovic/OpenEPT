@@ -35,8 +35,8 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     consumptionChart->setYLabel("[mAh]");
     consumptionChart->setXLabel("[ms]");
 
-    ui->GraphicsTopHorl->addWidget(voltageChart, Qt::AlignCenter);
-    ui->GraphicsTopHorl->addWidget(currentChart, Qt::AlignCenter);
+    ui->GraphicsTopHorl->addWidget(voltageChart);
+    ui->GraphicsTopHorl->addWidget(currentChart);
     ui->GraphicsBottomVerl->addWidget(consumptionChart, Qt::AlignCenter);
 }
 
@@ -44,6 +44,12 @@ void    DeviceWnd::onAdvanceConfigurationButtonPressed(bool pressed)
 {
     advanceConfigurationWnd->show();
 }
+
+void    DeviceWnd::closeEvent(QCloseEvent *event)
+{
+    emit sigWndClosed();
+}
+
 DeviceWnd::~DeviceWnd()
 {
     delete ui;

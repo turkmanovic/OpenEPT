@@ -33,6 +33,9 @@
       <property name="autoFillBackground">
        <bool>false</bool>
       </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
@@ -70,6 +73,9 @@
      <height>21</height>
     </rect>
    </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgb(186, 59, 10);</string>
+   </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
@@ -82,7 +88,6 @@
     <addaction name="actionAddSingleDevice"/>
     <addaction name="actionAddMultipleDevices"/>
     <addaction name="separator"/>
-    <addaction name="actionConnected_devices"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
@@ -107,25 +112,10 @@
    <addaction name="actionAddSingleDevice"/>
    <addaction name="actionAddMultipleDevices"/>
   </widget>
-  <action name="actionAdd_Device">
-   <property name="text">
-    <string>Add Device</string>
-   </property>
-  </action>
-  <action name="actionAdd_Multiple_Devices">
-   <property name="text">
-    <string>Add Multiple Devices</string>
-   </property>
-  </action>
-  <action name="actionConnected_devices">
-   <property name="text">
-    <string>Connected devices</string>
-   </property>
-  </action>
   <action name="actionAddMultipleDevices">
    <property name="icon">
-    <iconset theme="audio-card" resource="resource.qrc">
-     <normaloff>:/images/addMultiple.png</normaloff>:/images/addMultiple.png</iconset>
+    <iconset resource="resource.qrc">
+     <normaloff>:/images/NewSet/addMultiple.png</normaloff>:/images/NewSet/addMultiple.png</iconset>
    </property>
    <property name="text">
     <string>Add Multiple Devices</string>
@@ -134,7 +124,7 @@
   <action name="actionAddSingleDevice">
    <property name="icon">
     <iconset resource="resource.qrc">
-     <normaloff>:/images/addSingle.png</normaloff>:/images/addSingle.png</iconset>
+     <normaloff>:/images/NewSet/addSingle.png</normaloff>:/images/NewSet/addSingle.png</iconset>
    </property>
    <property name="text">
     <string>Add Single Device</string>

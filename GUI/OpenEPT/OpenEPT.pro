@@ -14,8 +14,8 @@ SOURCES += \
     Windows/Device/advanceconfigurationwnd.cpp \
     Windows/Device/devicewnd.cpp \
     Windows/Plot/plot.cpp \
-    container.cpp \
     device.cpp \
+    devicecontainer.cpp \
     main.cpp \
     openept.cpp
 
@@ -25,8 +25,8 @@ HEADERS += \
     Windows/Device/advanceconfigurationwnd.h \
     Windows/Device/devicewnd.h \
     Windows/Plot/plot.h \
-    container.h \
     device.h \
+    devicecontainer.h \
     openept.h
 
 FORMS += \
