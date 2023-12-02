@@ -10,6 +10,7 @@
 #define ADVANCEWNDCONFIG_STREAM_SIZE        100
 #define ADVANCEWNDCONFIG_VOLTAGE_OFFSET     100
 #define ADVANCEWNDCONFIG_CURRENT_OFFSET     100
+#define ADVANCEWNDCONFIG_DEVICE_PORT        1
 
 AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
     QWidget(parent),
@@ -41,39 +42,74 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
     /* Set default Value for Current Offset Line*/
     ui->currentOffsetLine->setText(QString::number(ADVANCEWNDCONFIG_CURRENT_OFFSET));
 
+    /* Set default Value for Stream size Line*/
+    ui->deviceIpAddressLine->setText("Device0");
+
+    /* Set default Value for Voltage Offset Line*/
+    ui->devicePortLine->setText(QString::number(ADVANCEWNDCONFIG_DEVICE_PORT));
+
+    /* Set default Value for Current Offset Line*/
+    ui->deviceNameLine->setText("192.168.0.102");
+
     /* Set default Value for ADC Resolution Comb*/
     QStringList adcResolutionOptions=(
-        QStringList()<<
-        ""<<
-        "1"<<
-        "2"
+        QStringList()
+        <<""
+        <<"16 Bit"
+        <<"14 Bit"
+        <<"12 Bit"
+        <<"10 Bit"
         );
     ui->adcResolutionComb->addItems(adcResolutionOptions);
 
     /* Set default Value for ADC Clock Div Comb*/
     QStringList adcClockDivOptions=(
-        QStringList()<<
-        ""<<
-        "1"<<
-        "2"
+        QStringList()
+        <<""
+        <<"1"
+        <<"2"
+        <<"4"
+        <<"6"
+        <<"8"
+        <<"10"
+        <<"12"
+        <<"16"
+        <<"32"
+        <<"64"
+        <<"128"
         );
     ui->adcClockDivComb->addItems(adcClockDivOptions);
 
     /* Set default Value for ADC Sample Time Comb*/
     QStringList adcSampleTimeOptions=(
-        QStringList()<<
-        ""<<
-        "1"<<
-        "2"
+        QStringList()
+        <<""
+        <<"1C5"
+        <<"2C5"
+        <<"8C5"
+        <<"16C5"
+        <<"32C5"
+        <<"64C5"
+        <<"387C5"
+        <<"810C5"
         );
     ui->adcSampleTimeComb->addItems(adcSampleTimeOptions);
 
     /* Set default Value for Averaging Ratio Comb*/
     QStringList averagingRatioOptions=(
-        QStringList()<<
-        ""<<
-        "1"<<
-        "2"
+        QStringList()
+        <<""
+        <<"1"
+        <<"2"
+        <<"4"
+        <<"8"
+        <<"16"
+        <<"32"
+        <<"64"
+        <<"128"
+        <<"256"
+        <<"512"
+        <<"1024"
         );
     ui->averagingRatioComb->addItems(averagingRatioOptions);
 
