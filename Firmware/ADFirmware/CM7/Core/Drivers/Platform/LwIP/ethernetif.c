@@ -115,7 +115,7 @@ __attribute__((at(0x30000200))) ETH_DMADescTypeDef  DMATxDscrTab[ETH_TX_DESC_CNT
 
 ETH_DMADescTypeDef DMARxDscrTab[ETH_RX_DESC_CNT] __attribute__((section(".RxDecripSection"))); /* Ethernet Rx DMA Descriptors */
 ETH_DMADescTypeDef DMATxDscrTab[ETH_TX_DESC_CNT] __attribute__((section(".TxDecripSection")));   /* Ethernet Tx DMA Descriptors */
-
+__attribute__((section(".Rx_PoolSection"))) extern u8_t memp_memory_RX_POOL_base[];
 #endif
 
 /* USER CODE BEGIN 2 */
@@ -126,7 +126,7 @@ osSemaphoreId RxPktSemaphore = NULL;   /* Semaphore to signal incoming packets *
 osSemaphoreId TxPktSemaphore = NULL;   /* Semaphore to signal transmit packet complete */
 
 /* Global Ethernet handle */
-ETH_HandleTypeDef heth;
+ETH_HandleTypeDef HETH;
 ETH_TxPacketConfig TxConfig;
 
 /* Private function prototypes -----------------------------------------------*/
@@ -207,24 +207,24 @@ static void low_level_init(struct netif *netif)
   /* Start ETH HAL Init */
 
    uint8_t MACAddr[6] ;
-  heth.Instance = ETH;
+  HETH.Instance = ETH;
   MACAddr[0] = 0x00;
   MACAddr[1] = 0x80;
   MACAddr[2] = 0xE1;
   MACAddr[3] = 0x00;
   MACAddr[4] = 0x00;
   MACAddr[5] = 0x00;
-  heth.Init.MACAddr = &MACAddr[0];
-  heth.Init.MediaInterface = HAL_ETH_RMII_MODE;
-  heth.Init.TxDesc = DMATxDscrTab;
-  heth.Init.RxDesc = DMARxDscrTab;
-  heth.Init.RxBuffLen = 1536;
+  HETH.Init.MACAddr = &MACAddr[0];
+  HETH.Init.MediaInterface = HAL_ETH_RMII_MODE;
+  HETH.Init.TxDesc = DMATxDscrTab;
+  HETH.Init.RxDesc = DMARxDscrTab;
+  HETH.Init.RxBuffLen = ETH_RX_BUFFER_SIZE;
 
   /* USER CODE BEGIN MACADDRESS */
 
   /* USER CODE END MACADDRESS */
 
-  hal_eth_init_status = HAL_ETH_Init(&heth);
+  hal_eth_init_status = HAL_ETH_Init(&HETH);
 
   memset(&TxConfig, 0 , sizeof(ETH_TxPacketConfig));
   TxConfig.Attributes = ETH_TX_PACKETS_FEATURES_CSUM | ETH_TX_PACKETS_FEATURES_CRCPAD;
@@ -242,12 +242,12 @@ static void low_level_init(struct netif *netif)
   netif->hwaddr_len = ETH_HWADDR_LEN;
 
   /* set MAC hardware address */
-  netif->hwaddr[0] =  heth.Init.MACAddr[0];
-  netif->hwaddr[1] =  heth.Init.MACAddr[1];
-  netif->hwaddr[2] =  heth.Init.MACAddr[2];
-  netif->hwaddr[3] =  heth.Init.MACAddr[3];
-  netif->hwaddr[4] =  heth.Init.MACAddr[4];
-  netif->hwaddr[5] =  heth.Init.MACAddr[5];
+  netif->hwaddr[0] =  HETH.Init.MACAddr[0];
+  netif->hwaddr[1] =  HETH.Init.MACAddr[1];
+  netif->hwaddr[2] =  HETH.Init.MACAddr[2];
+  netif->hwaddr[3] =  HETH.Init.MACAddr[3];
+  netif->hwaddr[4] =  HETH.Init.MACAddr[4];
+  netif->hwaddr[5] =  HETH.Init.MACAddr[5];
 
   /* maximum transfer unit */
   netif->mtu = ETH_MAX_PAYLOAD;
@@ -321,12 +321,12 @@ static void low_level_init(struct netif *netif)
       }
 
     /* Get MAC Config MAC */
-    HAL_ETH_GetMACConfig(&heth, &MACConf);
+    HAL_ETH_GetMACConfig(&HETH, &MACConf);
     MACConf.DuplexMode = duplex;
     MACConf.Speed = speed;
-    HAL_ETH_SetMACConfig(&heth, &MACConf);
+    HAL_ETH_SetMACConfig(&HETH, &MACConf);
 
-    HAL_ETH_Start_IT(&heth);
+    HAL_ETH_Start_IT(&HETH);
     netif_set_up(netif);
     netif_set_link_up(netif);
 
@@ -399,13 +399,13 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 
   pbuf_ref(p);
 
-  HAL_ETH_Transmit_IT(&heth, &TxConfig);
+  HAL_ETH_Transmit_IT(&HETH, &TxConfig);
   while(osSemaphoreAcquire(TxPktSemaphore, TIME_WAITING_FOR_INPUT)!=osOK)
 
   {
   }
 
-  HAL_ETH_ReleaseTxPacket(&heth);
+  HAL_ETH_ReleaseTxPacket(&HETH);
 
   return errval;
 }
@@ -424,7 +424,7 @@ static struct pbuf * low_level_input(struct netif *netif)
 
   if(RxAllocStatus == RX_ALLOC_OK)
   {
-    HAL_ETH_ReadData(&heth, (void **)&p);
+    HAL_ETH_ReadData(&HETH, (void **)&p);
   }
 
   return p;
@@ -703,7 +703,7 @@ int32_t ETH_PHY_IO_Init(void)
   */
 
   /* Configure the MDIO Clock */
-  HAL_ETH_SetMDIOClockRange(&heth);
+  HAL_ETH_SetMDIOClockRange(&HETH);
 
   return 0;
 }
@@ -727,7 +727,7 @@ int32_t ETH_PHY_IO_DeInit (void)
   */
 int32_t ETH_PHY_IO_ReadReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t *pRegVal)
 {
-  if(HAL_ETH_ReadPHYRegister(&heth, DevAddr, RegAddr, pRegVal) != HAL_OK)
+  if(HAL_ETH_ReadPHYRegister(&HETH, DevAddr, RegAddr, pRegVal) != HAL_OK)
   {
     return -1;
   }
@@ -744,7 +744,7 @@ int32_t ETH_PHY_IO_ReadReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t *pRegVal
   */
 int32_t ETH_PHY_IO_WriteReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t RegVal)
 {
-  if(HAL_ETH_WritePHYRegister(&heth, DevAddr, RegAddr, RegVal) != HAL_OK)
+  if(HAL_ETH_WritePHYRegister(&HETH, DevAddr, RegAddr, RegVal) != HAL_OK)
   {
     return -1;
   }
@@ -759,80 +759,6 @@ int32_t ETH_PHY_IO_WriteReg(uint32_t DevAddr, uint32_t RegAddr, uint32_t RegVal)
 int32_t ETH_PHY_IO_GetTick(void)
 {
   return HAL_GetTick();
-}
-
-/**
-  * @brief  Check the ETH link state then update ETH driver and netif link accordingly.
-  * @retval None
-  */
-void ethernet_link_thread(void* argument)
-{
-  ETH_MACConfigTypeDef MACConf = {0};
-  int32_t PHYLinkState = 0;
-  uint32_t linkchanged = 0U, speed = 0U, duplex = 0U;
-
-  struct netif *netif = (struct netif *) argument;
-/* USER CODE BEGIN ETH link init */
-
-/* USER CODE END ETH link init */
-
-  for(;;)
-  {
-  PHYLinkState = LAN8742_GetLinkState(&LAN8742);
-
-  if(netif_is_link_up(netif) && (PHYLinkState <= LAN8742_STATUS_LINK_DOWN))
-  {
-    HAL_ETH_Stop_IT(&heth);
-    netif_set_down(netif);
-    netif_set_link_down(netif);
-  }
-  else if(!netif_is_link_up(netif) && (PHYLinkState > LAN8742_STATUS_LINK_DOWN))
-  {
-    switch (PHYLinkState)
-    {
-    case LAN8742_STATUS_100MBITS_FULLDUPLEX:
-      duplex = ETH_FULLDUPLEX_MODE;
-      speed = ETH_SPEED_100M;
-      linkchanged = 1;
-      break;
-    case LAN8742_STATUS_100MBITS_HALFDUPLEX:
-      duplex = ETH_HALFDUPLEX_MODE;
-      speed = ETH_SPEED_100M;
-      linkchanged = 1;
-      break;
-    case LAN8742_STATUS_10MBITS_FULLDUPLEX:
-      duplex = ETH_FULLDUPLEX_MODE;
-      speed = ETH_SPEED_10M;
-      linkchanged = 1;
-      break;
-    case LAN8742_STATUS_10MBITS_HALFDUPLEX:
-      duplex = ETH_HALFDUPLEX_MODE;
-      speed = ETH_SPEED_10M;
-      linkchanged = 1;
-      break;
-    default:
-      break;
-    }
-
-    if(linkchanged)
-    {
-      /* Get MAC Config MAC */
-      HAL_ETH_GetMACConfig(&heth, &MACConf);
-      MACConf.DuplexMode = duplex;
-      MACConf.Speed = speed;
-      HAL_ETH_SetMACConfig(&heth, &MACConf);
-      HAL_ETH_Start_IT(&heth);
-      netif_set_up(netif);
-      netif_set_link_up(netif);
-    }
-  }
-
-/* USER CODE BEGIN ETH link Thread core code for User BSP */
-
-/* USER CODE END ETH link Thread core code for User BSP */
-
-    osDelay(100);
-  }
 }
 
 void HAL_ETH_RxAllocateCallback(uint8_t **buff)

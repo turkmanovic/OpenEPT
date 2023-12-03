@@ -55,13 +55,25 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern ETH_HandleTypeDef heth;
+extern ETH_HandleTypeDef HETH;
 extern DMA_HandleTypeDef hdma_adc1;
 extern DAC_HandleTypeDef hdac1;
 extern TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN EV */
+/**
+  * @brief This function handles USART1 global interrupt.
+  */
+void USART3_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART1_IRQn 0 */
 
+  /* USER CODE END USART1_IRQn 0 */
+  //HAL_UART_IRQHandler(&HUART3);
+  /* USER CODE BEGIN USART1_IRQn 1 */
+
+  /* USER CODE END USART1_IRQn 1 */
+}
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -199,12 +211,96 @@ void ETH_IRQHandler(void)
   /* USER CODE BEGIN ETH_IRQn 0 */
 
   /* USER CODE END ETH_IRQn 0 */
-  HAL_ETH_IRQHandler(&heth);
+  HAL_ETH_IRQHandler(&HETH);
   /* USER CODE BEGIN ETH_IRQn 1 */
 
   /* USER CODE END ETH_IRQn 1 */
 }
 
-/* USER CODE BEGIN 1 */
-
-/* USER CODE END 1 */
+/**
+  * @brief This function handles EXTI line[15:10] interrupts.
+  */
+void EXTI15_10_IRQHandler(void)
+{
+	if (__HAL_GPIO_EXTI_GET_IT(0x1 << EXTI_LINE10))
+	{
+		HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_10);
+		__HAL_GPIO_EXTI_CLEAR_IT(0x1 << EXTI_LINE10);
+	}
+	if (__HAL_GPIO_EXTI_GET_IT(0x1 << EXTI_LINE11))
+	{
+		HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
+		__HAL_GPIO_EXTI_CLEAR_IT(0x1 << EXTI_LINE11);
+	}
+	if (__HAL_GPIO_EXTI_GET_IT(0x1 << EXTI_LINE12))
+	{
+		HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_12);
+		__HAL_GPIO_EXTI_CLEAR_IT(0x1 << EXTI_LINE12);
+	}
+	if (__HAL_GPIO_EXTI_GET_IT(0x1 << EXTI_LINE13))
+	{
+		HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
+		__HAL_GPIO_EXTI_CLEAR_IT(0x1 << EXTI_LINE13);
+	}
+	if (__HAL_GPIO_EXTI_GET_IT(0x1 << EXTI_LINE14))
+	{
+		HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_14);
+		__HAL_GPIO_EXTI_CLEAR_IT(0x1 << EXTI_LINE14);
+	}
+	if (__HAL_GPIO_EXTI_GET_IT(0x1 << EXTI_LINE15))
+	{
+		HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_15);
+		__HAL_GPIO_EXTI_CLEAR_IT(0x1 << EXTI_LINE15);
+	}
+}
+/**
+  * @brief This function handles EXTI line[15:10] interrupts.
+  */
+void EXTI9_5_IRQHandler(void)
+{
+	if (__HAL_GPIO_EXTI_GET_IT(0x1 << EXTI_LINE5))
+	{
+		HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
+		__HAL_GPIO_EXTI_CLEAR_IT(0x1 << EXTI_LINE5);
+	}
+	if (__HAL_GPIO_EXTI_GET_IT(0x1 << EXTI_LINE6))
+	{
+		HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
+		__HAL_GPIO_EXTI_CLEAR_IT(0x1 << EXTI_LINE6);
+	}
+	if (__HAL_GPIO_EXTI_GET_IT(0x1 << EXTI_LINE7))
+	{
+		HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);
+		__HAL_GPIO_EXTI_CLEAR_IT(0x1 << EXTI_LINE7);
+	}
+	if (__HAL_GPIO_EXTI_GET_IT(0x1 << EXTI_LINE8))
+	{
+		HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
+		__HAL_GPIO_EXTI_CLEAR_IT(0x1 << EXTI_LINE8);
+	}
+	if (__HAL_GPIO_EXTI_GET_IT(0x1 << EXTI_LINE9))
+	{
+		HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_9);
+		__HAL_GPIO_EXTI_CLEAR_IT(0x1 << EXTI_LINE9);
+	}
+}
+void EXTI0_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+}
+void EXTI1_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
+}
+void EXTI2_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+}
+void EXTI3_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
+}
+void EXTI4_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
+}

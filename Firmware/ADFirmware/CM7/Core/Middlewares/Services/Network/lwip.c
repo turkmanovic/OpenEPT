@@ -22,9 +22,6 @@
 #include "lwip.h"
 #include "lwip/init.h"
 #include "lwip/netif.h"
-#if defined ( __CC_ARM )  /* MDK ARM Compiler */
-#include "lwip/sio.h"
-#endif /* MDK ARM Compiler */
 #include "ethernetif.h"
 #include <string.h>
 
@@ -41,7 +38,7 @@ void Error_Handler(void);
 /* USER CODE END 1 */
 
 /* Variables Initialization */
-struct netif gnetif;
+struct netif prvNETWORK_GNETIF;
 ip4_addr_t ipaddr;
 ip4_addr_t netmask;
 ip4_addr_t gw;
@@ -88,24 +85,24 @@ void MX_LWIP_Init(void)
   IP4_ADDR(&gw, GATEWAY_ADDRESS[0], GATEWAY_ADDRESS[1], GATEWAY_ADDRESS[2], GATEWAY_ADDRESS[3]);
 
   /* add the network interface (IPv4/IPv6) with RTOS */
-  netif_add(&gnetif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &tcpip_input);
+  netif_add(&prvNETWORK_GNETIF, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &tcpip_input);
 
   /* Registers the default network interface */
-  netif_set_default(&gnetif);
+  netif_set_default(&prvNETWORK_GNETIF);
 
-  if (netif_is_link_up(&gnetif))
+  if (netif_is_link_up(&prvNETWORK_GNETIF))
   {
     /* When the netif is fully configured this function must be called */
-    netif_set_up(&gnetif);
+    netif_set_up(&prvNETWORK_GNETIF);
   }
   else
   {
     /* When the netif link is down this function must be called */
-    netif_set_down(&gnetif);
+    netif_set_down(&prvNETWORK_GNETIF);
   }
 
   /* Set the link callback function, this function is called on change of link status*/
-  netif_set_link_callback(&gnetif, ethernet_link_status_updated);
+  netif_set_link_callback(&prvNETWORK_GNETIF, ethernet_link_status_updated);
 
   /* Create the Ethernet link handler thread */
 /* USER CODE BEGIN H7_OS_THREAD_NEW_CMSIS_RTOS_V2 */
@@ -113,7 +110,7 @@ void MX_LWIP_Init(void)
   attributes.name = "EthLink";
   attributes.stack_size = INTERFACE_THREAD_STACK_SIZE;
   attributes.priority = osPriorityBelowNormal;
-  osThreadNew(ethernet_link_thread, &gnetif, &attributes);
+  osThreadNew(ethernet_link_thread, &prvNETWORK_GNETIF, &attributes);
 /* USER CODE END H7_OS_THREAD_NEW_CMSIS_RTOS_V2 */
 
 /* USER CODE BEGIN 3 */
@@ -128,95 +125,5 @@ void MX_LWIP_Init(void)
 /* USER CODE END 4 */
 #endif
 
-/**
-  * @brief  Notify the User about the network interface config status
-  * @param  netif: the network interface
-  * @retval None
-  */
-static void ethernet_link_status_updated(struct netif *netif)
-{
-  if (netif_is_up(netif))
-  {
-/* USER CODE BEGIN 5 */
-/* USER CODE END 5 */
-  }
-  else /* netif is down */
-  {
-/* USER CODE BEGIN 6 */
-/* USER CODE END 6 */
-  }
-}
 
-#if defined ( __CC_ARM )  /* MDK ARM Compiler */
-/**
- * Opens a serial device for communication.
- *
- * @param devnum device number
- * @return handle to serial device if successful, NULL otherwise
- */
-sio_fd_t sio_open(u8_t devnum)
-{
-  sio_fd_t sd;
-
-/* USER CODE BEGIN 7 */
-  sd = 0; // dummy code
-/* USER CODE END 7 */
-
-  return sd;
-}
-
-/**
- * Sends a single character to the serial device.
- *
- * @param c character to send
- * @param fd serial device handle
- *
- * @note This function will block until the character can be sent.
- */
-void sio_send(u8_t c, sio_fd_t fd)
-{
-/* USER CODE BEGIN 8 */
-/* USER CODE END 8 */
-}
-
-/**
- * Reads from the serial device.
- *
- * @param fd serial device handle
- * @param data pointer to data buffer for receiving
- * @param len maximum length (in bytes) of data to receive
- * @return number of bytes actually received - may be 0 if aborted by sio_read_abort
- *
- * @note This function will block until data can be received. The blocking
- * can be cancelled by calling sio_read_abort().
- */
-u32_t sio_read(sio_fd_t fd, u8_t *data, u32_t len)
-{
-  u32_t recved_bytes;
-
-/* USER CODE BEGIN 9 */
-  recved_bytes = 0; // dummy code
-/* USER CODE END 9 */
-  return recved_bytes;
-}
-
-/**
- * Tries to read from the serial device. Same as sio_read but returns
- * immediately if no data is available and never blocks.
- *
- * @param fd serial device handle
- * @param data pointer to data buffer for receiving
- * @param len maximum length (in bytes) of data to receive
- * @return number of bytes actually received
- */
-u32_t sio_tryread(sio_fd_t fd, u8_t *data, u32_t len)
-{
-  u32_t recved_bytes;
-
-/* USER CODE BEGIN 10 */
-  recved_bytes = 0; // dummy code
-/* USER CODE END 10 */
-  return recved_bytes;
-}
-#endif /* MDK ARM Compiler */
 
