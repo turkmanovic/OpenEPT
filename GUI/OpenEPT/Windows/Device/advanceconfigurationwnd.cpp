@@ -10,7 +10,7 @@
 #define ADVANCEWNDCONFIG_STREAM_SIZE        100
 #define ADVANCEWNDCONFIG_VOLTAGE_OFFSET     100
 #define ADVANCEWNDCONFIG_CURRENT_OFFSET     100
-#define ADVANCEWNDCONFIG_DEVICE_PORT        1
+#define ADVANCEWNDCONFIG_DEVICE_PORT        50000
 
 AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
     QWidget(parent),
@@ -43,13 +43,13 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
     ui->currentOffsetLine->setText(QString::number(ADVANCEWNDCONFIG_CURRENT_OFFSET));
 
     /* Set default Value for Stream size Line*/
-    ui->deviceIpAddressLine->setText("Device0");
+    ui->deviceIpAddressLine->setText("192.168.1.2");
 
     /* Set default Value for Voltage Offset Line*/
     ui->devicePortLine->setText(QString::number(ADVANCEWNDCONFIG_DEVICE_PORT));
 
     /* Set default Value for Current Offset Line*/
-    ui->deviceNameLine->setText("192.168.0.102");
+    ui->deviceNameLine->setText("ADevice 1");
 
     /* Set default Value for ADC Resolution Comb*/
     QStringList adcResolutionOptions=(
