@@ -12,6 +12,50 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    /* Set default Value for ADC Resolution Comb*/
+    QStringList resolutionOptions=(
+        QStringList()
+        <<""
+        <<"16 Bit"
+        <<"14 Bit"
+        <<"12 Bit"
+        <<"10 Bit"
+        );
+    ui->resolutionComb->addItems(resolutionOptions);
+
+    /* Set default Value for ADC Clock Div Comb*/
+    QStringList clockDivOptions=(
+        QStringList()
+        <<""
+        <<"1"
+        <<"2"
+        <<"4"
+        <<"6"
+        <<"8"
+        <<"10"
+        <<"12"
+        <<"16"
+        <<"32"
+        <<"64"
+        <<"128"
+        );
+    ui->clockDivComb->addItems(clockDivOptions);
+
+    /* Set default Value for ADC Sample Time Comb*/
+    QStringList sampleTimeOptions=(
+        QStringList()
+        <<""
+        <<"1C5"
+        <<"2C5"
+        <<"8C5"
+        <<"16C5"
+        <<"32C5"
+        <<"64C5"
+        <<"387C5"
+        <<"810C5"
+        );
+    ui->sampleTimeComb->addItems(sampleTimeOptions);
+
     advanceConfigurationWnd  = new AdvanceConfigurationWnd();
     advanceConfigurationWnd->hide();
     connect(ui->advanceOptionPusb, SIGNAL(clicked(bool)), this, SLOT(onAdvanceConfigurationButtonPressed(bool)));
