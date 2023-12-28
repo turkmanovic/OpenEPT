@@ -692,6 +692,9 @@
                  </item>
                  <item>
                   <widget class="QPushButton" name="pathPusb">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="minimumSize">
                     <size>
                      <width>30</width>
@@ -741,6 +744,9 @@
                 <layout class="QHBoxLayout" name="pathVerlBottomHorl">
                  <item>
                   <widget class="QLineEdit" name="pathLine">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -912,7 +918,7 @@
                   </spacer>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="playPusb">
+                  <widget class="QPushButton" name="startPusb">
                    <property name="minimumSize">
                     <size>
                      <width>30</width>

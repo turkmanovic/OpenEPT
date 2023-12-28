@@ -13,16 +13,16 @@ typedef enum{
 }device_adc_resolution_t;
 
 typedef enum{
-    DEVICE_ADC_SAMPLING_SPEED_UKNOWN   = 0,
-    DEVICE_ADC_SAMPLING_SPEED_1C5      = 1,
-    DEVICE_ADC_SAMPLING_SPEED_2C5      = 2,
-    DEVICE_ADC_SAMPLING_SPEED_8C5      = 8,
-    DEVICE_ADC_SAMPLING_SPEED_16C5     = 16,
-    DEVICE_ADC_SAMPLING_SPEED_32C5     = 32,
-    DEVICE_ADC_SAMPLING_SPEED_64C5     = 64,
-    DEVICE_ADC_SAMPLING_SPEED_387C5    = 387,
-    DEVICE_ADC_SAMPLING_SPEED_810C5    = 810
-}device_adc_sampling_speed_t;
+    DEVICE_ADC_SAMPLING_TIME_UKNOWN   = 0,
+    DEVICE_ADC_SAMPLING_TIME_1C5      = 1,
+    DEVICE_ADC_SAMPLING_TIME_2C5      = 2,
+    DEVICE_ADC_SAMPLING_TIME_8C5      = 8,
+    DEVICE_ADC_SAMPLING_TIME_16C5     = 16,
+    DEVICE_ADC_SAMPLING_TIME_32C5     = 32,
+    DEVICE_ADC_SAMPLING_TIME_64C5     = 64,
+    DEVICE_ADC_SAMPLING_TIME_387C5    = 387,
+    DEVICE_ADC_SAMPLING_TIME_810C5    = 810
+}device_adc_sampling_time_t;
 
 typedef enum{
     DEVICE_ADC_CLOCK_DIV_UKNOWN        = 0,
@@ -69,7 +69,7 @@ signals:
 private:
     QString                     deviceName;
     device_adc_resolution_t     adcResolution;
-    device_adc_sampling_speed_t adcSamplingSpeed;
+    device_adc_sampling_time_t  adcSamplingTime;
     device_adc_clock_div_t      adcClockingDiv;
     device_adc_averaging_t      adcAveraging;
 

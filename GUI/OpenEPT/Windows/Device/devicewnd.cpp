@@ -13,7 +13,7 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     ui->setupUi(this);
 
     /* Set default Value for ADC Resolution Comb*/
-    QStringList resolutionOptions=(
+    resolutionOptions=(
         QStringList()
         <<""
         <<"16 Bit"
@@ -24,7 +24,7 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     ui->resolutionComb->addItems(resolutionOptions);
 
     /* Set default Value for ADC Clock Div Comb*/
-    QStringList clockDivOptions=(
+    clockDivOptions=(
         QStringList()
         <<""
         <<"1"
@@ -42,7 +42,7 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     ui->clockDivComb->addItems(clockDivOptions);
 
     /* Set default Value for ADC Sample Time Comb*/
-    QStringList sampleTimeOptions=(
+    sampleTimeOptions =(
         QStringList()
         <<""
         <<"1C5"
@@ -82,6 +82,16 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     ui->GraphicsTopHorl->addWidget(voltageChart);
     ui->GraphicsTopHorl->addWidget(currentChart);
     ui->GraphicsBottomVerl->addWidget(consumptionChart, Qt::AlignCenter);
+
+    connect(ui->clockDivComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onClockDivCombIndexChanged(int)));
+    connect(ui->resolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onResolutionCombIndexChanged(int)));
+    connect(ui->sampleTimeComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onSamplingTimeCombIndexChanged(int)));
+    connect(ui->saveToFileCheb, SIGNAL(stateChanged(int)), this, SLOT(onSaveToFileChanged(int)));
+    //connect(ui->saveToFileCheb, SIGNAL(saveToFileEnabled(bool)), this, SLOT(onInfoSaveToFileEnabled(bool)));
+    connect(ui->startPusb, SIGNAL(clicked(bool)), this, SLOT(onStartAcquisition()));
+    connect(ui->pausePusb, SIGNAL(clicked(bool)), this, SLOT(onPauseAcquisition()));
+    connect(ui->stopPusb, SIGNAL(clicked(bool)), this, SLOT(onStopAcquisiton()));
+    connect(ui->refreshPusb, SIGNAL(clicked(bool)), this, SLOT(onRefreshAcquisiton()));
 }
 
 void    DeviceWnd::onAdvanceConfigurationButtonPressed(bool pressed)
@@ -89,6 +99,63 @@ void    DeviceWnd::onAdvanceConfigurationButtonPressed(bool pressed)
     advanceConfigurationWnd->show();
 }
 
+void    DeviceWnd::onSaveToFileChanged(int value)
+{
+    if(value == Qt::Checked)
+    {
+        ui->pathPusb->setEnabled(true);
+        ui->pathLab->setEnabled(true);
+        ui->pathLine->setEnabled(true);
+        emit saveToFileEnabled(true);
+    }else
+    {
+        ui->pathPusb->setEnabled(false);
+        ui->pathLab->setEnabled(false);
+        ui->pathLine->setEnabled(false);
+        emit saveToFileEnabled(false);
+    }
+}
+/*
+void DeviceWnd::onInfoSaveToFileEnabled(bool enableStatus)
+{
+    saveToFileFlag = enableStatus;
+}
+*/
+
+void DeviceWnd::onStartAcquisition()
+{
+    emit startAcquisition();
+}
+
+void DeviceWnd::onPauseAcquisition()
+{
+    emit pauseAcquisition();
+}
+
+void DeviceWnd::onStopAcquisiton()
+{
+    emit stopAcquisition();
+}
+
+void DeviceWnd::onRefreshAcquisiton()
+{
+    emit refreshAcquisition();
+}
+
+void DeviceWnd::onClockDivCombIndexChanged(int index)
+{
+    emit sigClockDivChanged(clockDivOptions[index]);
+}
+
+void DeviceWnd::onResolutionCombIndexChanged(int index)
+{
+    emit sigResolutionChanged(resolutionOptions[index]);
+}
+
+void DeviceWnd::onSamplingTimeCombIndexChanged(int index)
+{
+    emit sigSamplingTimeChanged(sampleTimeOptions[index]);
+}
 void    DeviceWnd::closeEvent(QCloseEvent *event)
 {
     emit sigWndClosed();

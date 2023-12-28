@@ -19,12 +19,28 @@ public:
 
 signals:
     void    sigWndClosed();
-
+    void    sigSamplingTimeChanged(QString samplingTime);
+    void    sigResolutionChanged(QString resolution);
+    void    sigClockDivChanged(QString clockDiv);
+    void    saveToFileEnabled(bool enableStatus);
+    void    startAcquisition();
+    void    pauseAcquisition();
+    void    stopAcquisition();
+    void    refreshAcquisition();
 protected:
     void    closeEvent(QCloseEvent *event);
 
 public slots:
     void    onAdvanceConfigurationButtonPressed(bool pressed);
+    void    onClockDivCombIndexChanged(int index);
+    void    onResolutionCombIndexChanged(int index);
+    void    onSamplingTimeCombIndexChanged(int index);
+    //void    onInfoSaveToFileEnabled(bool enableStatus);
+    void    onSaveToFileChanged(int value);
+    void    onStartAcquisition();
+    void    onPauseAcquisition();
+    void    onStopAcquisiton();
+    void    onRefreshAcquisiton();
 
 private:
     Ui::DeviceWnd *ui;
@@ -34,6 +50,14 @@ private:
     Plot    *voltageChart;
     Plot    *currentChart;
     Plot    *consumptionChart;
+
+    QStringList sampleTimeOptions;
+    QStringList resolutionOptions;
+    QStringList clockDivOptions;
+    QStringList sampleAveraginOptions;
+
+    /* File info */
+    bool                saveToFileFlag;
 };
 
 #endif // DEVICEWND_H
