@@ -190,6 +190,8 @@ static void prvCONTROL_TaskFunc(void* pvParameter){
 			netconn_delete(newconn);
 			break;
 		case CONTROL_STATE_ERROR:
+			SYSTEM_ReportError(SYSTEM_ERROR_LEVEL_LOW);
+			vTaskDelay(portMAX_DELAY);
 			break;
 		}
 
