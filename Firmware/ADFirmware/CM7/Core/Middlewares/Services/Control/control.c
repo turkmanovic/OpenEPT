@@ -86,6 +86,7 @@ static void prvCONTROL_GetDeviceName(const char* arguments, uint16_t argumentsLe
 	}
 
 	prvCONTROL_PrepareOkResponse(response, responseSize, tmpDeviceName, deviceNameSize);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device name successfully obtained\r\n");
 }
 
 void prvCONTROL_SetDeviceName(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
@@ -104,6 +105,7 @@ void prvCONTROL_SetDeviceName(const char* arguments, uint16_t argumentsLength, c
 		return;
 	}
 	prvCONTROL_PrepareOkResponse(response, responseSize, "", 0);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device name successfully set\r\n");
 }
 
 
