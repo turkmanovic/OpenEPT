@@ -24,6 +24,7 @@
 #include "system.h"
 #include "logging.h"
 #include "network.h"
+#include "control.h"
 
 
 #include <stdint.h>
@@ -84,6 +85,12 @@ static void prvSYSTEM_Task()
 				break;
 			}
 			LOGGING_Write("System", LOGGING_MSG_TYPE_INFO, "Network service successfully initialized\r\n");
+			if(CONTROL_Init(2000) != CONTROL_STATUS_OK)
+			{
+				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
+				break;
+			}
+			LOGGING_Write("System", LOGGING_MSG_TYPE_INFO, "Control service successfully initialized\r\n");
 
 			xSemaphoreGive(prvSYSTEM_DATA.initSig);
 			prvSYSTEM_DATA.state = SYSTEM_STATE_SERVICE;

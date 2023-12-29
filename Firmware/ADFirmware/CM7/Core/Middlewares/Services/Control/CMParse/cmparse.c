@@ -97,7 +97,7 @@ cmparse_status_t	CMPARSE_AddCommand(const char* command, CommandCallBack callbac
 	return CMPARSE_STATUS_OK;
 }
 
-cmparse_status_t MESSAGEPARSING_Execute(const char* command, char* response, uint16_t* responseSize)
+cmparse_status_t 	CMPARSE_Execute(const char* command, char* response, uint16_t* responseSize)
 {
 	char arguments[CMPARSE_MAX_ARG_BUFFER_SIZE];
 	memset(arguments, 0, CMPARSE_MAX_ARG_BUFFER_SIZE);
