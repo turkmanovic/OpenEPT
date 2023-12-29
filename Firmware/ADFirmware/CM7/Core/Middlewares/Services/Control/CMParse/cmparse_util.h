@@ -12,7 +12,7 @@
 
 #define CMPARSE_MAX_COMMAND_NAME_LENGTH	50
 
-typedef uint8_t (*CommandCallBack)(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize);
+typedef void (*CommandCallBack)(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize);
 
 typedef struct
 {

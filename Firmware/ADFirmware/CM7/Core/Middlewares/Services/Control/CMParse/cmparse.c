@@ -124,6 +124,7 @@ char*					CMPARSE_GetArgParameters(char* argBuffer, uint32_t* argBufferSize, cmp
 		tmpArgBuffPtr += 1;
 		if(tmpArgBufferSizeProcessed == *argBufferSize) return NULL;
 	}
+	tmpArgBufferSizeProcessed += 1;
 	tmpArgBuffPtr += 1;
 	while(*tmpArgBuffPtr != '=')
 	{
@@ -133,6 +134,7 @@ char*					CMPARSE_GetArgParameters(char* argBuffer, uint32_t* argBufferSize, cmp
 		tmpArgBuffPtr += 1;
 		if(tmpArgBufferSizeProcessed == *argBufferSize) return NULL;
 	}
+	tmpArgBufferSizeProcessed += 1;
 	tmpArgBuffPtr += 1;
 	while(*tmpArgBuffPtr != ' ' && tmpArgBufferSizeProcessed < *argBufferSize)
 	{

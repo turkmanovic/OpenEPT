@@ -27,11 +27,25 @@ typedef struct
 
 static control_data_t	prvCONTROL_DATA;
 
-control_status_t prvCONTROL_GetDeviceName(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+void prvCONTROL_GetDeviceName(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
 	strcpy(response, "OK Acq Device\r\n");
 	*responseSize = strlen("OK Acq Device\r\n");
-	return CONTROL_STATUS_OK;
+}
+
+void prvCONTROL_SetADCparam(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	cmparse_value_t	value;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "stime", &value) != CMPARSE_STATUS_OK)
+	{
+		strcpy(response, "ERROR\r\n");
+		*responseSize = strlen("ERROR\r\n");
+		return;
+	}
+	strcpy(response, "OK\r\n");
+	*responseSize = strlen("OK\r\n");
 }
 
 
@@ -111,7 +125,6 @@ static void prvCONTROL_TaskFunc(void* pvParameter){
 				}
 				netbuf_delete(buf);
 			}
-			LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO,  "Connection closed\r\n");
 			netconn_close(newconn);
 			netconn_delete(newconn);
 			break;
@@ -139,6 +152,7 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	if(xSemaphoreTake(prvCONTROL_DATA.initSig, pdMS_TO_TICKS(initTimeout)) != pdTRUE) return CONTROL_STATUS_ERROR;
 
 	CMPARSE_AddCommand("device hello", prvCONTROL_GetDeviceName);
+	CMPARSE_AddCommand("device adcparam set", prvCONTROL_SetADCparam);
 
 	return CONTROL_STATUS_OK;
 }
