@@ -104,6 +104,8 @@ cmparse_status_t 	CMPARSE_Execute(const char* command, char* response, uint16_t*
 	uint16_t argumentsBufferSize = CMPARSE_MAX_ARG_BUFFER_SIZE;
 	CommandCallBack commandCallBack = prvCMPARSE_FindCallback(command);
 
+	if(commandCallBack == NULL) return CMPARSE_STATUS_ERROR;
+
 	if(prvCMPARSE_GetArguments(command, arguments, &argumentsBufferSize) != CMPARSE_STATUS_OK) return CMPARSE_STATUS_ERROR;
 
 	commandCallBack(arguments, argumentsBufferSize, response, responseSize);
@@ -116,6 +118,7 @@ char*					CMPARSE_GetArgParameters(char* argBuffer, uint32_t* argBufferSize, cmp
 {
 	char* 		tmpArgBuffPtr = argBuffer;
 	uint32_t	tmpArgBufferSizeProcessed = 0;
+	if(*argBufferSize == 0) return NULL;
 	key->size	= 0;
 	value->size = 0;
 	//arguments are in format -key=value
@@ -143,8 +146,6 @@ char*					CMPARSE_GetArgParameters(char* argBuffer, uint32_t* argBufferSize, cmp
 		tmpArgBufferSizeProcessed += 1;
 		tmpArgBuffPtr += 1;
 	}
-	*argBufferSize = *argBufferSize -tmpArgBufferSizeProcessed;
-	if(*argBufferSize == 0) return NULL;
 	return tmpArgBuffPtr;
 
 }
@@ -153,8 +154,8 @@ cmparse_status_t		CMPARSE_GetArgValue(const char* argBuffer, uint32_t argBufferS
 {
 	cmparse_value_t localKeyValue;
 	cmparse_value_t localValue;
-	uint32_t				unprocessedArgBufferSize = argBufferSize;
-	char*				unprocessedArgBufferPtr	=	argBuffer;
+	uint32_t				unprocessedArgBufferSize 	= 	argBufferSize;
+	char*				unprocessedArgBufferPtr			=	argBuffer;
 
 	do{
 		unprocessedArgBufferPtr = CMPARSE_GetArgParameters(
@@ -163,6 +164,7 @@ cmparse_status_t		CMPARSE_GetArgValue(const char* argBuffer, uint32_t argBufferS
 				&localKeyValue,
 				&localValue
 		);
+		if(unprocessedArgBufferPtr == NULL) return CMPARSE_STATUS_ERROR;
 		if(strncmp(key, localKeyValue.value, strlen(key)) == 0)
 		{
 			value->size = localValue.size;

@@ -9,6 +9,9 @@
 #define CORE_MIDDLEWARES_SERVICES_SYSTEM_SYSTEM_C_
 
 
+#include <stdint.h>
+#include <string.h>
+
 #include "cmsis_os.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -27,12 +30,12 @@
 #include "control.h"
 
 
-#include <stdint.h>
 
 typedef  struct
 {
-	system_state_t state;
-	SemaphoreHandle_t initSig;
+	system_state_t 		state;
+	SemaphoreHandle_t 	initSig;
+	char				deviceName[CONF_SYSTEM_DEFAULT_DEVICE_NAME_MAX];
 }system_data_t;
 
 static system_data_t prvSYSTEM_DATA;
@@ -72,6 +75,9 @@ static void prvSYSTEM_Task()
 			DRV_GPIO_Pin_Init(SYSTEM_LINK_STATUS_DIODE_PORT, SYSTEM_LINK_STATUS_DIODE_PIN, &userLedConf);
 			DRV_GPIO_Pin_Init(SYSTEM_ERROR_STATUS_DIODE_PORT, SYSTEM_ERROR_STATUS_DIODE_PIN, &userLedConf);
 			DRV_GPIO_Pin_EnableInt(DRV_GPIO_PORT_C, 13, 5, prvBUTTON_Callback);
+
+			memset(prvSYSTEM_DATA.deviceName, 0, CONF_SYSTEM_DEFAULT_DEVICE_NAME_MAX);
+			memcpy(prvSYSTEM_DATA.deviceName, CONF_SYSTEM_DEFAULT_DEVICE_NAME, strlen(CONF_SYSTEM_DEFAULT_DEVICE_NAME));
 
 			if(LOGGING_Init(2000) != LOGGING_STATUS_OK)
 			{
@@ -166,6 +172,21 @@ system_status_t SYSTEM_SetLinkStatus(system_link_status_t linkStatus)
 	{
 		if(DRV_GPIO_Pin_SetState(SYSTEM_LINK_STATUS_DIODE_PORT, SYSTEM_LINK_STATUS_DIODE_PIN, DRV_GPIO_PIN_STATE_RESET) != DRV_GPIO_STATUS_OK) return SYSTEM_STATUS_ERROR;
 	}
+	return SYSTEM_STATUS_OK;
+}
+
+system_status_t SYSTEM_SetDeviceName(const char* deviceName)
+{
+	if(strlen(deviceName) > CONF_SYSTEM_DEFAULT_DEVICE_NAME_MAX) return SYSTEM_STATE_ERROR;
+	memset(prvSYSTEM_DATA.deviceName, 0, CONF_SYSTEM_DEFAULT_DEVICE_NAME_MAX);
+	memcpy(prvSYSTEM_DATA.deviceName, deviceName, strlen(deviceName));
+	return SYSTEM_STATUS_OK;
+}
+
+system_status_t SYSTEM_GetDeviceName(char* deviceName, uint32_t* deviceNameSize)
+{
+	memcpy(deviceName, prvSYSTEM_DATA.deviceName, strlen(prvSYSTEM_DATA.deviceName));
+	*deviceNameSize = strlen(prvSYSTEM_DATA.deviceName);
 	return SYSTEM_STATUS_OK;
 }
 

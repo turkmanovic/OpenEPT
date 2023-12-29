@@ -1,18 +1,22 @@
-/*
- * control.c
- *
- *  Created on: Dec 28, 2023
- *      Author: Haris
+/**
+ ******************************************************************************
+ * @file   	control.c
+ * @brief  	...
+ * @author	Haris Turkmanovic
+ * @email	haris.turkmanovic@gmail.com
+ * @date	December 2023
+ ******************************************************************************
  */
 #include <string.h>
-#include "globalConfig.h"
-#include "control.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
 #include "lwip.h"
 #include "lwip/api.h"
-#include "../Logging/logging.h"
+
+#include "control.h"
+#include "logging.h"
+#include "system.h"
 #include "CMParse/cmparse.h"
 
 typedef struct
@@ -27,25 +31,79 @@ typedef struct
 
 static control_data_t	prvCONTROL_DATA;
 
-void prvCONTROL_GetDeviceName(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+static void inline prvCONTROL_PrepareErrorResponse(char* response, uint16_t* responseSize)
 {
-	strcpy(response, "OK Acq Device\r\n");
-	*responseSize = strlen("OK Acq Device\r\n");
+	uint32_t	tmpIncreaseSize  = 0;
+	char* tmpResponsePtr = response;
+	tmpIncreaseSize = strlen(CONTROL_RESPONSE_ERROR_STATUS_MSG);
+	memcpy(tmpResponsePtr, CONTROL_RESPONSE_ERROR_STATUS_MSG, tmpIncreaseSize);
+	tmpResponsePtr	+= tmpIncreaseSize;
+	*responseSize	+= tmpIncreaseSize;
+
+	tmpIncreaseSize = strlen(" 1");
+	memcpy(tmpResponsePtr, " 1", tmpIncreaseSize);
+	tmpResponsePtr	+= tmpIncreaseSize;
+	*responseSize	+= tmpIncreaseSize;
+
+	memcpy(tmpResponsePtr, "\r\n", 2);
+	tmpResponsePtr	+= 2;
+	*responseSize	+= 2;
 }
 
-void prvCONTROL_SetADCparam(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+static void inline prvCONTROL_PrepareOkResponse(char* response, uint16_t* responseSize, char* msg, uint32_t msgSize)
+{
+	uint32_t	tmpIncreaseSize  = 0;
+	char* tmpResponsePtr = response;
+	tmpIncreaseSize = strlen(CONTROL_RESPONSE_OK_STATUS_MSG);
+	memcpy(tmpResponsePtr, CONTROL_RESPONSE_OK_STATUS_MSG, tmpIncreaseSize);
+	tmpResponsePtr	+= tmpIncreaseSize;
+	*responseSize	+= tmpIncreaseSize;
+
+	memcpy(tmpResponsePtr, " ", 1);
+	tmpResponsePtr	+= 1;
+	*responseSize	+= 1;
+
+	memcpy(tmpResponsePtr, msg, msgSize);
+	tmpResponsePtr	+= msgSize;
+	*responseSize	+= msgSize;
+
+	memcpy(tmpResponsePtr, "\r\n", 2);
+	tmpResponsePtr	+= 2;
+	*responseSize	+= 2;
+}
+
+static void prvCONTROL_GetDeviceName(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	uint32_t 	deviceNameSize;
+	char tmpDeviceName[CONF_SYSTEM_DEFAULT_DEVICE_NAME_MAX];
+	memset(tmpDeviceName, 0, CONF_SYSTEM_DEFAULT_DEVICE_NAME_MAX);
+
+	*responseSize = 0;
+	if(SYSTEM_GetDeviceName(tmpDeviceName, &deviceNameSize) != SYSTEM_STATUS_OK  )
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+
+	prvCONTROL_PrepareOkResponse(response, responseSize, tmpDeviceName, deviceNameSize);
+}
+
+void prvCONTROL_SetDeviceName(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
 	cmparse_value_t	value;
 
 	memset(&value, 0, sizeof(cmparse_value_t));
-	if(CMPARSE_GetArgValue(arguments, argumentsLength, "stime", &value) != CMPARSE_STATUS_OK)
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "value", &value) != CMPARSE_STATUS_OK)
 	{
-		strcpy(response, "ERROR\r\n");
-		*responseSize = strlen("ERROR\r\n");
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
 		return;
 	}
-	strcpy(response, "OK\r\n");
-	*responseSize = strlen("OK\r\n");
+	if(SYSTEM_SetDeviceName(value.value) != SYSTEM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+	prvCONTROL_PrepareOkResponse(response, responseSize, "", 0);
 }
 
 
@@ -106,6 +164,9 @@ static void prvCONTROL_TaskFunc(void* pvParameter){
 					prvCONTROL_DATA.responseBufferSize = 0;
 					netbuf_data(buf, &data, &dataLen);
 					LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "New control message received\r\n");
+					memset(prvCONTROL_DATA.requestBuffer, 0, CONTROL_BUFFER_SIZE);
+					memset(prvCONTROL_DATA.responseBuffer, 0, CONTROL_BUFFER_SIZE);
+					prvCONTROL_DATA.responseBufferSize = 0;
 					memcpy(prvCONTROL_DATA.requestBuffer, data, dataLen);
 					if(CMPARSE_Execute(prvCONTROL_DATA.requestBuffer, prvCONTROL_DATA.responseBuffer, &prvCONTROL_DATA.responseBufferSize) != CMPARSE_STATUS_OK)
 					{
@@ -152,7 +213,7 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	if(xSemaphoreTake(prvCONTROL_DATA.initSig, pdMS_TO_TICKS(initTimeout)) != pdTRUE) return CONTROL_STATUS_ERROR;
 
 	CMPARSE_AddCommand("device hello", prvCONTROL_GetDeviceName);
-	CMPARSE_AddCommand("device adcparam set", prvCONTROL_SetADCparam);
+	CMPARSE_AddCommand("device setname", prvCONTROL_SetDeviceName);
 
 	return CONTROL_STATUS_OK;
 }
