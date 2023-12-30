@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * @file   	gpio.h
+ * @file   	drv_gpio.h
  * @brief  	...
  * @author	Haris Turkmanovic
  * @email	haris.turkmanovic@gmail.com

@@ -13,9 +13,9 @@
 
 #include "globalConfig.h"
 
-#define SYSTEM_TASK_NAME		CONF_SYSTEM_TASK_NAME
-#define SYSTEM_TASK_PRIO		CONF_SYSTEM_TASK_PRIO
-#define SYSTEM_TASK_STACK_SIZE	CONF_SYSTEM_TASK_STACK_SIZE
+#define SYSTEM_TASK_NAME				CONF_SYSTEM_TASK_NAME
+#define SYSTEM_TASK_PRIO				CONF_SYSTEM_TASK_PRIO
+#define SYSTEM_TASK_STACK_SIZE			CONF_SYSTEM_TASK_STACK_SIZE
 
 #define	SYSTEM_ERROR_STATUS_DIODE_PORT	CONF_SYSTEM_ERROR_STATUS_DIODE_PORT
 #define	SYSTEM_ERROR_STATUS_DIODE_PIN	CONF_SYSTEM_ERROR_STATUS_DIODE_PIN
@@ -55,5 +55,7 @@ system_status_t SYSTEM_Init();
 system_status_t SYSTEM_Start();
 system_status_t SYSTEM_ReportError(system_error_level_t errorLevel);
 system_status_t SYSTEM_SetLinkStatus(system_link_status_t linkStatus);
+system_status_t SYSTEM_SetDeviceName(const char* deviceName);
+system_status_t SYSTEM_GetDeviceName(char* deviceName, uint32_t* deviceNameSize);
 
 #endif /* CORE_MIDDLEWARES_SERVICES_SYSTEM_SYSTEM_H_ */
