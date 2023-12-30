@@ -1,4 +1,5 @@
 QT       += core gui uitools
+QT       += network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
@@ -10,6 +11,7 @@ CONFIG += c++17
 
 SOURCES += \
     Chart/qcustomplot.cpp \
+    Links/controllink.cpp \
     Windows/AddDevice/adddevicewnd.cpp \
     Windows/Device/advanceconfigurationwnd.cpp \
     Windows/Device/devicewnd.cpp \
@@ -21,6 +23,7 @@ SOURCES += \
 
 HEADERS += \
     Chart/qcustomplot.h \
+    Links/controllink.h \
     Windows/AddDevice/adddevicewnd.h \
     Windows/Device/advanceconfigurationwnd.h \
     Windows/Device/devicewnd.h \
