@@ -79,6 +79,7 @@ static void prvCONTROL_GetDeviceName(const char* arguments, uint16_t argumentsLe
 	memset(tmpDeviceName, 0, CONF_SYSTEM_DEFAULT_DEVICE_NAME_MAX);
 
 	*responseSize = 0;
+
 	if(SYSTEM_GetDeviceName(tmpDeviceName, &deviceNameSize) != SYSTEM_STATUS_OK  )
 	{
 		prvCONTROL_PrepareErrorResponse(response, responseSize);
@@ -99,11 +100,13 @@ void prvCONTROL_SetDeviceName(const char* arguments, uint16_t argumentsLength, c
 		prvCONTROL_PrepareErrorResponse(response, responseSize);
 		return;
 	}
+
 	if(SYSTEM_SetDeviceName(value.value) != SYSTEM_STATUS_OK)
 	{
 		prvCONTROL_PrepareErrorResponse(response, responseSize);
 		return;
 	}
+
 	prvCONTROL_PrepareOkResponse(response, responseSize, "", 0);
 	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device name successfully set\r\n");
 }
@@ -123,8 +126,8 @@ static void prvCONTROL_TaskFunc(void* pvParameter){
 		{
 		case CONTROL_STATE_INIT:
 
-			memset(prvCONTROL_DATA.requestBuffer, 0, CONTROL_BUFFER_SIZE);
-			memset(prvCONTROL_DATA.responseBuffer, 0, CONTROL_BUFFER_SIZE);
+			memset(prvCONTROL_DATA.requestBuffer, 	0, CONTROL_BUFFER_SIZE);
+			memset(prvCONTROL_DATA.responseBuffer, 	0, CONTROL_BUFFER_SIZE);
 			prvCONTROL_DATA.responseBufferSize = 0;
 
 			LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Control Service started\r\n");
@@ -161,14 +164,12 @@ static void prvCONTROL_TaskFunc(void* pvParameter){
 			if(err != ERR_OK) continue;
 			netconn_getaddr(newconn, &remoteIpAddr, &remoteIpPort, 0);
 			LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO,  "New connection accepted\r\n");
-			while((err = netconn_recv(newconn, &buf)) == ERR_OK){
+			while((err = netconn_recv(newconn, &buf)) == ERR_OK)
+			{
 				do{
 					prvCONTROL_DATA.responseBufferSize = 0;
 					netbuf_data(buf, &data, &dataLen);
 					LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "New control message received\r\n");
-					memset(prvCONTROL_DATA.requestBuffer, 0, CONTROL_BUFFER_SIZE);
-					memset(prvCONTROL_DATA.responseBuffer, 0, CONTROL_BUFFER_SIZE);
-					prvCONTROL_DATA.responseBufferSize = 0;
 					memcpy(prvCONTROL_DATA.requestBuffer, data, dataLen);
 					if(CMPARSE_Execute(prvCONTROL_DATA.requestBuffer, prvCONTROL_DATA.responseBuffer, &prvCONTROL_DATA.responseBufferSize) != CMPARSE_STATUS_OK)
 					{
@@ -182,11 +183,19 @@ static void prvCONTROL_TaskFunc(void* pvParameter){
 					}
 
 				}while(netbuf_next(buf) >= 0);
+
 				err = netconn_write(newconn, prvCONTROL_DATA.responseBuffer, prvCONTROL_DATA.responseBufferSize, NETCONN_COPY);
-				if(err != ERR_OK){
+				if(err != ERR_OK)
+				{
 					LOGGING_Write("Control Service", LOGGING_MSG_TYPE_WARNNING, "There is a problem to send message\r\n");
 				}
+
 				netbuf_delete(buf);
+
+				/*Reinit buffers*/
+				memset(prvCONTROL_DATA.requestBuffer, 	0, CONTROL_BUFFER_SIZE);
+				memset(prvCONTROL_DATA.responseBuffer, 	0, CONTROL_BUFFER_SIZE);
+				prvCONTROL_DATA.responseBufferSize = 0;
 			}
 			netconn_close(newconn);
 			netconn_delete(newconn);
@@ -216,8 +225,9 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 
 	if(xSemaphoreTake(prvCONTROL_DATA.initSig, pdMS_TO_TICKS(initTimeout)) != pdTRUE) return CONTROL_STATUS_ERROR;
 
-	CMPARSE_AddCommand("device hello", prvCONTROL_GetDeviceName);
-	CMPARSE_AddCommand("device setname", prvCONTROL_SetDeviceName);
+	/* Add commands */
+	CMPARSE_AddCommand("device hello", 		prvCONTROL_GetDeviceName);
+	CMPARSE_AddCommand("device setname", 	prvCONTROL_SetDeviceName);
 
 	return CONTROL_STATUS_OK;
 }
