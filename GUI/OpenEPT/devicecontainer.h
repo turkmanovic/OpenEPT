@@ -2,8 +2,9 @@
 #define DEVICECONTAINER_H
 
 #include <QObject>
-#include "Windows/Device/devicewnd.h"
 #include "device.h"
+#include "Windows/Device/devicewnd.h"
+#include "Utility/log.h"
 
 class DeviceContainer : public QObject
 {
@@ -15,11 +16,14 @@ signals:
     void    sigDeviceClosed(Device* device);
 
 public slots:
+    void    onDeviceControlLinkDisconnected();
+    void    onDeviceControlLinkConnected();
     void    onDeviceClosed();
 
 private:
     DeviceWnd*  deviceWnd;
     Device*     device;
+    Log*        log;
 
 };
 

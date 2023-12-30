@@ -1269,7 +1269,7 @@
           </layout>
          </item>
          <item>
-          <widget class="QTextEdit" name="loggingTexe">
+          <widget class="QPlainTextEdit" name="loggingQpte">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
              <horstretch>0</horstretch>

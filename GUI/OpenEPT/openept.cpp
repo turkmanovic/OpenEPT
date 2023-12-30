@@ -4,6 +4,7 @@
 #include "openept.h"
 #include "Windows/Device/devicewnd.h"
 #include "ui_openept.h"
+#include "Links/controllink.h"
 
 
 #define BUTTON_WIDTH (25)
@@ -60,11 +61,29 @@ void OpenEPT::onAddDeviceWndAddDevice(QString aIpAddress, QString aPort)
 
 bool OpenEPT::addNewDevice(QString aIpAddress, QString aPort)
 {
-    /* Name for testing purposes only*/
-    QString deviceName = "Device Name " + QString::number(deviceList.size());
+    QString deviceName;
+
+    /* Create control link and try to access device*/
+    ControlLink* tmpControlLink = new ControlLink();
+
+    /* Try to establish connection with device*/
+    if(tmpControlLink->establishLink(aIpAddress, aPort) != CONTROL_LINK_STATUS_ESTABLISHED)
+    {
+        delete tmpControlLink;
+        return false;
+    }
+
+    if(!tmpControlLink->getDeviceName(&deviceName))
+    {
+        delete tmpControlLink;
+        return false;
+    }
+
+
     /* Create device */
     Device  *tmpDevice = new Device();
     tmpDevice->setName(deviceName);
+    tmpDevice->assignControlLink(tmpControlLink);
 
     /* Create corresponding device window*/
     DeviceWnd *tmpdeviceWnd = new DeviceWnd();

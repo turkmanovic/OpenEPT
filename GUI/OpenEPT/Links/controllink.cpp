@@ -17,55 +17,91 @@ control_link_status_t   ControlLink::establishLink(QString aIpAddress, QString a
     QHostAddress    hostAddress(aIpAddress);
     qint16          hostPort = aPortNumber.toUShort();
     tcpSocket->connectToHost(hostAddress, hostPort);
+    linkStatus = CONTROL_LINK_STATUS_DISABLED;
     if(tcpSocket->waitForConnected(1000)){
         ipAddress = aIpAddress;
         portNumber = hostPort;
 
-        //setSocketKeepAlive();
+        if(!setSocketKeepAlive()) return linkStatus;
 
         linkStatus = CONTROL_LINK_STATUS_ESTABLISHED;
-        connect(tcpSocket, SIGNAL(disconnected()), this, SLOT(onDisconnect()),Qt::QueuedConnection);
-        connect(tcpSocket, SIGNAL(connected()), this, SLOT(onReconnected()),Qt::QueuedConnection);
+        connect(tcpSocket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
+        connect(tcpSocket, SIGNAL(connected()), this, SLOT(onReconnected()));
     }
     return linkStatus;
 }
-QString             ControlLink::executeCommand(QString command, int timeout)
+
+bool                    ControlLink::getDeviceName(QString *deviceName)
+{
+    QString response;
+    if(!executeCommand("device hello", &response, CONTROL_LINK_COMMAND_TIMEOUT)) return false;
+    *deviceName = response;
+    return true;
+}
+bool                    ControlLink::executeCommand(QString command, QString* response, int timeout)
 {
     QByteArray  receivedData;
     QByteArray  dataToSend(command.toUtf8());
     QString     receivedResponse = "";
     receivedData.clear();
-    if(linkStatus != CONTROL_LINK_STATUS_ESTABLISHED) return receivedResponse;
+    if(linkStatus != CONTROL_LINK_STATUS_ESTABLISHED) return false;
     tcpSocket->flush();
     tcpSocket->write(dataToSend);
     tcpSocket->waitForBytesWritten();
-    if(tcpSocket->waitForReadyRead(timeout) != true) return receivedResponse;
+    if(tcpSocket->waitForReadyRead(timeout) != true) return false;
     receivedData = tcpSocket->readAll();
     QString responseAsString(receivedData);
-    QStringList responseParts = responseAsString.split( " " );
-    if(responseParts[0] == "ok" && responseParts.size() > 1){
-        for(int i = 1; i < responseParts.size(); i++){
-            receivedResponse += responseParts[i];
-            if(i != (responseParts.size() - 1)){
-                receivedResponse += " ";
-            }
+    /* Check did we receive "\r\n" */
+    if(!responseAsString.contains("\r\n")) return false;
+    /* Split response to identify OK*/
+    QStringList responseParts = responseAsString.split(" ");
+    if(responseParts[0] != "OK") return false;
+    for(int i = 1; i < responseParts.size(); i++)
+    {
+        *response += responseParts[i];
+        if((i+1) !=responseParts.size())
+        {
+            *response += " ";
         }
     }
-    else {
-        if(responseParts.size() == 1){
-            receivedResponse = responseParts[0];
-        }
-    }
-    return receivedResponse;
+    /*take substring until*/
+    *response = (*response).split("\r\n")[0];
+    return true;
+}
+bool   ControlLink::setSocketKeepAlive()
+{
+    char enableKeepAlive = 1;
+    qintptr sd = tcpSocket->socketDescriptor();
+    int response;
+
+    response = setsockopt(sd, SOL_SOCKET, SO_KEEPALIVE, &enableKeepAlive, sizeof(enableKeepAlive));
+    if(response != 0) return false;
+
+    int maxIdle = 1; /* seconds */
+    response = setsockopt(sd, IPPROTO_TCP, TCP_KEEPIDLE, (const char*)&maxIdle, 4);
+    if(response != 0) return false;
+
+    int count = 1;  // send up to 2 keepalive packets out, then disconnect if no response
+    response = setsockopt(sd, IPPROTO_TCP , TCP_KEEPCNT, (const char*)&count, 4);
+    if(response != 0) return false;
+
+    int interval = 2;   // send a keepalive packet out every 2 seconds (after the 5 second idle period)
+    response = setsockopt(sd, IPPROTO_TCP, TCP_KEEPINTVL, (const char*)&interval, 4);
+    if(response != 0) return false;
+
+    return true;
 }
 void ControlLink::onDisconnected()
 {
     linkStatus = CONTROL_LINK_STATUS_DISABLED;
+    emit sigDisconnected();
 
 }
 
 void ControlLink::onReconnected()
 {
     linkStatus = CONTROL_LINK_STATUS_ESTABLISHED;
+    setSocketKeepAlive();
+    emit sigConnected();
 
 }

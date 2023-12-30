@@ -92,6 +92,7 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     connect(ui->pausePusb, SIGNAL(clicked(bool)), this, SLOT(onPauseAcquisition()));
     connect(ui->stopPusb, SIGNAL(clicked(bool)), this, SLOT(onStopAcquisiton()));
     connect(ui->refreshPusb, SIGNAL(clicked(bool)), this, SLOT(onRefreshAcquisiton()));
+
 }
 
 void    DeviceWnd::onAdvanceConfigurationButtonPressed(bool pressed)
@@ -164,4 +165,9 @@ void    DeviceWnd::closeEvent(QCloseEvent *event)
 DeviceWnd::~DeviceWnd()
 {
     delete ui;
+}
+
+QPlainTextEdit *DeviceWnd::getLogWidget()
+{
+    return ui->loggingQpte;
 }

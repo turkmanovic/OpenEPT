@@ -5,6 +5,7 @@
 #include "Windows/Plot/plot.h"
 #include "Windows/Device/advanceconfigurationwnd.h"
 
+
 namespace Ui {
 class DeviceWnd;
 }
@@ -16,6 +17,8 @@ class DeviceWnd : public QWidget
 public:
     explicit DeviceWnd(QWidget *parent = nullptr);
     ~DeviceWnd();
+
+    QPlainTextEdit* getLogWidget();
 
 signals:
     void    sigWndClosed();
@@ -43,21 +46,21 @@ public slots:
     void    onRefreshAcquisiton();
 
 private:
-    Ui::DeviceWnd *ui;
+    Ui::DeviceWnd               *ui;
 
-    AdvanceConfigurationWnd* advanceConfigurationWnd;
+    AdvanceConfigurationWnd     *advanceConfigurationWnd;
 
-    Plot    *voltageChart;
-    Plot    *currentChart;
-    Plot    *consumptionChart;
+    Plot                        *voltageChart;
+    Plot                        *currentChart;
+    Plot                        *consumptionChart;
 
-    QStringList sampleTimeOptions;
-    QStringList resolutionOptions;
-    QStringList clockDivOptions;
-    QStringList sampleAveraginOptions;
+    QStringList                 sampleTimeOptions;
+    QStringList                 resolutionOptions;
+    QStringList                 clockDivOptions;
+    QStringList                 sampleAveraginOptions;
 
     /* File info */
-    bool                saveToFileFlag;
+    bool                        saveToFileFlag;
 };
 
 #endif // DEVICEWND_H

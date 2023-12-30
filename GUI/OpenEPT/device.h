@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include "Links/controllink.h"
 
 typedef enum{
     DEVICE_ADC_RESOLUTION_UKNOWN       = 0,
@@ -60,11 +61,19 @@ class Device : public QObject
     Q_OBJECT
 public:
     explicit Device(QObject *parent = nullptr);
+    ~Device();
 
     bool        setName(QString aNewDeviceName);
     bool        getName(QString* aDeviceName);
+    void        assignControlLink(ControlLink* link);
 
 signals:
+    void        sigControlLinkConnected();
+    void        sigControlLinkDisconnected();
+
+public slots:
+    void        onControlLinkConnected();
+    void        onControlLinkDisconnected();
 
 private:
     QString                     deviceName;
@@ -72,6 +81,8 @@ private:
     device_adc_sampling_time_t  adcSamplingTime;
     device_adc_clock_div_t      adcClockingDiv;
     device_adc_averaging_t      adcAveraging;
+
+    ControlLink*                controlLink;
 
 };
 

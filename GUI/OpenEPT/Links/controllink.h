@@ -5,6 +5,8 @@
 #include <QTcpSocket>
 #include <QString>
 
+#define CONTROL_LINK_COMMAND_TIMEOUT    1000
+
 typedef enum{
     CONTROL_LINK_STATUS_ESTABLISHED,
     CONTROL_LINK_STATUS_DISABLED
@@ -16,8 +18,11 @@ class ControlLink : public QObject
 public:
     explicit ControlLink(QObject *parent = nullptr);
     control_link_status_t   establishLink(QString aIpAddress, QString aPortNumber);
+    bool                    getDeviceName(QString* deviceName);
 
 signals:
+    void                    sigDisconnected();
+    void                    sigConnected();
 
 public slots:
 
@@ -32,7 +37,8 @@ private:
     control_link_status_t   linkStatus;
 
 
-    QString                 executeCommand(QString command, int timeout);
+    bool                    executeCommand(QString command, QString* response, int timeout);
+    bool                    setSocketKeepAlive();
 
 };
 
