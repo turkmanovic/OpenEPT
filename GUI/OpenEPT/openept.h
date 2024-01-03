@@ -24,6 +24,7 @@ private slots:
     void onActionAddSingleDeviceTriggered();
     void onAddDeviceWndAddDevice(QString aIpAddress, QString aPort);
     void onDeviceContainerDeviceWndClosed(Device* aDevice);
+    void onDeviceContainerAllDeviceWndClosed();
 
 private:
     Ui::OpenEPT                 *ui;

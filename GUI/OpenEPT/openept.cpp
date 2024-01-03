@@ -36,6 +36,7 @@ OpenEPT::OpenEPT(QWidget *parent)
 
 OpenEPT::~OpenEPT()
 {
+    onDeviceContainerAllDeviceWndClosed();
     delete ui;
 }
 
@@ -133,5 +134,18 @@ void OpenEPT::onDeviceContainerDeviceWndClosed(Device *aDevice)
         }
     }
 
+}
+
+void OpenEPT::onDeviceContainerAllDeviceWndClosed()
+{
+    DeviceContainer* tmpDeviceContainer;
+    QList<QAction*> actionList = connectedDevicesMenu->actions();
+    for(int i = 0; i < actionList.size(); i++)
+    {
+        connectedDevicesMenu->removeAction(actionList[i]);
+        tmpDeviceContainer = deviceList.at(i);
+        deviceList.removeAt(i);
+        delete tmpDeviceContainer;
+    }
 }
 

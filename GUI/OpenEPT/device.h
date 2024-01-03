@@ -73,10 +73,14 @@ public:
 signals:
     void        sigControlLinkConnected();
     void        sigControlLinkDisconnected();
+    void        sigStatusLinkNewDeviceAdded(QString aDeviceIP);
 
 public slots:
     void        onControlLinkConnected();
     void        onControlLinkDisconnected();
+
+private slots:
+    void        onStatusLinkNewDeviceAdded(QString aDeviceIP);
 
 private:
     QString                     deviceName;

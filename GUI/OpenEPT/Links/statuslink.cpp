@@ -14,10 +14,24 @@ void StatusLink::startServer()
 
 void StatusLink::onServerStarted()
 {
-    tcpServer   = new QTcpSocket();
-    tcpServer->bind(STATUS_LINK_SERVER_PORT);
-    connect(tcpServer, SIGNAL(readyRead()), this, SLOT(onReadPendingData()));
+    tcpServer   = new QTcpServer();
 
+    if(!tcpServer->listen(QHostAddress::Any, STATUS_LINK_SERVER_PORT))
+    {
+        qDebug()<<"Status Link Server Bind failed";
+    }
+    connect(tcpServer, SIGNAL(newConnection()), this, SLOT(onNewConnectionAdded()));
+
+}
+
+void StatusLink::onNewConnectionAdded()
+{
+    QTcpSocket* tmpSocket;
+    while(tcpServer->hasPendingConnections())
+    {
+        tmpSocket = tcpServer->nextPendingConnection();
+        emit sigNewClientConnected(QHostAddress(tmpSocket->peerAddress().toIPv4Address()).toString());
+    }
 }
 
 void StatusLink::onReadPendingData()
