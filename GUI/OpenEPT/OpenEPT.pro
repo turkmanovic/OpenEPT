@@ -16,6 +16,7 @@ SOURCES += \
     Links/statuslink.cpp \
     Utility/log.cpp \
     Windows/AddDevice/adddevicewnd.cpp \
+    Windows/Console/consolewnd.cpp \
     Windows/Device/advanceconfigurationwnd.cpp \
     Windows/Device/devicewnd.cpp \
     Windows/Plot/plot.cpp \
@@ -30,6 +31,7 @@ HEADERS += \
     Links/statuslink.h \
     Utility/log.h \
     Windows/AddDevice/adddevicewnd.h \
+    Windows/Console/consolewnd.h \
     Windows/Device/advanceconfigurationwnd.h \
     Windows/Device/devicewnd.h \
     Windows/Plot/plot.h \
@@ -39,6 +41,7 @@ HEADERS += \
 
 FORMS += \
     Windows/AddDevice/adddevicewnd.ui \
+    Windows/Console/consolewnd.ui \
     Windows/Device/advanceconfigurationwnd.ui \
     Windows/Device/devicewnd.ui \
     openept.ui
