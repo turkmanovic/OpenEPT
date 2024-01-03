@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QString>
 #include "Links/controllink.h"
+#include "Links/statuslink.h"
 
 typedef enum{
     DEVICE_ADC_RESOLUTION_UKNOWN       = 0,
@@ -66,6 +67,7 @@ public:
     bool        setName(QString aNewDeviceName);
     bool        getName(QString* aDeviceName);
     void        controlLinkAssign(ControlLink* link);
+    void        statusLinkCreate();
     void        controlLinkReconnect();
 
 signals:
@@ -84,6 +86,7 @@ private:
     device_adc_averaging_t      adcAveraging;
 
     ControlLink*                controlLink;
+    StatusLink*                 statusLink;
 
 };
 

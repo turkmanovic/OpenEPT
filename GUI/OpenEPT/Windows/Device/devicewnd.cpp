@@ -151,6 +151,8 @@ void DeviceWnd::setDeviceStateDisconnected()
     ui->stopPusb->setEnabled(false);
     ui->pausePusb->setEnabled(false);
     ui->refreshPusb->setEnabled(false);
+    ui->dischargeControlPusb1->setEnabled(false);
+    ui->dischargeControlPusb2->setEnabled(false);
     ui->deviceConnectedLabe->setText("Disconnected");
     ui->deviceConnectedLabe->setStyleSheet("QLabel { background-color : red; color : black; }");
 }
@@ -161,6 +163,8 @@ void DeviceWnd::setDeviceStateConnected()
     ui->stopPusb->setEnabled(true);
     ui->pausePusb->setEnabled(true);
     ui->refreshPusb->setEnabled(true);
+    ui->dischargeControlPusb1->setEnabled(true);
+    ui->dischargeControlPusb2->setEnabled(true);
     ui->deviceConnectedLabe->setText("Connected");
     ui->deviceConnectedLabe->setStyleSheet("QLabel { background-color : green; color : black; }");
 }

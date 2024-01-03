@@ -37,6 +37,12 @@ void Device::controlLinkAssign(ControlLink* link)
 
 }
 
+void Device::statusLinkCreate()
+{
+    statusLink  = new StatusLink();
+    statusLink->startServer();
+}
+
 void Device::controlLinkReconnect()
 {
     controlLink->reconnect();

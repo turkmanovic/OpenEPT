@@ -18,8 +18,7 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
 void DeviceContainer::onDeviceControlLinkDisconnected()
 {
     log->printLogMessage("Device control link disconnected", LOG_MESSAGE_TYPE_WARNING);
-    deviceWnd->setDeviceState(DEVICE_STATE_UNDEFINED);
-    //device->controlLinkReconnect();
+    deviceWnd->setDeviceState(DEVICE_STATE_DISCONNECTED);
 }
 
 void DeviceContainer::onDeviceControlLinkConnected()

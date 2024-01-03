@@ -13,6 +13,7 @@ CONFIG += c++17
 SOURCES += \
     Chart/qcustomplot.cpp \
     Links/controllink.cpp \
+    Links/statuslink.cpp \
     Utility/log.cpp \
     Windows/AddDevice/adddevicewnd.cpp \
     Windows/Device/advanceconfigurationwnd.cpp \
@@ -26,6 +27,7 @@ SOURCES += \
 HEADERS += \
     Chart/qcustomplot.h \
     Links/controllink.h \
+    Links/statuslink.h \
     Utility/log.h \
     Windows/AddDevice/adddevicewnd.h \
     Windows/Device/advanceconfigurationwnd.h \
