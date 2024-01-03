@@ -41,7 +41,7 @@ void Device::statusLinkCreate()
 {
     statusLink  = new StatusLink();
     statusLink->startServer();
-    connect(statusLink, SIGNAL(sigNewClientConnected(QString)), this, SLOT(onStatusLinkNewDeviceAdded(QString)), Qt::QueuedConnection);
+    connect(statusLink, SIGNAL(sigNewClientConnected(QString)), this, SLOT(onStatusLinkNewDeviceAdded(QString)));
 }
 
 void Device::controlLinkReconnect()
