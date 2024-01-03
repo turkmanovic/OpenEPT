@@ -77,6 +77,12 @@ typedef enum{
  */
 control_status_t 	CONTROL_Init(uint32_t initTimeout);
 /**
+ * @brief	Initialize control service
+ * @param	initTimeout: timeout initialization
+ * @retval	::control_status_t
+ */
+control_status_t 	CONTROL_Close();
+/**
  * @}
  */
 #endif /* CORE_MIDDLEWARES_SERVICES_CONTROL_CONTROL_H_ */

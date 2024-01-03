@@ -122,6 +122,8 @@
 
 #define LWIP_TCP			1
 #define LWIP_CALLBACK_API	1
+#define MEMP_NUM_TCP_PCB	10
+#define LWIP_SO_RCVTIMEO	1
 /* USER CODE END 1 */
 
 #ifdef __cplusplus

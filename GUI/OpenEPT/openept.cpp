@@ -83,11 +83,12 @@ bool OpenEPT::addNewDevice(QString aIpAddress, QString aPort)
     /* Create device */
     Device  *tmpDevice = new Device();
     tmpDevice->setName(deviceName);
-    tmpDevice->assignControlLink(tmpControlLink);
+    tmpDevice->controlLinkAssign(tmpControlLink);
 
     /* Create corresponding device window*/
     DeviceWnd *tmpdeviceWnd = new DeviceWnd();
     tmpdeviceWnd->setWindowTitle(deviceName);
+    tmpdeviceWnd->setDeviceState(DEVICE_STATE_CONNECTED);
 
     /* Create device container */
     DeviceContainer *tmpDeviceContainer = new DeviceContainer(NULL,tmpdeviceWnd,tmpDevice);
@@ -127,6 +128,7 @@ void OpenEPT::onDeviceContainerDeviceWndClosed(Device *aDevice)
         {
             connectedDevicesMenu->removeAction(actionList[i]);
             deviceList.removeAt(i);
+            delete aDevice;
             return;
         }
     }

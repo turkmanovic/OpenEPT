@@ -79,6 +79,8 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     consumptionChart->setYLabel("[mAh]");
     consumptionChart->setXLabel("[ms]");
 
+    setDeviceState(DEVICE_STATE_UNDEFINED);
+
     ui->GraphicsTopHorl->addWidget(voltageChart);
     ui->GraphicsTopHorl->addWidget(currentChart);
     ui->GraphicsBottomVerl->addWidget(consumptionChart, Qt::AlignCenter);
@@ -143,6 +145,26 @@ void DeviceWnd::onRefreshAcquisiton()
     emit refreshAcquisition();
 }
 
+void DeviceWnd::setDeviceStateDisconnected()
+{
+    ui->startPusb->setEnabled(false);
+    ui->stopPusb->setEnabled(false);
+    ui->pausePusb->setEnabled(false);
+    ui->refreshPusb->setEnabled(false);
+    ui->deviceConnectedLabe->setText("Disconnected");
+    ui->deviceConnectedLabe->setStyleSheet("QLabel { background-color : red; color : black; }");
+}
+
+void DeviceWnd::setDeviceStateConnected()
+{
+    ui->startPusb->setEnabled(true);
+    ui->stopPusb->setEnabled(true);
+    ui->pausePusb->setEnabled(true);
+    ui->refreshPusb->setEnabled(true);
+    ui->deviceConnectedLabe->setText("Connected");
+    ui->deviceConnectedLabe->setStyleSheet("QLabel { background-color : green; color : black; }");
+}
+
 void DeviceWnd::onClockDivCombIndexChanged(int index)
 {
     emit sigClockDivChanged(clockDivOptions[index]);
@@ -170,4 +192,21 @@ DeviceWnd::~DeviceWnd()
 QPlainTextEdit *DeviceWnd::getLogWidget()
 {
     return ui->loggingQpte;
+}
+
+void DeviceWnd::setDeviceState(device_state_t aDeviceState)
+{
+    deviceState = aDeviceState;
+    switch(deviceState)
+    {
+    case DEVICE_STATE_UNDEFINED:
+        setDeviceStateDisconnected();
+        break;
+    case DEVICE_STATE_CONNECTED:
+        setDeviceStateConnected();
+        break;
+    case DEVICE_STATE_DISCONNECTED:
+        setDeviceStateDisconnected();
+        break;
+    }
 }

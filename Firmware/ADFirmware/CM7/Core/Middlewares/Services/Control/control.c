@@ -20,6 +20,7 @@
 #include "semphr.h"
 #include "lwip.h"
 #include "lwip/api.h"
+#include "lwip/sockets.h"
 
 #include "control.h"
 #include "logging.h"
@@ -34,10 +35,12 @@ typedef struct
 {
 	TaskHandle_t		taskHandle;
 	SemaphoreHandle_t	initSig;
+	SemaphoreHandle_t	guard;
 	char				requestBuffer[CONTROL_BUFFER_SIZE];
 	char				responseBuffer[CONTROL_BUFFER_SIZE];
 	uint16_t			responseBufferSize;
 	control_state_t		state;
+	uint32_t			disconnectionCounter;
 }control_data_t;
 /**
  * @}
@@ -166,14 +169,13 @@ static void prvCONTROL_SetDeviceName(const char* arguments, uint16_t argumentsLe
  * @param	pvParameter: value forwarded during task creation
  * @retval	void
  */
-static void prvCONTROL_TaskFunc(void* pvParameter){
-	struct netconn *conn, *newconn;
-	ip_addr_t 		remoteIpAddr;
-	uint16_t		remoteIpPort;
-	err_t			err;
-	struct netbuf 	*buf;
-	void 			*data;
-	uint16_t 		dataLen;
+static void prvCONTROL_TaskFunc(void* pvParameter)
+{
+	int 			sock, newconn, size;
+    struct sockaddr_in address, remotehost;
+	int				err;
+	struct timeval	tv;
+	uint32_t		tmpval;
 
 	for(;;){
 		switch(prvCONTROL_DATA.state)
@@ -185,23 +187,28 @@ static void prvCONTROL_TaskFunc(void* pvParameter){
 			prvCONTROL_DATA.responseBufferSize = 0;
 
 			LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Control Service started\r\n");
-			conn = netconn_new(NETCONN_TCP);
-			if(conn == NULL){
+			sock = socket(AF_INET, SOCK_STREAM, 0);
+			if(sock < 0){
 				LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "There is a problem to create TCP socket\r\n");
 				prvCONTROL_DATA.state = CONTROL_STATE_ERROR;
 				break;
 			}
 			LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "TCP connection successfully created\r\n");
 
-			err = netconn_bind(conn, IP_ADDR_ANY, CONTROL_SERVER_PORT);
-			if(err != ERR_OK){
+			address.sin_family = AF_INET;
+			address.sin_port = htons(CONFIG_CONTROL_SERVER_PORT);
+			address.sin_addr.s_addr = INADDR_ANY;
+
+			err = bind(sock, (struct sockaddr *)&address, sizeof (address));
+			if(err < 0){
 				LOGGING_Write("Control Service",LOGGING_MSG_TYPE_ERROR,  "There is a problem to bind TCP socket\r\n");
 				prvCONTROL_DATA.state = CONTROL_STATE_ERROR;
 				break;
 			}
 			LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "TCP Connection successfully bound to port %d\r\n", CONTROL_SERVER_PORT);
 
-			netconn_listen(conn);
+			listen(sock, 5);
+		    size = sizeof(remotehost);
 
 			if(xSemaphoreGive(prvCONTROL_DATA.initSig) != pdTRUE)
 			{
@@ -213,46 +220,83 @@ static void prvCONTROL_TaskFunc(void* pvParameter){
 			prvCONTROL_DATA.state = CONTROL_STATE_SERVICE;
 			break;
 		case CONTROL_STATE_SERVICE:
-			LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Wait for control message over TCP on port %d\r\n", CONTROL_SERVER_PORT);
-			err = netconn_accept(conn, &newconn);
-			if(err != ERR_OK) continue;
-			netconn_getaddr(newconn, &remoteIpAddr, &remoteIpPort, 0);
-			LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO,  "New connection accepted\r\n");
-			while((err = netconn_recv(newconn, &buf)) == ERR_OK)
+			LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Wait for new connection on port %d\r\n", CONTROL_SERVER_PORT);
+			newconn = accept(sock, (struct sockaddr *)&remotehost, (socklen_t *)&size);
+
+			if(xSemaphoreTake(prvCONTROL_DATA.guard, portMAX_DELAY) != pdPASS)
 			{
-				do{
-					prvCONTROL_DATA.responseBufferSize = 0;
-					netbuf_data(buf, &data, &dataLen);
-					LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "New control message received\r\n");
-					memcpy(prvCONTROL_DATA.requestBuffer, data, dataLen);
-					if(CMPARSE_Execute(prvCONTROL_DATA.requestBuffer, prvCONTROL_DATA.responseBuffer, &prvCONTROL_DATA.responseBufferSize) != CMPARSE_STATUS_OK)
+				LOGGING_Write("Control Service",LOGGING_MSG_TYPE_ERROR,  "There is a problem to take guard semaphore\r\n");
+				prvCONTROL_DATA.state = CONTROL_STATE_ERROR;
+				break;
+			}
+
+			prvCONTROL_DATA.disconnectionCounter = 0;
+
+			if(xSemaphoreGive(prvCONTROL_DATA.guard) != pdPASS)
+			{
+				LOGGING_Write("Control Service",LOGGING_MSG_TYPE_ERROR,  "There is a problem to release guard semaphore\r\n");
+				prvCONTROL_DATA.state = CONTROL_STATE_ERROR;
+				break;
+			}
+
+			LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO,  "New connection accepted\r\n");
+			LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO,  "Connection id: %d\r\n", newconn);
+
+			tv.tv_sec = 1;
+			tv.tv_usec = 0;
+			if(setsockopt(newconn, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(struct timeval)) != 0)
+			{
+				LOGGING_Write("Control Service", LOGGING_MSG_TYPE_WARNNING,  "Unable to set socket option\r\n");
+				close(newconn);
+				break;
+			}
+			while(1){
+				err = read(newconn, prvCONTROL_DATA.requestBuffer, CONTROL_BUFFER_SIZE);
+				if(err == 0){
+					break;
+				}
+				if(err < 0 )
+				{
+					if(xSemaphoreTake(prvCONTROL_DATA.guard, portMAX_DELAY) != pdPASS)
 					{
-						LOGGING_Write("Control Service", LOGGING_MSG_TYPE_WARNNING, "There is error during control message parsing procedure\r\n");
-						memcpy(prvCONTROL_DATA.responseBuffer, "ERROR 0",strlen("ERROR 0"));
-						prvCONTROL_DATA.responseBufferSize = strlen("ERROR 0");
-					}
-					else
-					{
-						LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Control message successfully processed\r\n");
+						LOGGING_Write("Control Service",LOGGING_MSG_TYPE_ERROR,  "There is a problem to take guard semaphore\r\n");
+						prvCONTROL_DATA.state = CONTROL_STATE_ERROR;
+						break;
 					}
 
-				}while(netbuf_next(buf) >= 0);
+					tmpval = prvCONTROL_DATA.disconnectionCounter;
 
-				err = netconn_write(newconn, prvCONTROL_DATA.responseBuffer, prvCONTROL_DATA.responseBufferSize, NETCONN_COPY);
-				if(err != ERR_OK)
+					if(xSemaphoreGive(prvCONTROL_DATA.guard) != pdPASS)
+					{
+						LOGGING_Write("Control Service",LOGGING_MSG_TYPE_ERROR,  "There is a problem to release guard semaphore\r\n");
+						prvCONTROL_DATA.state = CONTROL_STATE_ERROR;
+						break;
+					}
+					if(tmpval != 0) break;
+					else continue;
+				}
+				if(CMPARSE_Execute(prvCONTROL_DATA.requestBuffer, prvCONTROL_DATA.responseBuffer, &prvCONTROL_DATA.responseBufferSize) != CMPARSE_STATUS_OK)
+				{
+					LOGGING_Write("Control Service", LOGGING_MSG_TYPE_WARNNING, "There is error during control message parsing procedure\r\n");
+					memcpy(prvCONTROL_DATA.responseBuffer, "ERROR 0",strlen("ERROR 0"));
+					prvCONTROL_DATA.responseBufferSize = strlen("ERROR 0");
+				}
+				else
+				{
+					LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Control message successfully processed\r\n");
+				}
+				err = write(newconn, prvCONTROL_DATA.responseBuffer, prvCONTROL_DATA.responseBufferSize);
+				if(err < 0)
 				{
 					LOGGING_Write("Control Service", LOGGING_MSG_TYPE_WARNNING, "There is a problem to send message\r\n");
 				}
-
-				netbuf_delete(buf);
-
 				/* Reinit buffers */
 				memset(prvCONTROL_DATA.requestBuffer, 	0, CONTROL_BUFFER_SIZE);
 				memset(prvCONTROL_DATA.responseBuffer, 	0, CONTROL_BUFFER_SIZE);
 				prvCONTROL_DATA.responseBufferSize = 0;
 			}
-			netconn_close(newconn);
-			netconn_delete(newconn);
+			LOGGING_Write("Control Service", LOGGING_MSG_TYPE_WARNNING,  "Connection closed\r\n");
+			close(newconn);
 			break;
 		case CONTROL_STATE_ERROR:
 			SYSTEM_ReportError(SYSTEM_ERROR_LEVEL_LOW);
@@ -277,6 +321,12 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 
 	if(prvCONTROL_DATA.initSig == NULL) return CONTROL_STATUS_ERROR;
 
+	prvCONTROL_DATA.guard = xSemaphoreCreateMutex();
+
+	prvCONTROL_DATA.disconnectionCounter = 0;
+
+	if(prvCONTROL_DATA.guard == NULL) return CONTROL_STATUS_ERROR;
+
 	prvCONTROL_DATA.state = CONTROL_STATE_INIT;
 
 	if(xSemaphoreTake(prvCONTROL_DATA.initSig, pdMS_TO_TICKS(initTimeout)) != pdTRUE) return CONTROL_STATUS_ERROR;
@@ -284,6 +334,23 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	/* Add commands */
 	CMPARSE_AddCommand("device hello", 		prvCONTROL_GetDeviceName);
 	CMPARSE_AddCommand("device setname", 	prvCONTROL_SetDeviceName);
+
+	return CONTROL_STATUS_OK;
+}
+
+control_status_t 	CONTROL_Close()
+{
+	if(xSemaphoreTake(prvCONTROL_DATA.guard, portMAX_DELAY) != pdPASS)
+	{
+		return CONTROL_STATUS_ERROR;
+	}
+
+	prvCONTROL_DATA.disconnectionCounter += 1;
+
+	if(xSemaphoreGive(prvCONTROL_DATA.guard) != pdPASS)
+	{
+		return CONTROL_STATUS_ERROR;
+	}
 
 	return CONTROL_STATUS_OK;
 }

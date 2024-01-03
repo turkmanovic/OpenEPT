@@ -28,13 +28,18 @@ bool Device::getName(QString *aDeviceName)
     return true;
 }
 
-void Device::assignControlLink(ControlLink* link)
+void Device::controlLinkAssign(ControlLink* link)
 {
     controlLink = link;
     connect(controlLink, SIGNAL(sigConnected()), this, SLOT(onControlLinkConnected()));
     connect(controlLink, SIGNAL(sigDisconnected()), this, SLOT(onControlLinkDisconnected()));
     emit sigControlLinkConnected();
 
+}
+
+void Device::controlLinkReconnect()
+{
+    controlLink->reconnect();
 }
 
 void Device::onControlLinkConnected()

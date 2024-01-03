@@ -10,25 +10,37 @@ ControlLink::ControlLink(QObject *parent)
     ipAddress       =   "0.0.0.0";
     portNumber      =   0;
     linkStatus      =   CONTROL_LINK_STATUS_DISABLED;
+    reconnectTimer  = new QTimer(this);
+    connect(reconnectTimer, SIGNAL(timeout()), this, SLOT(reconnect()));
+
+}
+
+ControlLink::~ControlLink()
+{
+    if(linkStatus == CONTROL_LINK_STATUS_ESTABLISHED)
+    {
+        tcpSocket->disconnect();
+    }
 }
 
 control_link_status_t   ControlLink::establishLink(QString aIpAddress, QString aPortNumber)
 {
     QHostAddress    hostAddress(aIpAddress);
     qint16          hostPort = aPortNumber.toUShort();
-    tcpSocket->connectToHost(hostAddress, hostPort);
     linkStatus = CONTROL_LINK_STATUS_DISABLED;
-    if(tcpSocket->waitForConnected(1000)){
-        ipAddress = aIpAddress;
-        portNumber = hostPort;
-
-        if(!setSocketKeepAlive()) return linkStatus;
-
-        linkStatus = CONTROL_LINK_STATUS_ESTABLISHED;
-        connect(tcpSocket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
-        connect(tcpSocket, SIGNAL(connected()), this, SLOT(onReconnected()));
-    }
+    ipAddress = aIpAddress;
+    portNumber = hostPort;
+    connect(tcpSocket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
+    connect(tcpSocket, SIGNAL(connected()), this, SLOT(onReconnected()));
+    tcpSocket->connectToHost(hostAddress, hostPort);
+    tcpSocket->waitForConnected(1000);
     return linkStatus;
+}
+
+void ControlLink::reconnect()
+{
+    tcpSocket->connectToHost(ipAddress, portNumber);
+    tcpSocket->waitForConnected(10);
 }
 
 bool                    ControlLink::getDeviceName(QString *deviceName)
@@ -95,11 +107,16 @@ void ControlLink::onDisconnected()
 {
     linkStatus = CONTROL_LINK_STATUS_DISABLED;
     emit sigDisconnected();
-
+    linkStatus = CONTROL_LINK_STATUS_RECONNECTING;
+    reconnectTimer->start(CONTROL_LINK_RECONNECT_PERIOD);
 }
 
 void ControlLink::onReconnected()
 {
+    if(linkStatus == CONTROL_LINK_STATUS_RECONNECTING)
+    {
+        reconnectTimer->stop();
+    }
     linkStatus = CONTROL_LINK_STATUS_ESTABLISHED;
     setSocketKeepAlive();
     emit sigConnected();

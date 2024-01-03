@@ -21,6 +21,7 @@
 #include "system.h"
 #include "network.h"
 #include "logging.h"
+#include "control.h"
 
 typedef  struct
 {
@@ -86,6 +87,7 @@ static void prvNETWORK_LinkStatusUpdated(struct netif *netif)
 		SYSTEM_SetLinkStatus(SYSTEM_LINK_STATUS_DOWN);
 		prvNETWORK_DATA.linkStatus = SYSTEM_LINK_STATUS_DOWN;
 		LOGGING_Write("Network", LOGGING_MSG_TYPE_WARNNING, "Network interface down\r\n");
+		CONTROL_Close();
 	}
 }
 

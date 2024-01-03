@@ -65,7 +65,8 @@ public:
 
     bool        setName(QString aNewDeviceName);
     bool        getName(QString* aDeviceName);
-    void        assignControlLink(ControlLink* link);
+    void        controlLinkAssign(ControlLink* link);
+    void        controlLinkReconnect();
 
 signals:
     void        sigControlLinkConnected();
