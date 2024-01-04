@@ -182,10 +182,15 @@ static void prvCONTROL_SetDeviceName(const char* arguments, uint16_t argumentsLe
 	prvCONTROL_PrepareOkResponse(response, responseSize, "", 0);
 	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device name successfully set\r\n");
 }
-
+//TODO: This is just for testing purposes. It should never be used as it is now. Remove!
 control_status_link_instance_t statusLinkInstance;
 /**
- * TODO:COmment
+ * @brief	Create status link
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
  */
 static void prvCONTROL_CreateStatusLink(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
@@ -210,8 +215,14 @@ static void prvCONTROL_CreateStatusLink(const char* arguments, uint16_t argument
 		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Status link sucessfully created\r\n");
 	}
 }
+//TODO: This function is introduced for testing purposes only. Remove it in production phase!
 /**
- * TODO:COmment
+ * @brief	Send message over status link
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
  */
 static void prvCONTROL_StatusLinkSendMessage(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
@@ -392,7 +403,6 @@ static void prvCONTROL_StatusLinkTaskFunc(void* pvParameter)
     struct netconn *conn;
     err_t 			connect_err;
 	ip_addr_t 		remote_ip;
-	struct netbuf  *buf;
 
 	for(;;){
 		switch(prvCONTROL_STATUS_LINK_DATA[linkInstance.linkInstanceNo].state)

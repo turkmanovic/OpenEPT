@@ -42,7 +42,7 @@
 #define CONTROL_STATUS_LINK_TASK_NAME			CONFIG_CONTROL_STATUS_LINK_TASK_NAME	/*!< Status link task name */
 #define CONTROL_STATUS_LINK_TASK_PRIO			CONFIG_CONTROL_STATUS_LINK_PRIO			/*!< Status link task prio */
 #define CONTROL_STATUS_LINK_TASK_STACK			CONFIG_CONTROL_STATUS_LINK_STACK_SIZE	/*!< Status link task stack size */
-#define CONTROL_STATUS_LINK_MESSAGES_MAX_NO		CONFIG_CONTROL_STATUS_MESSAGES_MAX_NO	/*!< MAX Number of messages to send */
+#define CONTROL_STATUS_LINK_MESSAGES_MAX_NO		CONFIG_CONTROL_STATUS_MESSAGES_MAX_NO	/*!< Status messages queue buffer size */
 /**
  * @}
  */
@@ -115,11 +115,28 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout);
  */
 control_status_t 	CONTROL_LinkClosed();
 /**
- * TODO: Comment
+ * @brief	Create status link
+ *
+ * 			Create status link thread and try to establish communication with control
+ * 			link server.
+ *
+ * @param	control_status_link_instance_t: control link instance. If control link is successfully
+ * 			created this argument should be used to access control link with all functions related
+ * 			to control link.  See ::control_status_link_instance_t structure
+ * @param	statusServerIp: server IP information. See ::control_status_link_ip_info_t
+ * @param	timeout: timeout value to wait for status link to be created
+ * @retval	::control_status_t
  */
 control_status_t 	CONTROL_StatusLinkCreate(control_status_link_instance_t* statusLinkInstance, control_status_link_ip_info_t statusServerIp, uint32_t timeout);
 /**
- * TODO: Comment
+ * @brief	Send status message over control link
+ *
+ * @param	control_status_link_instance_t: pointer to previously created status link
+ * 			to control link.  See ::control_status_link_instance_t structure
+ * @param	message: message to send
+ * @param	messageSize: message size
+ * @param	timeout: timeout interval to wait for message to be sent over status link
+ * @retval	::control_status_t
  */
 control_status_t 	CONTROL_StatusLinkSendMessage(control_status_link_instance_t* statusLinkInstance, const char* message, uint32_t messageSize, uint32_t timeout);
 /**
