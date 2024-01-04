@@ -182,18 +182,21 @@ static void prvCONTROL_SetDeviceName(const char* arguments, uint16_t argumentsLe
 	prvCONTROL_PrepareOkResponse(response, responseSize, "", 0);
 	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device name successfully set\r\n");
 }
+
+control_status_link_instance_t statusLinkInstance;
 /**
  * TODO:COmment
  */
 static void prvCONTROL_CreateStatusLink(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
 	control_status_link_ip_info_t statusLinkServer;
-	control_status_link_instance_t statusLinkInstance;
+	char instanceNoStr[10];
+	uint32_t size;
 	statusLinkServer.ip[0] = 192;
 	statusLinkServer.ip[1] = 168;
 	statusLinkServer.ip[2] = 2;
-	statusLinkServer.ip[3] = 178;
-	statusLinkServer.portNo = 55770;
+	statusLinkServer.ip[3] = 100;
+	statusLinkServer.portNo = 48569;
 
 	if(CONTROL_StatusLinkCreate(&statusLinkInstance, statusLinkServer, 2000) != CONTROL_STATUS_OK)
 	{
@@ -202,8 +205,34 @@ static void prvCONTROL_CreateStatusLink(const char* arguments, uint16_t argument
 	}
 	else
 	{
-		prvCONTROL_PrepareOkResponse(response, responseSize, "", 0);
+		size = sprintf(instanceNoStr,"%d",(int)statusLinkInstance.linkInstanceNo);
+		prvCONTROL_PrepareOkResponse(response, responseSize, instanceNoStr, size);
 		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Status link sucessfully created\r\n");
+	}
+}
+/**
+ * TODO:COmment
+ */
+static void prvCONTROL_StatusLinkSendMessage(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	cmparse_value_t	value;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "value", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+
+	if(CONTROL_StatusLinkSendMessage(&statusLinkInstance, value.value, value.size, 2000) != CONTROL_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_WARNNING, "Unable to send message\r\n");
+	}
+	else
+	{
+		prvCONTROL_PrepareOkResponse(response, responseSize, "", 0);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "message successfully sent\r\n");
 	}
 }
 /**
@@ -410,20 +439,7 @@ static void prvCONTROL_StatusLinkTaskFunc(void* pvParameter)
 				prvCONTROL_DATA.state = CONTROL_STATE_ERROR;
 				break;
 			}
-			buf = netbuf_new();
-			if(buf == NULL)
-			{
-				LOGGING_Write("Control Service(Status)", LOGGING_MSG_TYPE_WARNNING,  "There is a problem to init LwIP buffer\r\n");
-				continue;
-			}
-			if(netbuf_ref(buf, message.message, message.messageSize) != ERR_OK)
-			{
-				LOGGING_Write("Control Service(Status)", LOGGING_MSG_TYPE_WARNNING,  "Unable to ref LwIP memory\r\n");
-				continue;
-
-			}
-
-			if(netconn_send(conn, buf) != ERR_OK)
+			if(netconn_write(conn, message.message, message.messageSize, NETCONN_COPY) != ERR_OK)
 			{
 				LOGGING_Write("Control Service(Status)", LOGGING_MSG_TYPE_WARNNING,  "Unable to send status message\r\n");
 			}
@@ -431,9 +447,6 @@ static void prvCONTROL_StatusLinkTaskFunc(void* pvParameter)
 			{
 				LOGGING_Write("Control Service(Status)", LOGGING_MSG_TYPE_INFO,  "Status message successfully sent\r\n");
 			}
-
-			netbuf_delete(buf);
-
 			memset(&message, 0, sizeof(control_status_message_t));
 			break;
 		case CONTROL_STATE_ERROR:
@@ -472,9 +485,10 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	if(xSemaphoreTake(prvCONTROL_DATA.initSig, pdMS_TO_TICKS(initTimeout)) != pdTRUE) return CONTROL_STATUS_ERROR;
 
 	/* Add commands */
-	CMPARSE_AddCommand("device hello", 		prvCONTROL_GetDeviceName);
-	CMPARSE_AddCommand("device setname", 	prvCONTROL_SetDeviceName);
+	CMPARSE_AddCommand("device hello", 			prvCONTROL_GetDeviceName);
+	CMPARSE_AddCommand("device setname", 		prvCONTROL_SetDeviceName);
 	CMPARSE_AddCommand("device slink create", 	prvCONTROL_CreateStatusLink);
+	CMPARSE_AddCommand("device slink send", 	prvCONTROL_StatusLinkSendMessage);
 
 	return CONTROL_STATUS_OK;
 }
