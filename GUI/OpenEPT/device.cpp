@@ -42,6 +42,7 @@ void Device::statusLinkCreate()
     statusLink  = new StatusLink();
     statusLink->startServer();
     connect(statusLink, SIGNAL(sigNewClientConnected(QString)), this, SLOT(onStatusLinkNewDeviceAdded(QString)));
+    connect(statusLink, SIGNAL(sigNewStatusMessageReceived(QString,QString)), this, SLOT(onStatusLinkNewMessageReceived(QString,QString)));
 }
 
 void Device::controlLinkReconnect()
@@ -62,4 +63,9 @@ void Device::onControlLinkDisconnected()
 void Device::onStatusLinkNewDeviceAdded(QString aDeviceIP)
 {
     emit sigStatusLinkNewDeviceAdded(aDeviceIP);
+}
+
+void Device::onStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage)
+{
+    emit sigStatusLinkNewMessageReceived(aDeviceIP, aMessage);
 }

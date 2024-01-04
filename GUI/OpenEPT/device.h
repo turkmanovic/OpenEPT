@@ -74,6 +74,7 @@ signals:
     void        sigControlLinkConnected();
     void        sigControlLinkDisconnected();
     void        sigStatusLinkNewDeviceAdded(QString aDeviceIP);
+    void        sigStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
 
 public slots:
     void        onControlLinkConnected();
@@ -81,6 +82,7 @@ public slots:
 
 private slots:
     void        onStatusLinkNewDeviceAdded(QString aDeviceIP);
+    void        onStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
 
 private:
     QString                     deviceName;

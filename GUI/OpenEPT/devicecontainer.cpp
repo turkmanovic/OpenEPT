@@ -12,6 +12,7 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(device, SIGNAL(sigControlLinkConnected()), this, SLOT(onDeviceControlLinkConnected()));
     connect(device, SIGNAL(sigControlLinkDisconnected()), this, SLOT(onDeviceControlLinkDisconnected()));
     connect(device, SIGNAL(sigStatusLinkNewDeviceAdded(QString)), this, SLOT(onDeviceStatusLinkNewDeviceAdded(QString)));
+    connect(device, SIGNAL(sigStatusLinkNewMessageReceived(QString,QString)), this, SLOT(onDeviceStatusLinkNewMessageReceived(QString,QString)));
 
     log->printLogMessage("Device container successfully created", LOG_MESSAGE_TYPE_INFO);
     device->statusLinkCreate();
@@ -40,6 +41,11 @@ void DeviceContainer::onDeviceControlLinkConnected()
 void DeviceContainer::onDeviceStatusLinkNewDeviceAdded(QString aDeviceIP)
 {
     log->printLogMessage("Status link sucessfully establish with device(IP: " + aDeviceIP + ")", LOG_MESSAGE_TYPE_INFO);
+}
+
+void DeviceContainer::onDeviceStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage)
+{
+    log->printLogMessage("New message received from device (IP: " + aDeviceIP + ") :\" " + aMessage + "\"", LOG_MESSAGE_TYPE_INFO, LOG_MESSAGE_DEVICE_TYPE_DEVICE);
 }
 
 void DeviceContainer::onDeviceClosed()

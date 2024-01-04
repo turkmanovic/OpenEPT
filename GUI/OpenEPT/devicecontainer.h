@@ -20,6 +20,7 @@ public slots:
     void    onDeviceControlLinkDisconnected();
     void    onDeviceControlLinkConnected();
     void    onDeviceStatusLinkNewDeviceAdded(QString aDeviceIP);
+    void    onDeviceStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
     void    onDeviceClosed();
 
 private:

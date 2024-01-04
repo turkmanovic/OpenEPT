@@ -19,7 +19,7 @@ public:
 
 signals:
     void                    sigNewClientConnected(QString ip);
-    void                    sigNewStatusMessageReceived(QString message);
+    void                    sigNewStatusMessageReceived(QString clientIp, QString message);
 
 public slots:
     void                    onServerStarted();
