@@ -28,15 +28,21 @@
  * @defgroup CONTROL_PUBLIC_DEFINES Control service public defines
  * @{
  */
-#define CONTROL_BUFFER_SIZE					CONFIG_CONTROL_BUFFER_SIZE				/*!< Request and response buffer sizes */
-#define CONTROL_SERVER_PORT					CONFIG_CONTROL_SERVER_PORT				/*!< Control service TCP PORT number value */
+#define CONTROL_BUFFER_SIZE						CONFIG_CONTROL_BUFFER_SIZE				/*!< Request and response buffer sizes */
+#define CONTROL_SERVER_PORT						CONFIG_CONTROL_SERVER_PORT				/*!< Control service TCP PORT number value */
 
-#define CONTROL_TASK_NAME					CONFIG_CONTROL_TASK_NAME				/*!< Control service task name */
-#define CONTROL_TASK_PRIO					CONFIG_CONTROL_PRIO						/*!< Control service task prio */
-#define CONTROL_TASK_STACK					CONFIG_CONTROL_STACK_SIZE				/*!< Control service task stack size */
+#define CONTROL_TASK_NAME						CONFIG_CONTROL_TASK_NAME				/*!< Control service task name */
+#define CONTROL_TASK_PRIO						CONFIG_CONTROL_PRIO						/*!< Control service task prio */
+#define CONTROL_TASK_STACK						CONFIG_CONTROL_STACK_SIZE				/*!< Control service task stack size */
 
-#define CONTROL_RESPONSE_OK_STATUS_MSG		CONF_CONTROL_RESPONSE_OK_STATUS_MSG		/*!< Default OK response message */
-#define CONTROL_RESPONSE_ERROR_STATUS_MSG	CONF_CONTROL_RESPONSE_ERROR_STATUS_MSG	/*!< Default ERROR response message */
+#define CONTROL_RESPONSE_OK_STATUS_MSG			CONF_CONTROL_RESPONSE_OK_STATUS_MSG		/*!< Default OK response message */
+#define CONTROL_RESPONSE_ERROR_STATUS_MSG		CONF_CONTROL_RESPONSE_ERROR_STATUS_MSG	/*!< Default ERROR response message */
+
+#define CONTROL_STATUS_LINK_MAX_NO				CONFIG_CONTROL_STATUS_LINK_MAX_NO		/*!< MAX Number of status links */
+#define CONTROL_STATUS_LINK_TASK_NAME			CONFIG_CONTROL_STATUS_LINK_TASK_NAME	/*!< Status link task name */
+#define CONTROL_STATUS_LINK_TASK_PRIO			CONFIG_CONTROL_STATUS_LINK_PRIO			/*!< Status link task prio */
+#define CONTROL_STATUS_LINK_TASK_STACK			CONFIG_CONTROL_STATUS_LINK_STACK_SIZE	/*!< Status link task stack size */
+#define CONTROL_STATUS_LINK_MESSAGES_MAX_NO		CONFIG_CONTROL_STATUS_MESSAGES_MAX_NO	/*!< MAX Number of messages to send */
 /**
  * @}
  */
@@ -61,6 +67,28 @@ typedef enum{
 	CONTROL_STATUS_ERROR		/*!< Control service status Error */
 }control_status_t;
 /**
+ * @brief Link state
+ */
+typedef enum{
+	CONTROL_LINK_STATE_UP,		/*!< Link is up */
+	CONTROL_LINK_STATE_DOWN		/*!< Link is down */
+}control_link_state_t;
+/**
+ * @brief Status link IP info
+ */
+typedef struct
+{
+	uint8_t		ip[4];			/*!< IP Address buffer */
+	uint16_t	portNo;			/*!< Port number */
+}control_status_link_ip_info_t;
+/**
+ * @brief Status link instance handler
+ */
+typedef struct{
+	uint32_t						linkInstanceNo;
+	control_status_link_ip_info_t 	ipInfo;
+}control_status_link_instance_t;
+/**
  * @}
  */
 /**
@@ -77,11 +105,23 @@ typedef enum{
  */
 control_status_t 	CONTROL_Init(uint32_t initTimeout);
 /**
- * @brief	Initialize control service
- * @param	initTimeout: timeout initialization
+ * @brief	Report control service that link is closed
+ *
+ * 			This function is usually used by Network service to report Link
+ * 			status. Based on the number of this function calls, Control service
+ * 			close opened links
+ *
  * @retval	::control_status_t
  */
-control_status_t 	CONTROL_Close();
+control_status_t 	CONTROL_LinkClosed();
+/**
+ * TODO: Comment
+ */
+control_status_t 	CONTROL_StatusLinkCreate(control_status_link_instance_t* statusLinkInstance, control_status_link_ip_info_t statusServerIp, uint32_t timeout);
+/**
+ * TODO: Comment
+ */
+control_status_t 	CONTROL_StatusLinkSendMessage(control_status_link_instance_t* statusLinkInstance, const char* message, uint32_t messageSize, uint32_t timeout);
 /**
  * @}
  */
