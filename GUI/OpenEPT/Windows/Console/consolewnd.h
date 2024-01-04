@@ -15,6 +15,8 @@ public:
     explicit ConsoleWnd(QWidget *parent = nullptr);
     ~ConsoleWnd();
 
+private slots:
+    void onSendClicked();
 private:
     Ui::ConsoleWnd *ui;
 };
