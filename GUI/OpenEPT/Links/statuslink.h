@@ -3,9 +3,10 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <QTcpServer>
 #include <QThread>
 
-#define STATUS_LINK_SERVER_PORT         10000
+#define STATUS_LINK_SERVER_PORT         7000
 #define STATUS_LINK_BUFFER_SIZE         1500
 
 class StatusLink : public QObject
@@ -17,15 +18,18 @@ public:
     void                    startServer();
 
 signals:
-    void                    sigNewStatusMessageReceived(QString message);
+    void                    sigNewClientConnected(QString ip);
+    void                    sigNewStatusMessageReceived(QString clientIp, QString message);
 
 public slots:
     void                    onServerStarted();
+    void                    onNewConnectionAdded();
     void                    onReadPendingData();
 
 
 private:
-    QTcpSocket              *tcpServer;
+    QTcpServer              *tcpServer;
+    QList<QTcpSocket*>      clientList;
     QThread                 *tcpServerThread;
 };
 

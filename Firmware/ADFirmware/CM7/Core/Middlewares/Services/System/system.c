@@ -98,6 +98,8 @@ static void prvSYSTEM_Task()
 			}
 			LOGGING_Write("System", LOGGING_MSG_TYPE_INFO, "Control service successfully initialized\r\n");
 
+
+
 			xSemaphoreGive(prvSYSTEM_DATA.initSig);
 			prvSYSTEM_DATA.state = SYSTEM_STATE_SERVICE;
 			break;
