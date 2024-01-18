@@ -22,6 +22,8 @@ public slots:
     void    onDeviceStatusLinkNewDeviceAdded(QString aDeviceIP);
     void    onDeviceStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
     void    onDeviceClosed();
+    void    onConsoleWndMessageRcvd(QString msg);
+    void    onConsoleWndHandleControlMsgResponse(QString msg);
 
 private:
     DeviceWnd*  deviceWnd;

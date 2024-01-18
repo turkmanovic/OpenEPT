@@ -9,10 +9,12 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     log->assignLogWidget(deviceWnd->getLogWidget());
 
     connect(deviceWnd, SIGNAL(sigWndClosed()), this, SLOT(onDeviceClosed()));
+    connect(deviceWnd, SIGNAL(sigNewControlMessageRcvd(QString)), this, SLOT(onConsoleWndMessageRcvd(QString)));
     connect(device, SIGNAL(sigControlLinkConnected()), this, SLOT(onDeviceControlLinkConnected()));
     connect(device, SIGNAL(sigControlLinkDisconnected()), this, SLOT(onDeviceControlLinkDisconnected()));
     connect(device, SIGNAL(sigStatusLinkNewDeviceAdded(QString)), this, SLOT(onDeviceStatusLinkNewDeviceAdded(QString)));
     connect(device, SIGNAL(sigStatusLinkNewMessageReceived(QString,QString)), this, SLOT(onDeviceStatusLinkNewMessageReceived(QString,QString)));
+    connect(device, SIGNAL(sigNewResponseReceived(QString)), this, SLOT(onConsoleWndHandleControlMsgResponse(QString)));
 
     log->printLogMessage("Device container successfully created", LOG_MESSAGE_TYPE_INFO);
     device->statusLinkCreate();
@@ -51,4 +53,14 @@ void DeviceContainer::onDeviceStatusLinkNewMessageReceived(QString aDeviceIP, QS
 void DeviceContainer::onDeviceClosed()
 {
     emit sigDeviceClosed(device);
+}
+
+void DeviceContainer::onConsoleWndMessageRcvd(QString msg)
+{
+    device->sendControlMsg(msg);
+}
+
+void DeviceContainer::onConsoleWndHandleControlMsgResponse(QString msg)
+{
+    deviceWnd->printConsoleMsg(msg);
 }

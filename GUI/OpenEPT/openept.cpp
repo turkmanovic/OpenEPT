@@ -87,7 +87,7 @@ bool OpenEPT::addNewDevice(QString aIpAddress, QString aPort)
     tmpDevice->controlLinkAssign(tmpControlLink);
 
     /* Create corresponding device window*/
-    DeviceWnd *tmpdeviceWnd = new DeviceWnd();
+    DeviceWnd *tmpdeviceWnd = new DeviceWnd(0);
     tmpdeviceWnd->setWindowTitle(deviceName);
     tmpdeviceWnd->setDeviceState(DEVICE_STATE_CONNECTED);
 

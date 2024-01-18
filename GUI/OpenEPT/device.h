@@ -69,12 +69,14 @@ public:
     void        controlLinkAssign(ControlLink* link);
     void        statusLinkCreate();
     void        controlLinkReconnect();
+    void        sendControlMsg(QString msg);
 
 signals:
     void        sigControlLinkConnected();
     void        sigControlLinkDisconnected();
     void        sigStatusLinkNewDeviceAdded(QString aDeviceIP);
     void        sigStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
+    void        sigNewResponseReceived(QString response);
 
 public slots:
     void        onControlLinkConnected();

@@ -14,6 +14,7 @@ typedef enum
 typedef enum
 {
     LOG_MESSAGE_DEVICE_TYPE_APP,
+    LOG_MESSAGE_DEVICE_TYPE_CONSOLE,
     LOG_MESSAGE_DEVICE_TYPE_DEVICE
 }log_message_device_type_t;
 

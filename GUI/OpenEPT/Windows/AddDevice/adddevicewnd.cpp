@@ -1,5 +1,6 @@
 #include "adddevicewnd.h"
 #include "ui_adddevicewnd.h"
+#include "ui_consolewnd.h"
 
 AddDeviceWnd::AddDeviceWnd(QWidget *parent) :
     QWidget(parent),

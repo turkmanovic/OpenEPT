@@ -50,6 +50,13 @@ void Device::controlLinkReconnect()
     controlLink->reconnect();
 }
 
+void Device::sendControlMsg(QString msg)
+{
+    QString response;
+    if(!controlLink->executeCommand(msg, &response, 1000)) return;
+    emit sigNewResponseReceived(response);
+}
+
 void Device::onControlLinkConnected()
 {
     emit sigControlLinkConnected();

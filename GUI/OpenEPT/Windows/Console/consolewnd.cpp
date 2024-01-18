@@ -8,6 +8,7 @@ ConsoleWnd::ConsoleWnd(QWidget *parent) :
     ui->setupUi(this);
     connect(ui->controlSendPusb, SIGNAL(clicked(bool)), this, SLOT(onSendClicked()));
     connect(ui->controlSendLine, SIGNAL(returnPressed()), this, SLOT(onSendClicked()));
+    logUtil.assignLogWidget(ui->controlSendRecievePlte);
 }
 
 ConsoleWnd::~ConsoleWnd()
@@ -15,8 +16,17 @@ ConsoleWnd::~ConsoleWnd()
     delete ui;
 }
 
+void ConsoleWnd::printMessage(QString msg)
+{
+    logUtil.printLogMessage(" Response: " + msg, LOG_MESSAGE_TYPE_INFO);
+}
+
 void ConsoleWnd::onSendClicked() {
     QString textToSend = ui->controlSendLine->text();
-    ui->controlSendRecievePlte->appendPlainText(textToSend);
-    ui->controlSendLine->clear();
+    logUtil.printLogMessage(" Command: " + textToSend, LOG_MESSAGE_TYPE_INFO, LOG_MESSAGE_DEVICE_TYPE_CONSOLE);
+    emit onHelloSend(textToSend);
+}
+
+void ConsoleWnd::onOkRecieved() {
+    ui->controlSendRecievePlte->appendPlainText("OK");
 }

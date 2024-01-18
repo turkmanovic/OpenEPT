@@ -25,6 +25,9 @@ void Log::printLogMessage(QString message, log_message_type_t type, log_message_
     case LOG_MESSAGE_DEVICE_TYPE_DEVICE:
         tmpMessageDeviceType += "[ACDevice]    ";
         break;
+    case LOG_MESSAGE_DEVICE_TYPE_CONSOLE:
+        tmpMessageDeviceType += "[Console]    ";
+        break;
     }
     plainTextWidget->moveCursor(QTextCursor::End);
     switch(type)

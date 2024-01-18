@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "Windows/Plot/plot.h"
 #include "Windows/Device/advanceconfigurationwnd.h"
+#include "Windows/Console/consolewnd.h"
 
 typedef enum
 {
@@ -27,6 +28,7 @@ public:
 
     QPlainTextEdit* getLogWidget();
     void            setDeviceState(device_state_t aDeviceState);
+    void            printConsoleMsg(QString msg);
 
 signals:
     void            sigWndClosed();
@@ -38,6 +40,7 @@ signals:
     void            pauseAcquisition();
     void            stopAcquisition();
     void            refreshAcquisition();
+    void            sigNewControlMessageRcvd(const QString &response);
 protected:
     void            closeEvent(QCloseEvent *event);
 
@@ -52,12 +55,15 @@ public slots:
     void            onPauseAcquisition();
     void            onStopAcquisiton();
     void            onRefreshAcquisiton();
+    void            onConsolePressed();
+    void            handleOnHelloSend(QString text);
 
 private:
     Ui::DeviceWnd               *ui;
 
     AdvanceConfigurationWnd     *advanceConfigurationWnd;
 
+    ConsoleWnd                  *consoleWnd;
     Plot                        *voltageChart;
     Plot                        *currentChart;
     Plot                        *consumptionChart;

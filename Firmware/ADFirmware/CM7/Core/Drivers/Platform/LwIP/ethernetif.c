@@ -96,6 +96,18 @@ typedef struct
 #define ETH_RX_BUFFER_CNT             12U
 LWIP_MEMPOOL_DECLARE(RX_POOL, ETH_RX_BUFFER_CNT, sizeof(RxBuff_t), "Zero-copy RX PBUF pool");
 
+#if defined ( __ICCARM__ ) /*!< IAR Compiler */
+#pragma location = 0x30000400
+extern u8_t memp_memory_RX_POOL_base[];
+
+#elif defined ( __CC_ARM )  /* MDK ARM Compiler */
+__attribute__((section(".Rx_PoolSection"))) extern u8_t memp_memory_RX_POOL_base[];
+
+#elif defined ( __GNUC__ ) /* GNU Compiler */
+__attribute__((section(".Rx_PoolSection"))) extern u8_t memp_memory_RX_POOL_base[];
+
+#endif
+
 /* Variable Definitions */
 static uint8_t RxAllocStatus;
 

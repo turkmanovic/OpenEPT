@@ -1,6 +1,6 @@
 #include "devicewnd.h"
 #include "ui_devicewnd.h"
-
+#include "Windows/Console/consolewnd.h"
 /*TODO: Declare this in config file*/
 #define PLOT_MINIMUM_SIZE_WIDTH     600
 #define PLOT_MINIMUM_SIZE_HEIGHT    200
@@ -11,7 +11,10 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     ui(new Ui::DeviceWnd)
 {
     ui->setupUi(this);
-
+//    if (!consoleWnd) {
+//        qDebug() << "Error: Failed to allocate memory for consoleWnd.";
+//        // Handle the error appropriately, e.g., return or exit
+//    }
     /* Set default Value for ADC Resolution Comb*/
     resolutionOptions=(
         QStringList()
@@ -81,6 +84,8 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
 
     setDeviceState(DEVICE_STATE_UNDEFINED);
 
+    consoleWnd  = new ConsoleWnd();
+
     ui->GraphicsTopHorl->addWidget(voltageChart);
     ui->GraphicsTopHorl->addWidget(currentChart);
     ui->GraphicsBottomVerl->addWidget(consumptionChart, Qt::AlignCenter);
@@ -94,9 +99,19 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     connect(ui->pausePusb, SIGNAL(clicked(bool)), this, SLOT(onPauseAcquisition()));
     connect(ui->stopPusb, SIGNAL(clicked(bool)), this, SLOT(onStopAcquisiton()));
     connect(ui->refreshPusb, SIGNAL(clicked(bool)), this, SLOT(onRefreshAcquisiton()));
+    connect(ui->ConsolePusb, SIGNAL(clicked(bool)), this, SLOT(onConsolePressed()));
+    //connect(this, SIGNAL(onRecieved(QString)), consoleWnd, SLOT(onOkRecieved(QString)));
+
+    connect(consoleWnd, SIGNAL(onHelloSend(QString)), this, SLOT(handleOnHelloSend(QString)));
+
+
 
 }
 
+void    DeviceWnd::handleOnHelloSend(QString text)
+{
+    emit sigNewControlMessageRcvd(text);
+}
 void    DeviceWnd::onAdvanceConfigurationButtonPressed(bool pressed)
 {
     advanceConfigurationWnd->show();
@@ -124,6 +139,11 @@ void DeviceWnd::onInfoSaveToFileEnabled(bool enableStatus)
     saveToFileFlag = enableStatus;
 }
 */
+
+void DeviceWnd::onConsolePressed()
+{
+    consoleWnd->show();
+}
 
 void DeviceWnd::onStartAcquisition()
 {
@@ -213,4 +233,9 @@ void DeviceWnd::setDeviceState(device_state_t aDeviceState)
         setDeviceStateDisconnected();
         break;
     }
+}
+
+void DeviceWnd::printConsoleMsg(QString msg)
+{
+    consoleWnd->printMessage(msg);
 }

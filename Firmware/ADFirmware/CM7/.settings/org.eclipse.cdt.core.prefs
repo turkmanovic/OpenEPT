@@ -6,6 +6,6 @@ doxygen/doxygen_use_structural_commands=false
 eclipse.preferences.version=1
 environment/project/com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1957845872/PROJECT_PATH/delimiter=;
 environment/project/com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1957845872/PROJECT_PATH/operation=replace
-environment/project/com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1957845872/PROJECT_PATH/value=C\:\\Users\\Haris\\Documents\\OpenEPT\\OpenEPT\\Firmware\\ADFirmware\\
+environment/project/com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1957845872/PROJECT_PATH/value=D\:\\prof_Hari\\OpenEPT\\Firmware\\ADFirmware\\
 environment/project/com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1957845872/append=true
 environment/project/com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1957845872/appendContributed=true
