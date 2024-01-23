@@ -57,10 +57,12 @@ void DeviceContainer::onDeviceClosed()
 
 void DeviceContainer::onConsoleWndMessageRcvd(QString msg)
 {
+    /* call device funtion sendControl Msg -> */
     device->sendControlMsg(msg);
 }
 
 void DeviceContainer::onConsoleWndHandleControlMsgResponse(QString msg)
 {
+    /* call deviceWnd function with recieved msg from FW <- */
     deviceWnd->printConsoleMsg(msg);
 }

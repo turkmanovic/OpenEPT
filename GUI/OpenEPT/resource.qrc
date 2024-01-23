@@ -32,5 +32,6 @@
         <file>images/NewSet/zoom_area.png</file>
         <file>images/NewSet/zoom_in.png</file>
         <file>images/NewSet/zoom_out.png</file>
+        <file>images/console.png</file>
     </qresource>
 </RCC>

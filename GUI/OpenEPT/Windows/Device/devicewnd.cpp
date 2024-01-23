@@ -1,6 +1,8 @@
 #include "devicewnd.h"
 #include "ui_devicewnd.h"
 #include "Windows/Console/consolewnd.h"
+#include <QFileDialog>
+
 /*TODO: Declare this in config file*/
 #define PLOT_MINIMUM_SIZE_WIDTH     600
 #define PLOT_MINIMUM_SIZE_HEIGHT    200
@@ -94,23 +96,25 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     connect(ui->resolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onResolutionCombIndexChanged(int)));
     connect(ui->sampleTimeComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onSamplingTimeCombIndexChanged(int)));
     connect(ui->saveToFileCheb, SIGNAL(stateChanged(int)), this, SLOT(onSaveToFileChanged(int)));
-    //connect(ui->saveToFileCheb, SIGNAL(saveToFileEnabled(bool)), this, SLOT(onInfoSaveToFileEnabled(bool)));
+    connect(ui->pathPusb, SIGNAL(clicked(bool)), this, SLOT(onPathInfo()));
     connect(ui->startPusb, SIGNAL(clicked(bool)), this, SLOT(onStartAcquisition()));
     connect(ui->pausePusb, SIGNAL(clicked(bool)), this, SLOT(onPauseAcquisition()));
     connect(ui->stopPusb, SIGNAL(clicked(bool)), this, SLOT(onStopAcquisiton()));
     connect(ui->refreshPusb, SIGNAL(clicked(bool)), this, SLOT(onRefreshAcquisiton()));
     connect(ui->ConsolePusb, SIGNAL(clicked(bool)), this, SLOT(onConsolePressed()));
-    //connect(this, SIGNAL(onRecieved(QString)), consoleWnd, SLOT(onOkRecieved(QString)));
-
-    connect(consoleWnd, SIGNAL(onHelloSend(QString)), this, SLOT(handleOnHelloSend(QString)));
-
-
-
+    connect(consoleWnd, SIGNAL(sigControlMsgSend(QString)), this, SLOT(onNewControlMsgRcvd(QString)));
 }
 
-void    DeviceWnd::handleOnHelloSend(QString text)
+void    DeviceWnd::onNewControlMsgRcvd(QString text)
 {
+    /* emit signal to deviceContrainer -> */
     emit sigNewControlMessageRcvd(text);
+}
+
+void DeviceWnd::onPathInfo()
+{
+    QString chosenPath = QFileDialog::getExistingDirectory(this, "Select Directory", QDir::homePath());
+    ui->pathLine->setText(chosenPath);
 }
 void    DeviceWnd::onAdvanceConfigurationButtonPressed(bool pressed)
 {
@@ -237,5 +241,6 @@ void DeviceWnd::setDeviceState(device_state_t aDeviceState)
 
 void DeviceWnd::printConsoleMsg(QString msg)
 {
+    /* call consoleWnd print Message to display recieved msg form FW <- */
     consoleWnd->printMessage(msg);
 }

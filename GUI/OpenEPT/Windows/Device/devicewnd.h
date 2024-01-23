@@ -56,7 +56,8 @@ public slots:
     void            onStopAcquisiton();
     void            onRefreshAcquisiton();
     void            onConsolePressed();
-    void            handleOnHelloSend(QString text);
+    void            onNewControlMsgRcvd(QString text);
+    void            onPathInfo();
 
 private:
     Ui::DeviceWnd               *ui;

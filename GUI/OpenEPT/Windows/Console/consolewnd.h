@@ -19,10 +19,10 @@ public:
 
 
 signals:
-    void onHelloSend(const QString &text);
+    void sigControlMsgSend(const QString &text);
 
 private slots:
-    void onSendClicked();
+    void onSendControlMsgClicked();
     void onOkRecieved();
 private:
     Ui::ConsoleWnd *ui;

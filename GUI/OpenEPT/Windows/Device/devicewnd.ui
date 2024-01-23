@@ -887,21 +887,44 @@
              <item>
               <layout class="QHBoxLayout" name="systemVerlConsole">
                <item>
+                <widget class="QLabel" name="ConsoleLabe">
+                 <property name="maximumSize">
+                  <size>
+                   <width>184</width>
+                   <height>10</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Console</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <widget class="QPushButton" name="ConsolePusb">
                  <property name="minimumSize">
                   <size>
-                   <width>230</width>
+                   <width>30</width>
                    <height>30</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>230</width>
+                   <width>30</width>
                    <height>30</height>
                   </size>
                  </property>
                  <property name="text">
-                  <string>Console</string>
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="../../resource.qrc">
+                   <normaloff>:/images/console.png</normaloff>:/images/console.png</iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>20</width>
+                   <height>20</height>
+                  </size>
                  </property>
                 </widget>
                </item>
