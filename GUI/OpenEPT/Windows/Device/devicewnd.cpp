@@ -63,6 +63,8 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
 
     advanceConfigurationWnd  = new AdvanceConfigurationWnd();
     advanceConfigurationWnd->hide();
+    //Prethodno se lista kreira dinamicki
+    //advanceConfigurationWnd->assignResolutionList(QList* )
     connect(ui->advanceOptionPusb, SIGNAL(clicked(bool)), this, SLOT(onAdvanceConfigurationButtonPressed(bool)));
 
     voltageChart             = new Plot(PLOT_MINIMUM_SIZE_WIDTH/2, PLOT_MINIMUM_SIZE_HEIGHT);
@@ -93,7 +95,7 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     ui->GraphicsBottomVerl->addWidget(consumptionChart, Qt::AlignCenter);
 
     connect(ui->clockDivComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onClockDivCombIndexChanged(int)));
-    connect(ui->resolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onResolutionCombIndexChanged(int)));
+    //connect(ui->resolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onResolutionCombIndexChanged(int)));
     connect(ui->sampleTimeComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onSamplingTimeCombIndexChanged(int)));
     connect(ui->saveToFileCheb, SIGNAL(stateChanged(int)), this, SLOT(onSaveToFileChanged(int)));
     connect(ui->pathPusb, SIGNAL(clicked(bool)), this, SLOT(onPathInfo()));
@@ -103,6 +105,8 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     connect(ui->refreshPusb, SIGNAL(clicked(bool)), this, SLOT(onRefreshAcquisiton()));
     connect(ui->ConsolePusb, SIGNAL(clicked(bool)), this, SLOT(onConsolePressed()));
     connect(consoleWnd, SIGNAL(sigControlMsgSend(QString)), this, SLOT(onNewControlMsgRcvd(QString)));
+    connect(ui->resolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onResolutionChanged(int)));
+    connect(advanceConfigurationWnd, SIGNAL(sigAdvResolutionChanged(int)), this, SLOT(onAdvResolutionChanged(int)));
 }
 
 void    DeviceWnd::onNewControlMsgRcvd(QString text)
@@ -116,6 +120,19 @@ void DeviceWnd::onPathInfo()
     QString chosenPath = QFileDialog::getExistingDirectory(this, "Select Directory", QDir::homePath());
     ui->pathLine->setText(chosenPath);
 }
+
+void DeviceWnd::onAdvResolutionChanged(int index)
+{
+    ui->resolutionComb->setCurrentIndex(index);
+    //prebaciti u configure -> emit sigResolutionChanged(index);
+}
+
+void DeviceWnd::onResolutionChanged(int index)
+{
+    advanceConfigurationWnd->SetResolutionFromDevWnd(index);
+    emit sigResolutionChanged(index);
+}
+
 void    DeviceWnd::onAdvanceConfigurationButtonPressed(bool pressed)
 {
     advanceConfigurationWnd->show();
@@ -197,12 +214,12 @@ void DeviceWnd::onClockDivCombIndexChanged(int index)
 {
     emit sigClockDivChanged(clockDivOptions[index]);
 }
-
+/*
 void DeviceWnd::onResolutionCombIndexChanged(int index)
 {
     emit sigResolutionChanged(resolutionOptions[index]);
 }
-
+*/
 void DeviceWnd::onSamplingTimeCombIndexChanged(int index)
 {
     emit sigSamplingTimeChanged(sampleTimeOptions[index]);

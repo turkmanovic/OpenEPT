@@ -70,6 +70,7 @@ public:
     void        statusLinkCreate();
     void        controlLinkReconnect();
     void        sendControlMsg(QString msg);
+    bool        setResolution(device_adc_resolution_t resolution);
 
 signals:
     void        sigControlLinkConnected();

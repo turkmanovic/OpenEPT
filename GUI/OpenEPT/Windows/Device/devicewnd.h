@@ -33,7 +33,7 @@ public:
 signals:
     void            sigWndClosed();
     void            sigSamplingTimeChanged(QString samplingTime);
-    void            sigResolutionChanged(QString resolution);
+    void            sigResolutionChanged(int resolution);
     void            sigClockDivChanged(QString clockDiv);
     void            saveToFileEnabled(bool enableStatus);
     void            startAcquisition();
@@ -47,7 +47,7 @@ protected:
 public slots:
     void            onAdvanceConfigurationButtonPressed(bool pressed);
     void            onClockDivCombIndexChanged(int index);
-    void            onResolutionCombIndexChanged(int index);
+    //void            onResolutionCombIndexChanged(int index);
     void            onSamplingTimeCombIndexChanged(int index);
     //void            onInfoSaveToFileEnabled(bool enableStatus);
     void            onSaveToFileChanged(int value);
@@ -58,6 +58,9 @@ public slots:
     void            onConsolePressed();
     void            onNewControlMsgRcvd(QString text);
     void            onPathInfo();
+
+    void            onResolutionChanged(int index);
+    void            onAdvResolutionChanged(int index);
 
 private:
     Ui::DeviceWnd               *ui;

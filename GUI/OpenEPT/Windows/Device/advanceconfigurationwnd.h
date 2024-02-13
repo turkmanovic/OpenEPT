@@ -27,9 +27,13 @@ public:
     void     SetProfileType(loadProfileType_t aProfileType);
     void     RemoveProfileType(loadProfileType_t aProfileType);
     ~AdvanceConfigurationWnd();
+    void     SetResolutionFromDevWnd(int index);
 
+signals:
+    void    sigAdvResolutionChanged(int resolution);
 public slots:
     void    onLoadProfileChanged(int loadIndex);
+    void    onAdvResolutionChanged(int index);
 
 private:
     Ui::AdvanceConfigurationWnd *ui;
@@ -55,6 +59,10 @@ private:
     QWidget*            staticProfileWidg;
 
     loadProfileType_t   activeLoadProfileType;
+
+    QStringList                 advSampleTimeOptions;
+    QStringList                 advResolutionOptions;
+    QStringList                 advClockDivOptions;
 };
 
 #endif // ADVANCECONFIGURATIONWND_H

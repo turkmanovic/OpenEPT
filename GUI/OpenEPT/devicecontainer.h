@@ -24,6 +24,7 @@ public slots:
     void    onDeviceClosed();
     void    onConsoleWndMessageRcvd(QString msg);
     void    onConsoleWndHandleControlMsgResponse(QString msg);
+    void    onResolutionChanged(int index);
 
 private:
     DeviceWnd*  deviceWnd;
