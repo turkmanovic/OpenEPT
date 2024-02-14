@@ -42,13 +42,13 @@
 		<link>
 			<name>Core/Middlewares/ThirdParty</name>
 			<type>2</type>
-			<locationURI>PROJECT_ROOT/Middlewares</locationURI>
+			<locationURI>$%7BPROJECT_ROOT%7D/Middlewares/Third_Party</locationURI>
 		</link>
 	</linkedResources>
 	<variableList>
 		<variable>
 			<name>PROJECT_ROOT</name>
-			<value>file:/D:/prof_Hari/OpenEPT/Firmware/ADFirmware</value>
+			<value>file:/C:/Users/Haris/Documents/OpenEPT/OpenEPT/Firmware/ADFirmware</value>
 		</variable>
 	</variableList>
 </projectDescription>
