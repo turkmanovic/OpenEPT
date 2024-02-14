@@ -52,7 +52,7 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
     ui->deviceNameLine->setText("ADevice 1");
 
     /* Set default Value for ADC Resolution Comb*/
-    QStringList adcResolutionOptions=(
+    advResolutionOptions=(
         QStringList()
         <<""
         <<"16 Bit"
@@ -60,10 +60,10 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
         <<"12 Bit"
         <<"10 Bit"
         );
-    ui->adcResolutionComb->addItems(adcResolutionOptions);
+    ui->adcResolutionComb->addItems(advResolutionOptions);
 
     /* Set default Value for ADC Clock Div Comb*/
-    QStringList adcClockDivOptions=(
+    advClockDivOptions=(
         QStringList()
         <<""
         <<"1"
@@ -78,10 +78,10 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
         <<"64"
         <<"128"
         );
-    ui->adcClockDivComb->addItems(adcClockDivOptions);
+    ui->adcClockDivComb->addItems(advClockDivOptions);
 
     /* Set default Value for ADC Sample Time Comb*/
-    QStringList adcSampleTimeOptions=(
+    advSampleTimeOptions=(
         QStringList()
         <<""
         <<"1C5"
@@ -93,7 +93,7 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
         <<"387C5"
         <<"810C5"
         );
-    ui->adcSampleTimeComb->addItems(adcSampleTimeOptions);
+    ui->adcSampleTimeComb->addItems(advSampleTimeOptions);
 
     /* Set default Value for Averaging Ratio Comb*/
     QStringList averagingRatioOptions=(
@@ -231,6 +231,7 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
 
     SetProfileTypeUknown();
     activeLoadProfileType = LOAD_PROFILE_TYPE_UNKNOW;
+    connect(ui->adcResolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onAdvResolutionChanged(int)));
 }
 
 
@@ -319,4 +320,14 @@ void    AdvanceConfigurationWnd::onLoadProfileChanged(int loadIndex)
 AdvanceConfigurationWnd::~AdvanceConfigurationWnd()
 {
     delete ui;
+}
+
+void    AdvanceConfigurationWnd::SetResolutionFromDevWnd(int index)
+{
+    ui->adcResolutionComb->setCurrentIndex(index);
+}
+
+void    AdvanceConfigurationWnd::onAdvResolutionChanged(int index)
+{
+    emit sigAdvResolutionChanged(index);
 }

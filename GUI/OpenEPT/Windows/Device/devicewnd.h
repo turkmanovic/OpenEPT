@@ -4,6 +4,7 @@
 #include <QWidget>
 #include "Windows/Plot/plot.h"
 #include "Windows/Device/advanceconfigurationwnd.h"
+#include "Windows/Console/consolewnd.h"
 
 typedef enum
 {
@@ -27,24 +28,26 @@ public:
 
     QPlainTextEdit* getLogWidget();
     void            setDeviceState(device_state_t aDeviceState);
+    void            printConsoleMsg(QString msg);
 
 signals:
     void            sigWndClosed();
     void            sigSamplingTimeChanged(QString samplingTime);
-    void            sigResolutionChanged(QString resolution);
+    void            sigResolutionChanged(int resolution);
     void            sigClockDivChanged(QString clockDiv);
     void            saveToFileEnabled(bool enableStatus);
     void            startAcquisition();
     void            pauseAcquisition();
     void            stopAcquisition();
     void            refreshAcquisition();
+    void            sigNewControlMessageRcvd(const QString &response);
 protected:
     void            closeEvent(QCloseEvent *event);
 
 public slots:
     void            onAdvanceConfigurationButtonPressed(bool pressed);
     void            onClockDivCombIndexChanged(int index);
-    void            onResolutionCombIndexChanged(int index);
+    //void            onResolutionCombIndexChanged(int index);
     void            onSamplingTimeCombIndexChanged(int index);
     //void            onInfoSaveToFileEnabled(bool enableStatus);
     void            onSaveToFileChanged(int value);
@@ -52,12 +55,19 @@ public slots:
     void            onPauseAcquisition();
     void            onStopAcquisiton();
     void            onRefreshAcquisiton();
+    void            onConsolePressed();
+    void            onNewControlMsgRcvd(QString text);
+    void            onPathInfo();
+
+    void            onResolutionChanged(int index);
+    void            onAdvResolutionChanged(int index);
 
 private:
     Ui::DeviceWnd               *ui;
 
     AdvanceConfigurationWnd     *advanceConfigurationWnd;
 
+    ConsoleWnd                  *consoleWnd;
     Plot                        *voltageChart;
     Plot                        *currentChart;
     Plot                        *consumptionChart;

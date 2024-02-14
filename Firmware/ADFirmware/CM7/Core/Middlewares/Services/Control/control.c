@@ -182,6 +182,36 @@ static void prvCONTROL_SetDeviceName(const char* arguments, uint16_t argumentsLe
 	prvCONTROL_PrepareOkResponse(response, responseSize, "", 0);
 	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device name successfully set\r\n");
 }
+
+/**
+ * @brief	Set device resolution by utilizing system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_SetResolution(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device Resolution successfully set\r\n");
+}
+
+/**
+ * @brief	Get device resolution by utilizing system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_GetResolution(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device Resolution successfully set\r\n");
+}
+
+
 //TODO: This is just for testing purposes. It should never be used as it is now. Remove!
 control_status_link_instance_t statusLinkInstance;
 /**
@@ -499,6 +529,9 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	CMPARSE_AddCommand("device setname", 		prvCONTROL_SetDeviceName);
 	CMPARSE_AddCommand("device slink create", 	prvCONTROL_CreateStatusLink);
 	CMPARSE_AddCommand("device slink send", 	prvCONTROL_StatusLinkSendMessage);
+
+	CMPARSE_AddCommand("device resolution set", 	prvCONTROL_SetResolution);
+	CMPARSE_AddCommand("device resolution get", 	prvCONTROL_GetResolution);
 
 	return CONTROL_STATUS_OK;
 }

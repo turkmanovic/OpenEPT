@@ -50,6 +50,46 @@ void Device::controlLinkReconnect()
     controlLink->reconnect();
 }
 
+void Device::sendControlMsg(QString msg)
+{
+    /* call controLink execute Commnad to communicate with FW -> */
+    QString response;
+    if(!controlLink->executeCommand(msg, &response, 1000)) return;
+    /* emit Response to deviceContainer <- */
+    emit sigNewResponseReceived(response);
+}
+
+bool Device::setResolution(device_adc_resolution_t resolution)
+{
+    QString response;
+    QString command = "device resolution set -value=";
+    switch(resolution)
+    {
+    case DEVICE_ADC_RESOLUTION_UKNOWN:
+        return false;
+        break;
+    case DEVICE_ADC_RESOLUTION_16BIT:
+        command += "16";
+        break;
+    case DEVICE_ADC_RESOLUTION_14BIT:
+        command += "14";
+        break;
+    case DEVICE_ADC_RESOLUTION_12BIT:
+        command += "12";
+        break;
+    case DEVICE_ADC_RESOLUTION_10BIT:
+        command += "10";
+        break;
+    }
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    //Proveriti da li je ok, ako nije vratiti false, ako jeste vratiti true
+    if(response != "OK"){
+        return false;
+    }
+    adcResolution = resolution;
+    return true;
+}
+
 void Device::onControlLinkConnected()
 {
     emit sigControlLinkConnected();

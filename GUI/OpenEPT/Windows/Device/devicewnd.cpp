@@ -1,5 +1,7 @@
 #include "devicewnd.h"
 #include "ui_devicewnd.h"
+#include "Windows/Console/consolewnd.h"
+#include <QFileDialog>
 
 /*TODO: Declare this in config file*/
 #define PLOT_MINIMUM_SIZE_WIDTH     600
@@ -11,7 +13,10 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     ui(new Ui::DeviceWnd)
 {
     ui->setupUi(this);
-
+//    if (!consoleWnd) {
+//        qDebug() << "Error: Failed to allocate memory for consoleWnd.";
+//        // Handle the error appropriately, e.g., return or exit
+//    }
     /* Set default Value for ADC Resolution Comb*/
     resolutionOptions=(
         QStringList()
@@ -58,6 +63,8 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
 
     advanceConfigurationWnd  = new AdvanceConfigurationWnd();
     advanceConfigurationWnd->hide();
+    //Prethodno se lista kreira dinamicki
+    //advanceConfigurationWnd->assignResolutionList(QList* )
     connect(ui->advanceOptionPusb, SIGNAL(clicked(bool)), this, SLOT(onAdvanceConfigurationButtonPressed(bool)));
 
     voltageChart             = new Plot(PLOT_MINIMUM_SIZE_WIDTH/2, PLOT_MINIMUM_SIZE_HEIGHT);
@@ -81,20 +88,49 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
 
     setDeviceState(DEVICE_STATE_UNDEFINED);
 
+    consoleWnd  = new ConsoleWnd();
+
     ui->GraphicsTopHorl->addWidget(voltageChart);
     ui->GraphicsTopHorl->addWidget(currentChart);
     ui->GraphicsBottomVerl->addWidget(consumptionChart, Qt::AlignCenter);
 
     connect(ui->clockDivComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onClockDivCombIndexChanged(int)));
-    connect(ui->resolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onResolutionCombIndexChanged(int)));
+    //connect(ui->resolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onResolutionCombIndexChanged(int)));
     connect(ui->sampleTimeComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onSamplingTimeCombIndexChanged(int)));
     connect(ui->saveToFileCheb, SIGNAL(stateChanged(int)), this, SLOT(onSaveToFileChanged(int)));
-    //connect(ui->saveToFileCheb, SIGNAL(saveToFileEnabled(bool)), this, SLOT(onInfoSaveToFileEnabled(bool)));
+    connect(ui->pathPusb, SIGNAL(clicked(bool)), this, SLOT(onPathInfo()));
     connect(ui->startPusb, SIGNAL(clicked(bool)), this, SLOT(onStartAcquisition()));
     connect(ui->pausePusb, SIGNAL(clicked(bool)), this, SLOT(onPauseAcquisition()));
     connect(ui->stopPusb, SIGNAL(clicked(bool)), this, SLOT(onStopAcquisiton()));
     connect(ui->refreshPusb, SIGNAL(clicked(bool)), this, SLOT(onRefreshAcquisiton()));
+    connect(ui->ConsolePusb, SIGNAL(clicked(bool)), this, SLOT(onConsolePressed()));
+    connect(consoleWnd, SIGNAL(sigControlMsgSend(QString)), this, SLOT(onNewControlMsgRcvd(QString)));
+    connect(ui->resolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onResolutionChanged(int)));
+    connect(advanceConfigurationWnd, SIGNAL(sigAdvResolutionChanged(int)), this, SLOT(onAdvResolutionChanged(int)));
+}
 
+void    DeviceWnd::onNewControlMsgRcvd(QString text)
+{
+    /* emit signal to deviceContrainer -> */
+    emit sigNewControlMessageRcvd(text);
+}
+
+void DeviceWnd::onPathInfo()
+{
+    QString chosenPath = QFileDialog::getExistingDirectory(this, "Select Directory", QDir::homePath());
+    ui->pathLine->setText(chosenPath);
+}
+
+void DeviceWnd::onAdvResolutionChanged(int index)
+{
+    ui->resolutionComb->setCurrentIndex(index);
+    //prebaciti u configure -> emit sigResolutionChanged(index);
+}
+
+void DeviceWnd::onResolutionChanged(int index)
+{
+    advanceConfigurationWnd->SetResolutionFromDevWnd(index);
+    emit sigResolutionChanged(index);
 }
 
 void    DeviceWnd::onAdvanceConfigurationButtonPressed(bool pressed)
@@ -124,6 +160,11 @@ void DeviceWnd::onInfoSaveToFileEnabled(bool enableStatus)
     saveToFileFlag = enableStatus;
 }
 */
+
+void DeviceWnd::onConsolePressed()
+{
+    consoleWnd->show();
+}
 
 void DeviceWnd::onStartAcquisition()
 {
@@ -173,12 +214,12 @@ void DeviceWnd::onClockDivCombIndexChanged(int index)
 {
     emit sigClockDivChanged(clockDivOptions[index]);
 }
-
+/*
 void DeviceWnd::onResolutionCombIndexChanged(int index)
 {
     emit sigResolutionChanged(resolutionOptions[index]);
 }
-
+*/
 void DeviceWnd::onSamplingTimeCombIndexChanged(int index)
 {
     emit sigSamplingTimeChanged(sampleTimeOptions[index]);
@@ -213,4 +254,10 @@ void DeviceWnd::setDeviceState(device_state_t aDeviceState)
         setDeviceStateDisconnected();
         break;
     }
+}
+
+void DeviceWnd::printConsoleMsg(QString msg)
+{
+    /* call consoleWnd print Message to display recieved msg form FW <- */
+    consoleWnd->printMessage(msg);
 }
