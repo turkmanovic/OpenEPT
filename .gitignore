@@ -3,6 +3,7 @@ Firmware/ADFirmware/CM4/Debug/*
 Firmware/ADFirmware/CM4/.settings*
 Firmware/ADFirmware/CM7/.settings*
 Firmware/ADFirmware/CM7/.project*
+Firmware/ADFirmware/CM7/*.launch
 Firmware/ConfProject/CM7/Debug/*
 Firmware/ConfProject/CM4/Debug/*
 Firmware/ConfProject/.settings*
