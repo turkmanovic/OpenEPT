@@ -51,7 +51,7 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
     /* Set default Value for Current Offset Line*/
     ui->deviceNameLine->setText("ADevice 1");
 
-    /* Set default Value for ADC Resolution Comb*/
+    /* Set default Value for ADC Resolution Comb
     advResolutionOptions=(
         QStringList()
         <<""
@@ -60,9 +60,9 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
         <<"12 Bit"
         <<"10 Bit"
         );
-    ui->adcResolutionComb->addItems(advResolutionOptions);
+    ui->adcResolutionComb->addItems(advResolutionOptions);*/
 
-    /* Set default Value for ADC Clock Div Comb*/
+    /* Set default Value for ADC Clock Div Comb
     advClockDivOptions=(
         QStringList()
         <<""
@@ -79,8 +79,8 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
         <<"128"
         );
     ui->adcClockDivComb->addItems(advClockDivOptions);
-
-    /* Set default Value for ADC Sample Time Comb*/
+*/
+    /* Set default Value for ADC Sample Time Comb
     advSampleTimeOptions=(
         QStringList()
         <<""
@@ -94,7 +94,7 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
         <<"810C5"
         );
     ui->adcSampleTimeComb->addItems(advSampleTimeOptions);
-
+*/
     /* Set default Value for Averaging Ratio Comb*/
     QStringList averagingRatioOptions=(
         QStringList()
@@ -232,6 +232,8 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
     SetProfileTypeUknown();
     activeLoadProfileType = LOAD_PROFILE_TYPE_UNKNOW;
     connect(ui->adcResolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onAdvResolutionChanged(int)));
+    connect(ui->adcClockDivComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onAdvClkDivChanged(int)));
+    connect(ui->adcSampleTimeComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onAdvSampleTimeChanged(int)));
 }
 
 
@@ -324,10 +326,69 @@ AdvanceConfigurationWnd::~AdvanceConfigurationWnd()
 
 void    AdvanceConfigurationWnd::SetResolutionFromDevWnd(int index)
 {
+    QPalette palette = ui->adcResolutionComb->palette();
+    palette.setColor(QPalette::Text, Qt::black); // Set text color to red
+    ui->adcResolutionComb->setPalette(palette);
+    ui->adcResolutionComb->blockSignals(true);
     ui->adcResolutionComb->setCurrentIndex(index);
+    ui->adcResolutionComb->blockSignals(false);
+}
+
+void    AdvanceConfigurationWnd::SetClockDivFromDevWnd(int index)
+{
+    QPalette palette = ui->adcClockDivComb->palette();
+    palette.setColor(QPalette::Text, Qt::black); // Set text color to red
+    ui->adcClockDivComb->setPalette(palette);
+    ui->adcClockDivComb->blockSignals(true);
+    ui->adcClockDivComb->setCurrentIndex(index);
+    ui->adcClockDivComb->blockSignals(false);
+}
+
+void    AdvanceConfigurationWnd::SetSampleTimeFromDevWnd(int index)
+{
+    QPalette palette = ui->adcSampleTimeComb->palette();
+    palette.setColor(QPalette::Text, Qt::black); // Set text color to red
+    ui->adcSampleTimeComb->setPalette(palette);
+    ui->adcSampleTimeComb->blockSignals(true);
+    ui->adcSampleTimeComb->setCurrentIndex(index);
+    ui->adcSampleTimeComb->blockSignals(false);
 }
 
 void    AdvanceConfigurationWnd::onAdvResolutionChanged(int index)
 {
-    emit sigAdvResolutionChanged(index);
+    QPalette palette = ui->adcResolutionComb->palette();
+    palette.setColor(QPalette::Text, Qt::red); // Set text color to red
+    ui->adcResolutionComb->setPalette(palette);
+    //emit sigAdvResolutionChanged(index);
+}
+
+void    AdvanceConfigurationWnd::onAdvClkDivChanged(int index)
+{
+    QPalette palette = ui->adcClockDivComb->palette();
+    palette.setColor(QPalette::Text, Qt::red); // Set text color to red
+    ui->adcClockDivComb->setPalette(palette);
+    //emit sigAdvClockDivChanged(index);
+}
+
+void    AdvanceConfigurationWnd::onAdvSampleTimeChanged(int index)
+{
+    QPalette palette = ui->adcSampleTimeComb->palette();
+    palette.setColor(QPalette::Text, Qt::red); // Set text color to red
+    ui->adcSampleTimeComb->setPalette(palette);
+    //emit sigAdvSampleTimeChanged(index);
+}
+
+void     AdvanceConfigurationWnd::assignResolutionList(const QStringList *items)
+{
+    ui->adcResolutionComb->addItems(*items);
+}
+
+void     AdvanceConfigurationWnd::assignClockDivList(const QStringList *items)
+{
+    ui->adcClockDivComb->addItems(*items);
+}
+
+void     AdvanceConfigurationWnd::assignSampleTimeList(const QStringList *items)
+{
+    ui->adcSampleTimeComb->addItems(*items);
 }

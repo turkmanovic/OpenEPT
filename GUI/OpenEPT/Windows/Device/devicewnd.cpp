@@ -18,6 +18,7 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
 //        // Handle the error appropriately, e.g., return or exit
 //    }
     /* Set default Value for ADC Resolution Comb*/
+    /*
     resolutionOptions=(
         QStringList()
         <<""
@@ -27,10 +28,19 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
         <<"10 Bit"
         );
     ui->resolutionComb->addItems(resolutionOptions);
-
+    */
+    resolutionOptions = new QStringList();
+    *resolutionOptions
+        <<""
+        <<"16 Bit"
+        <<"14 Bit"
+        <<"12 Bit"
+        <<"10 Bit"
+        ;
+    ui->resolutionComb->addItems(*resolutionOptions);
     /* Set default Value for ADC Clock Div Comb*/
-    clockDivOptions=(
-        QStringList()
+    clockDivOptions = new QStringList();
+    *clockDivOptions
         <<""
         <<"1"
         <<"2"
@@ -43,12 +53,12 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
         <<"32"
         <<"64"
         <<"128"
-        );
-    ui->clockDivComb->addItems(clockDivOptions);
+        ;
+    ui->clockDivComb->addItems(*clockDivOptions);
 
     /* Set default Value for ADC Sample Time Comb*/
-    sampleTimeOptions =(
-        QStringList()
+    sampleTimeOptions = new QStringList();
+    *sampleTimeOptions
         <<""
         <<"1C5"
         <<"2C5"
@@ -58,13 +68,15 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
         <<"64C5"
         <<"387C5"
         <<"810C5"
-        );
-    ui->sampleTimeComb->addItems(sampleTimeOptions);
+        ;
+    ui->sampleTimeComb->addItems(*sampleTimeOptions);
 
     advanceConfigurationWnd  = new AdvanceConfigurationWnd();
     advanceConfigurationWnd->hide();
     //Prethodno se lista kreira dinamicki
-    //advanceConfigurationWnd->assignResolutionList(QList* )
+    advanceConfigurationWnd->assignResolutionList(resolutionOptions);
+    advanceConfigurationWnd->assignClockDivList(clockDivOptions);
+    advanceConfigurationWnd->assignSampleTimeList(sampleTimeOptions);
     connect(ui->advanceOptionPusb, SIGNAL(clicked(bool)), this, SLOT(onAdvanceConfigurationButtonPressed(bool)));
 
     voltageChart             = new Plot(PLOT_MINIMUM_SIZE_WIDTH/2, PLOT_MINIMUM_SIZE_HEIGHT);
@@ -94,9 +106,6 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     ui->GraphicsTopHorl->addWidget(currentChart);
     ui->GraphicsBottomVerl->addWidget(consumptionChart, Qt::AlignCenter);
 
-    connect(ui->clockDivComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onClockDivCombIndexChanged(int)));
-    //connect(ui->resolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onResolutionCombIndexChanged(int)));
-    connect(ui->sampleTimeComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onSamplingTimeCombIndexChanged(int)));
     connect(ui->saveToFileCheb, SIGNAL(stateChanged(int)), this, SLOT(onSaveToFileChanged(int)));
     connect(ui->pathPusb, SIGNAL(clicked(bool)), this, SLOT(onPathInfo()));
     connect(ui->startPusb, SIGNAL(clicked(bool)), this, SLOT(onStartAcquisition()));
@@ -106,7 +115,11 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     connect(ui->ConsolePusb, SIGNAL(clicked(bool)), this, SLOT(onConsolePressed()));
     connect(consoleWnd, SIGNAL(sigControlMsgSend(QString)), this, SLOT(onNewControlMsgRcvd(QString)));
     connect(ui->resolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onResolutionChanged(int)));
+    connect(ui->clockDivComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onClockDivChanged(int)));
+    connect(ui->sampleTimeComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onSampleTimeChanged(int)));
     connect(advanceConfigurationWnd, SIGNAL(sigAdvResolutionChanged(int)), this, SLOT(onAdvResolutionChanged(int)));
+    connect(advanceConfigurationWnd, SIGNAL(sigAdvClockDivChanged(int)), this, SLOT(onAdvClockDivChanged(int)));
+    connect(advanceConfigurationWnd, SIGNAL(sigAdvSampleTimeChanged(int)), this, SLOT(onAdvSampleTimeChanged(int)));
 }
 
 void    DeviceWnd::onNewControlMsgRcvd(QString text)
@@ -123,14 +136,41 @@ void DeviceWnd::onPathInfo()
 
 void DeviceWnd::onAdvResolutionChanged(int index)
 {
+    ui->resolutionComb->blockSignals(true);
     ui->resolutionComb->setCurrentIndex(index);
-    //prebaciti u configure -> emit sigResolutionChanged(index);
+    ui->resolutionComb->blockSignals(false);
+}
+
+void DeviceWnd::onAdvClockDivChanged(int index)
+{
+    ui->clockDivComb->blockSignals(true);
+    ui->clockDivComb->setCurrentIndex(index);
+    ui->clockDivComb->blockSignals(false);
+}
+
+void DeviceWnd::onAdvSampleTimeChanged(int index)
+{
+    ui->sampleTimeComb->blockSignals(true);
+    ui->sampleTimeComb->setCurrentIndex(index);
+    ui->sampleTimeComb->blockSignals(false);
 }
 
 void DeviceWnd::onResolutionChanged(int index)
 {
     advanceConfigurationWnd->SetResolutionFromDevWnd(index);
     emit sigResolutionChanged(index);
+}
+
+void DeviceWnd::onClockDivChanged(int index)
+{
+    advanceConfigurationWnd->SetClockDivFromDevWnd(index);
+    emit sigClockDivChanged(index);
+}
+
+void DeviceWnd::onSampleTimeChanged(int index)
+{
+    advanceConfigurationWnd->SetSampleTimeFromDevWnd(index);
+    emit sigSampleTimeChanged(index);
 }
 
 void    DeviceWnd::onAdvanceConfigurationButtonPressed(bool pressed)
@@ -210,20 +250,22 @@ void DeviceWnd::setDeviceStateConnected()
     ui->deviceConnectedLabe->setStyleSheet("QLabel { background-color : green; color : black; }");
 }
 
+/*
 void DeviceWnd::onClockDivCombIndexChanged(int index)
 {
     emit sigClockDivChanged(clockDivOptions[index]);
 }
-/*
+
 void DeviceWnd::onResolutionCombIndexChanged(int index)
 {
     emit sigResolutionChanged(resolutionOptions[index]);
 }
-*/
+
 void DeviceWnd::onSamplingTimeCombIndexChanged(int index)
 {
     emit sigSamplingTimeChanged(sampleTimeOptions[index]);
 }
+*/
 void    DeviceWnd::closeEvent(QCloseEvent *event)
 {
     emit sigWndClosed();

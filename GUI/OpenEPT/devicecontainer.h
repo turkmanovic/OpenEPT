@@ -25,6 +25,8 @@ public slots:
     void    onConsoleWndMessageRcvd(QString msg);
     void    onConsoleWndHandleControlMsgResponse(QString msg);
     void    onResolutionChanged(int index);
+    void    onClockDivChanged(int index);
+    void    onSampleTimeChanged(int index);
 
 private:
     DeviceWnd*  deviceWnd;

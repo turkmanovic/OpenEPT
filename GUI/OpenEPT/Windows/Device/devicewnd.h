@@ -34,7 +34,8 @@ signals:
     void            sigWndClosed();
     void            sigSamplingTimeChanged(QString samplingTime);
     void            sigResolutionChanged(int resolution);
-    void            sigClockDivChanged(QString clockDiv);
+    void            sigClockDivChanged(int clockDiv);
+    void            sigSampleTimeChanged(int sampleTime);
     void            saveToFileEnabled(bool enableStatus);
     void            startAcquisition();
     void            pauseAcquisition();
@@ -46,9 +47,9 @@ protected:
 
 public slots:
     void            onAdvanceConfigurationButtonPressed(bool pressed);
-    void            onClockDivCombIndexChanged(int index);
+    //void            onClockDivCombIndexChanged(int index);
     //void            onResolutionCombIndexChanged(int index);
-    void            onSamplingTimeCombIndexChanged(int index);
+    //void            onSamplingTimeCombIndexChanged(int index);
     //void            onInfoSaveToFileEnabled(bool enableStatus);
     void            onSaveToFileChanged(int value);
     void            onStartAcquisition();
@@ -60,7 +61,11 @@ public slots:
     void            onPathInfo();
 
     void            onResolutionChanged(int index);
+    void            onClockDivChanged(int index);
+    void            onSampleTimeChanged(int index);
     void            onAdvResolutionChanged(int index);
+    void            onAdvClockDivChanged(int index);
+    void            onAdvSampleTimeChanged(int index);
 
 private:
     Ui::DeviceWnd               *ui;
@@ -72,9 +77,9 @@ private:
     Plot                        *currentChart;
     Plot                        *consumptionChart;
 
-    QStringList                 sampleTimeOptions;
-    QStringList                 resolutionOptions;
-    QStringList                 clockDivOptions;
+    QStringList*                sampleTimeOptions;
+    QStringList*                resolutionOptions;
+    QStringList*                clockDivOptions;
     QStringList                 sampleAveraginOptions;
 
     /* File info */
