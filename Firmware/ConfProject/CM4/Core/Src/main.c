@@ -50,7 +50,7 @@
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
-static void MX_DMA_Init(void);
+static void MX_BDMA_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -99,7 +99,7 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_DMA_Init();
+  MX_BDMA_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -118,11 +118,11 @@ int main(void)
 /**
   * Enable DMA controller clock
   */
-static void MX_DMA_Init(void)
+static void MX_BDMA_Init(void)
 {
 
   /* DMA controller clock enable */
-  __HAL_RCC_DMA1_CLK_ENABLE();
+  __HAL_RCC_BDMA_CLK_ENABLE();
 
 }
 
