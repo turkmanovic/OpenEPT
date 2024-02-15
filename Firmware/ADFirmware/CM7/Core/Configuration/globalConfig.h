@@ -11,7 +11,7 @@
 
 /*Driver layer connfiguration*/
 /* AnalogIN configuration*/
-#define CONF_AIN_MAX_BUFFER_SIZE	1500
+#define CONF_AIN_MAX_BUFFER_SIZE			8
 
 
 /* GPIO configuration*/

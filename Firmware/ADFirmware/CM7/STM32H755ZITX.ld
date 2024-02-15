@@ -187,6 +187,12 @@ SECTIONS
     . = ABSOLUTE(0x30040200);
     *(.Rx_PoolSection)  
   } >RAM_D2
+  
+   .adcBuffers (NOLOAD) :
+  {
+    . = ABSOLUTE(0x38000000);
+    *(.ADCSamplesBuffer) 
+  } >RAM_D3
 
   /* Remove information from the compiler libraries */
   /DISCARD/ :
