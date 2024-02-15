@@ -15,6 +15,8 @@
  ******************************************************************************
  */
 #include <string.h>
+#include <stdio.h>
+
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
@@ -27,6 +29,7 @@
 #include "logging.h"
 #include "system.h"
 #include "CMParse/cmparse.h"
+
 
 /**
  * @defgroup CONTROL_PRIVATE_STRUCTURES Control service private structures defines
@@ -193,8 +196,19 @@ static void prvCONTROL_SetDeviceName(const char* arguments, uint16_t argumentsLe
  */
 static void prvCONTROL_SetResolution(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
+	cmparse_value_t	value;
+	uint32_t		valueNumber;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "value", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain device resolution\r\n", valueNumber);
+		return;
+	}
+	sscanf(value.value, "%u", &valueNumber);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "%d bit resolution successfully set\r\n", valueNumber);
 	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
-	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device Resolution successfully set\r\n");
 }
 
 /**
@@ -242,7 +256,7 @@ static void prvCONTROL_CreateStatusLink(const char* arguments, uint16_t argument
 	{
 		size = sprintf(instanceNoStr,"%d",(int)statusLinkInstance.linkInstanceNo);
 		prvCONTROL_PrepareOkResponse(response, responseSize, instanceNoStr, size);
-		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Status link sucessfully created\r\n");
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Status link successfully created\r\n");
 	}
 }
 //TODO: This function is introduced for testing purposes only. Remove it in production phase!
@@ -443,12 +457,12 @@ static void prvCONTROL_StatusLinkTaskFunc(void* pvParameter)
 
 			IP_ADDR4(&remote_ip, linkInstance.ipInfo.ip[0], linkInstance.ipInfo.ip[1], linkInstance.ipInfo.ip[2], linkInstance.ipInfo.ip[3]);
 
-			LOGGING_Write("Control Service(Status)", LOGGING_MSG_TYPE_INFO,  "Try to create status link connection with server:\r\n");
-			LOGGING_Write("Control Service(Status)", LOGGING_MSG_TYPE_INFO,  "Server IP: %d.%d.%d.%d\r\n",linkInstance.ipInfo.ip[0],
+			LOGGING_Write("Control Service (Status)", LOGGING_MSG_TYPE_INFO,  "Try to create status link connection with server:\r\n");
+			LOGGING_Write("Control Service (Status)", LOGGING_MSG_TYPE_INFO,  "Server IP: %d.%d.%d.%d\r\n",linkInstance.ipInfo.ip[0],
 					linkInstance.ipInfo.ip[1],
 					linkInstance.ipInfo.ip[2],
 					linkInstance.ipInfo.ip[3]);
-			LOGGING_Write("Control Service(Status)", LOGGING_MSG_TYPE_INFO,  "Server Port: %d\r\n",linkInstance.ipInfo.portNo);
+			LOGGING_Write("Control Service (Status)", LOGGING_MSG_TYPE_INFO,  "Server Port: %d\r\n",linkInstance.ipInfo.portNo);
 
 			connect_err = netconn_connect(conn, &remote_ip, linkInstance.ipInfo.portNo);
 
@@ -464,28 +478,28 @@ static void prvCONTROL_StatusLinkTaskFunc(void* pvParameter)
 
 			if(xSemaphoreGive(prvCONTROL_STATUS_LINK_DATA[linkInstance.linkInstanceNo].initSig) != pdTRUE)
 			{
-				LOGGING_Write("Control Service(Status)", LOGGING_MSG_TYPE_ERROR,  "There is a problem with init semaphore\r\n");
+				LOGGING_Write("Control Service (Status)", LOGGING_MSG_TYPE_ERROR,  "There is a problem with init semaphore\r\n");
 				prvCONTROL_DATA.state = CONTROL_STATE_ERROR;
 				break;
 			}
 
-			LOGGING_Write("Control Service(Status)", LOGGING_MSG_TYPE_INFO,  "Status link with id %d sucesfully created\r\n");
+			LOGGING_Write("Control Service (Status)", LOGGING_MSG_TYPE_INFO,  "Status link with id %d sucesfully created\r\n");
 			prvCONTROL_STATUS_LINK_DATA[linkInstance.linkInstanceNo].state = CONTROL_STATE_SERVICE;
 			break;
 		case CONTROL_STATE_SERVICE:
 			if(xQueueReceive(prvCONTROL_STATUS_LINK_DATA[linkInstance.linkInstanceNo].messageQueue, &message, portMAX_DELAY) != pdPASS)
 			{
-				LOGGING_Write("Control Service(Status)", LOGGING_MSG_TYPE_ERROR,  "Unable to read status message queue\r\n");
+				LOGGING_Write("Control Service (Status)", LOGGING_MSG_TYPE_ERROR,  "Unable to read status message queue\r\n");
 				prvCONTROL_DATA.state = CONTROL_STATE_ERROR;
 				break;
 			}
 			if(netconn_write(conn, message.message, message.messageSize, NETCONN_COPY) != ERR_OK)
 			{
-				LOGGING_Write("Control Service(Status)", LOGGING_MSG_TYPE_WARNNING,  "Unable to send status message\r\n");
+				LOGGING_Write("Control Service (Status)", LOGGING_MSG_TYPE_WARNNING,  "Unable to send status message\r\n");
 			}
 			else
 			{
-				LOGGING_Write("Control Service(Status)", LOGGING_MSG_TYPE_INFO,  "Status message successfully sent\r\n");
+				LOGGING_Write("Control Service (Status)", LOGGING_MSG_TYPE_INFO,  "Status message successfully sent\r\n");
 			}
 			memset(&message, 0, sizeof(control_status_message_t));
 			break;
@@ -530,8 +544,8 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	CMPARSE_AddCommand("device slink create", 	prvCONTROL_CreateStatusLink);
 	CMPARSE_AddCommand("device slink send", 	prvCONTROL_StatusLinkSendMessage);
 
-	CMPARSE_AddCommand("device resolution set", 	prvCONTROL_SetResolution);
-	CMPARSE_AddCommand("device resolution get", 	prvCONTROL_GetResolution);
+	CMPARSE_AddCommand("device resolution set", prvCONTROL_SetResolution);
+	CMPARSE_AddCommand("device resolution get", prvCONTROL_GetResolution);
 
 	return CONTROL_STATUS_OK;
 }
