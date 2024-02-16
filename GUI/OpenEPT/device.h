@@ -38,8 +38,7 @@ typedef enum{
     DEVICE_ADC_CLOCK_DIV_16            = 16,
     DEVICE_ADC_CLOCK_DIV_32            = 32,
     DEVICE_ADC_CLOCK_DIV_64            = 64,
-    DEVICE_ADC_CLOCK_DIV_128           = 128,
-    DEVICE_ADC_CLOCK_DIV_256           = 256
+    DEVICE_ADC_CLOCK_DIV_128           = 128
 }device_adc_clock_div_t;
 
 typedef enum{
@@ -71,6 +70,8 @@ public:
     void        controlLinkReconnect();
     void        sendControlMsg(QString msg);
     bool        setResolution(device_adc_resolution_t resolution);
+    bool        setClockDiv(device_adc_clock_div_t clockDiv);
+    bool        setSampleTime(device_adc_sampling_time_t sampleTime);
 
 signals:
     void        sigControlLinkConnected();

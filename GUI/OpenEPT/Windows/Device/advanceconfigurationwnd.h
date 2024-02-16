@@ -5,6 +5,7 @@
 #include <QLineEdit>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include "Windows/Device/advcofigurationdata.h"
 
 namespace Ui {
 class AdvanceConfigurationWnd;
@@ -28,13 +29,24 @@ public:
     void     RemoveProfileType(loadProfileType_t aProfileType);
     ~AdvanceConfigurationWnd();
     void     SetResolutionFromDevWnd(int index);
+    void     SetClockDivFromDevWnd(int index);
+    void     SetSampleTimeFromDevWnd(int index);
+    void     assignResolutionList(const QStringList *items);
+    void     assignClockDivList(const QStringList *items);
+    void     assignSampleTimeList(const QStringList *items);
+    advConfigurationData cdata;
 
 signals:
     void    sigAdvResolutionChanged(int resolution);
+    void    sigAdvClockDivChanged(int clkDiv);
+    void    sigAdvSampleTimeChanged(int sampleTime);
+    void    sigAdvConfigurationChanged(QVariant data);
 public slots:
     void    onLoadProfileChanged(int loadIndex);
     void    onAdvResolutionChanged(int index);
-
+    void    onAdvClkDivChanged(int index);
+    void    onAdvSampleTimeChanged(int index);
+    void    onAdvConfigurationPressed(void);
 private:
     Ui::AdvanceConfigurationWnd *ui;
 

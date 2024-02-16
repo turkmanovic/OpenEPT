@@ -90,6 +90,99 @@ bool Device::setResolution(device_adc_resolution_t resolution)
     return true;
 }
 
+bool Device::setClockDiv(device_adc_clock_div_t clockDiv)
+{
+    QString response;
+    QString command = "device clkdiv set -value=";
+    switch(clockDiv)
+    {
+    case DEVICE_ADC_CLOCK_DIV_UKNOWN:
+        return false;
+        break;
+    case DEVICE_ADC_CLOCK_DIV_1:
+        command += "1";
+        break;
+    case DEVICE_ADC_CLOCK_DIV_2:
+        command += "2";
+        break;
+    case DEVICE_ADC_CLOCK_DIV_4:
+        command += "4";
+        break;
+    case DEVICE_ADC_CLOCK_DIV_6:
+        command += "6";
+        break;
+    case DEVICE_ADC_CLOCK_DIV_8:
+        command += "8";
+        break;
+    case DEVICE_ADC_CLOCK_DIV_10:
+        command += "10";
+        break;
+    case DEVICE_ADC_CLOCK_DIV_12:
+        command += "12";
+        break;
+    case DEVICE_ADC_CLOCK_DIV_16:
+        command += "16";
+        break;
+    case DEVICE_ADC_CLOCK_DIV_32:
+        command += "32";
+        break;
+    case DEVICE_ADC_CLOCK_DIV_64:
+        command += "64";
+        break;
+    case DEVICE_ADC_CLOCK_DIV_128:
+        command += "128";
+        break;
+    }
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    if(response != "OK"){
+        return false;
+    }
+    adcClockingDiv = clockDiv;
+    return true;
+}
+
+bool Device::setSampleTime(device_adc_sampling_time_t sampleTime)
+{
+    QString response;
+    QString command = "device stime set -value=";
+    switch(sampleTime)
+    {
+    case DEVICE_ADC_SAMPLING_TIME_UKNOWN:
+        return false;
+        break;
+    case DEVICE_ADC_SAMPLING_TIME_1C5:
+        command += "1";
+        break;
+    case DEVICE_ADC_SAMPLING_TIME_2C5:
+        command += "2";
+        break;
+    case DEVICE_ADC_SAMPLING_TIME_8C5:
+        command += "8";
+        break;
+    case DEVICE_ADC_SAMPLING_TIME_16C5:
+        command += "16";
+        break;
+    case DEVICE_ADC_SAMPLING_TIME_32C5:
+        command += "32";
+        break;
+    case DEVICE_ADC_SAMPLING_TIME_64C5:
+        command += "64";
+        break;
+    case DEVICE_ADC_SAMPLING_TIME_387C5:
+        command += "387";
+        break;
+    case DEVICE_ADC_SAMPLING_TIME_810C5:
+        command += "810";
+        break;
+    }
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    if(response != "OK"){
+        return false;
+    }
+    adcSamplingTime = sampleTime;
+    return true;
+}
+
 void Device::onControlLinkConnected()
 {
     emit sigControlLinkConnected();

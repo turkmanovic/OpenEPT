@@ -222,9 +222,64 @@ static void prvCONTROL_SetResolution(const char* arguments, uint16_t argumentsLe
 static void prvCONTROL_GetResolution(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
 	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
-	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device Resolution successfully set\r\n");
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device Resolution successfully get\r\n");
 }
 
+/**
+ * @brief	Set device clock div by utilizing system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_SetClkdiv(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device Clock div successfully set\r\n");
+}
+
+/**
+ * @brief	Get device clock div by utilizing system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_GetClkdiv(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device Clock div successfully get\r\n");
+}
+
+/**
+ * @brief	Set device sample time by utilizing system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_SetSampletime(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device sample time successfully set\r\n");
+}
+
+/**
+ * @brief	Get device sample time by utilizing system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_GetSampletime(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device sample time successfully get\r\n");
+}
 
 //TODO: This is just for testing purposes. It should never be used as it is now. Remove!
 control_status_link_instance_t statusLinkInstance;
@@ -544,8 +599,12 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	CMPARSE_AddCommand("device slink create", 	prvCONTROL_CreateStatusLink);
 	CMPARSE_AddCommand("device slink send", 	prvCONTROL_StatusLinkSendMessage);
 
-	CMPARSE_AddCommand("device resolution set", prvCONTROL_SetResolution);
-	CMPARSE_AddCommand("device resolution get", prvCONTROL_GetResolution);
+	CMPARSE_AddCommand("device resolution set", 	prvCONTROL_SetResolution);
+	CMPARSE_AddCommand("device resolution get", 	prvCONTROL_GetResolution);
+	CMPARSE_AddCommand("device clkdiv set", 		prvCONTROL_SetClkdiv);
+	CMPARSE_AddCommand("device clkdiv get", 		prvCONTROL_GetClkdiv);
+	CMPARSE_AddCommand("device stime set", 			prvCONTROL_SetSampletime);
+	CMPARSE_AddCommand("device stime get", 			prvCONTROL_GetSampletime);
 
 	return CONTROL_STATUS_OK;
 }
