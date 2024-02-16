@@ -16,8 +16,11 @@
 static ADC_HandleTypeDef 				prvDRV_AIN_DEVICE_ADC_HANDLER;
 static DMA_HandleTypeDef 				prvDRV_AIN_DEVICE_DMA_HANDLER;
 static TIM_HandleTypeDef 				prvDRV_AIN_DEVICE_TIMER_HANDLER;
-static uint16_t							prvDRV_AIN_ADC_DATA_SAMPLES[DRV_AIN_ADC_BUFFER_MAX_SIZE] __attribute__((section(".ADCSamplesBuffer")));
+static uint16_t							prvDRV_AIN_ADC_DATA_SAMPLES[CONF_AIN_MAX_BUFFER_NO][DRV_AIN_ADC_BUFFER_MAX_SIZE]
+																							__attribute__((section(".ADCSamplesBuffer")));
 static drv_ain_adc_acquisition_status_t	prvDRV_AIN_ACQUISITION_STATUS;
+static ADC_ChannelConfTypeDef 			prvDRV_AIN_ADC_CHANNEL_1_CONFIG;
+static ADC_ChannelConfTypeDef 			prvDRV_AIN_ADC_CHANNEL_2_CONFIG;
 
 
 /**
@@ -190,7 +193,7 @@ static drv_ain_status				prvDRV_AIN_InitDeviceTimer()
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Instance = TIM1;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Prescaler = 10000-1;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.CounterMode = TIM_COUNTERMODE_UP;
-	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Period = 1;
+	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Period = 40000;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.RepetitionCounter = 0;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -206,10 +209,12 @@ static drv_ain_status				prvDRV_AIN_InitDeviceTimer()
 }
 static drv_ain_status				prvDRV_AIN_InitDeviceADC()
 {
+	memset(&prvDRV_AIN_ADC_CHANNEL_1_CONFIG, 0, sizeof(ADC_ChannelConfTypeDef));
+	memset(&prvDRV_AIN_ADC_CHANNEL_2_CONFIG, 0, sizeof(ADC_ChannelConfTypeDef));
 
-	ADC_ChannelConfTypeDef sConfig = {0};
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Instance = ADC3;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Resolution = ADC_RESOLUTION_16B;
+	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ScanConvMode = ADC_SCAN_ENABLE;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.LowPowerAutoWait = DISABLE;
@@ -226,20 +231,25 @@ static drv_ain_status				prvDRV_AIN_InitDeviceADC()
 
 	/** Configure Regular Channel
 	*/
-	sConfig.Channel = ADC_CHANNEL_0;
-	sConfig.Rank = ADC_REGULAR_RANK_1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
-	sConfig.SingleDiff = ADC_SINGLE_ENDED;
-	sConfig.OffsetNumber = ADC_OFFSET_NONE;
-	sConfig.Offset = 0;
-	sConfig.OffsetSignedSaturation = DISABLE;
-	if (HAL_ADC_ConfigChannel(&prvDRV_AIN_DEVICE_ADC_HANDLER, &sConfig) != HAL_OK) return DRV_AIN_STATUS_ERROR;
+	prvDRV_AIN_ADC_CHANNEL_1_CONFIG.Channel = ADC_CHANNEL_0;
+	prvDRV_AIN_ADC_CHANNEL_1_CONFIG.Rank = ADC_REGULAR_RANK_1;
+	prvDRV_AIN_ADC_CHANNEL_1_CONFIG.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+	prvDRV_AIN_ADC_CHANNEL_1_CONFIG.SingleDiff = ADC_SINGLE_ENDED;
+	prvDRV_AIN_ADC_CHANNEL_1_CONFIG.OffsetNumber = ADC_OFFSET_NONE;
+	prvDRV_AIN_ADC_CHANNEL_1_CONFIG.Offset = 0;
+	prvDRV_AIN_ADC_CHANNEL_1_CONFIG.OffsetSignedSaturation = DISABLE;
+	if (HAL_ADC_ConfigChannel(&prvDRV_AIN_DEVICE_ADC_HANDLER, &prvDRV_AIN_ADC_CHANNEL_1_CONFIG) != HAL_OK) return DRV_AIN_STATUS_ERROR;
 
 	/** Configure Regular Channel
 	*/
-	sConfig.Channel = ADC_CHANNEL_1;
-	sConfig.Rank = ADC_REGULAR_RANK_2;
-	if (HAL_ADC_ConfigChannel(&prvDRV_AIN_DEVICE_ADC_HANDLER, &sConfig) != HAL_OK) return DRV_AIN_STATUS_ERROR;
+	prvDRV_AIN_ADC_CHANNEL_2_CONFIG.Channel = ADC_CHANNEL_1;
+	prvDRV_AIN_ADC_CHANNEL_2_CONFIG.Rank = ADC_REGULAR_RANK_2;
+	prvDRV_AIN_ADC_CHANNEL_2_CONFIG.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+	prvDRV_AIN_ADC_CHANNEL_2_CONFIG.SingleDiff = ADC_SINGLE_ENDED;
+	prvDRV_AIN_ADC_CHANNEL_2_CONFIG.OffsetNumber = ADC_OFFSET_NONE;
+	prvDRV_AIN_ADC_CHANNEL_2_CONFIG.Offset = 0;
+	prvDRV_AIN_ADC_CHANNEL_2_CONFIG.OffsetSignedSaturation = DISABLE;
+	if (HAL_ADC_ConfigChannel(&prvDRV_AIN_DEVICE_ADC_HANDLER, &prvDRV_AIN_ADC_CHANNEL_2_CONFIG) != HAL_OK) return DRV_AIN_STATUS_ERROR;
 
 	if (HAL_ADC_RegisterCallback(&prvDRV_AIN_DEVICE_ADC_HANDLER, HAL_ADC_CONVERSION_HALF_CB_ID, prvDRV_AIN_DMAHalfComplitedCallback)!= HAL_OK)return DRV_AIN_STATUS_ERROR;
 	if (HAL_ADC_RegisterCallback(&prvDRV_AIN_DEVICE_ADC_HANDLER, HAL_ADC_CONVERSION_COMPLETE_CB_ID, prvDRV_AIN_DMAHalfComplitedCallback)!= HAL_OK)return DRV_AIN_STATUS_ERROR;
@@ -252,7 +262,6 @@ drv_ain_status 						DRV_AIN_Init(drv_ain_adc_t adc, drv_ain_adc_config_t* confi
 	drv_gpio_pin_init_conf_t userLedConf;
 	userLedConf.mode = DRV_GPIO_PIN_MODE_OUTPUT_PP;
 	userLedConf.pullState = DRV_GPIO_PIN_PULL_NOPULL;
-	memset((void*)prvDRV_AIN_ADC_DATA_SAMPLES, 0, 2*DRV_AIN_ADC_BUFFER_MAX_SIZE);
 	prvDRV_AIN_DMAInit();
 	prvDRV_AIN_InitDeviceADC();
 	prvDRV_AIN_InitDeviceTimer();
@@ -263,9 +272,10 @@ drv_ain_status 						DRV_AIN_Init(drv_ain_adc_t adc, drv_ain_adc_config_t* confi
 }
 drv_ain_status 						DRV_AIN_Start(drv_ain_adc_t adc)
 {
+	memset((void*)prvDRV_AIN_ADC_DATA_SAMPLES, 0, 2*CONF_AIN_MAX_BUFFER_NO*DRV_AIN_ADC_BUFFER_MAX_SIZE);
 	if(prvDRV_AIN_ACQUISITION_STATUS == DRV_AIN_ADC_ACQUISITION_STATUS_ACTIVE) return DRV_AIN_STATUS_ERROR;
 	if(HAL_TIM_Base_Start(&prvDRV_AIN_DEVICE_TIMER_HANDLER) != HAL_OK) return DRV_AIN_STATUS_ERROR;
-	if(HAL_ADC_Start_DMA(&prvDRV_AIN_DEVICE_ADC_HANDLER, (uint32_t*)prvDRV_AIN_ADC_DATA_SAMPLES, DRV_AIN_ADC_BUFFER_MAX_SIZE)) return DRV_AIN_STATUS_ERROR;
+	if(HAL_ADC_Start_DMA(&prvDRV_AIN_DEVICE_ADC_HANDLER, (uint32_t*)prvDRV_AIN_ADC_DATA_SAMPLES, CONF_AIN_MAX_BUFFER_NO*DRV_AIN_ADC_BUFFER_MAX_SIZE)) return DRV_AIN_STATUS_ERROR;
 	prvDRV_AIN_ACQUISITION_STATUS = DRV_AIN_ADC_ACQUISITION_STATUS_ACTIVE;
 	return DRV_AIN_STATUS_OK;
 }
@@ -279,17 +289,109 @@ drv_ain_status 						DRV_AIN_Stop(drv_ain_adc_t adc)
 }
 drv_ain_adc_acquisition_status_t 	DRV_AIN_GetAcquisitonStatus(drv_ain_adc_t adc)
 {
-
+	return prvDRV_AIN_ACQUISITION_STATUS;
+}
+drv_ain_status 						DRV_AIN_SetResolution(drv_ain_adc_t adc, drv_ain_adc_resolution_t res)
+{
+	if(prvDRV_AIN_ACQUISITION_STATUS == DRV_AIN_ADC_ACQUISITION_STATUS_ACTIVE) return DRV_AIN_STATUS_ERROR;
+	switch(res)
+	{
+	case DRV_AIN_ADC_RESOLUTION_10BIT:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Resolution = ADC_RESOLUTION_10B;
+		break;
+	case DRV_AIN_ADC_RESOLUTION_12BIT:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Resolution = ADC_RESOLUTION_12B;
+		break;
+	case DRV_AIN_ADC_RESOLUTION_14BIT:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Resolution = ADC_RESOLUTION_14B;
+		break;
+	case DRV_AIN_ADC_RESOLUTION_16BIT:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Resolution = ADC_RESOLUTION_16B;
+		break;
+	default:
+		return DRV_AIN_STATUS_ERROR;
+	}
+	if (HAL_ADC_Init(&prvDRV_AIN_DEVICE_ADC_HANDLER) != HAL_OK) return DRV_AIN_STATUS_ERROR;
 	return DRV_AIN_STATUS_OK;
 }
-drv_ain_status 						DRV_AIN_SetChannelResolution(drv_ain_adc_t adc, drv_ain_adc_resolution_t res)
+drv_ain_status 						DRV_AIN_SetClockDiv(drv_ain_adc_t adc, drv_ain_adc_clock_div_t div)
 {
-
+	if(prvDRV_AIN_ACQUISITION_STATUS == DRV_AIN_ADC_ACQUISITION_STATUS_ACTIVE) return DRV_AIN_STATUS_ERROR;
+	switch(div)
+	{
+	case DRV_AIN_ADC_CLOCK_DIV_1:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
+		break;
+	case DRV_AIN_ADC_CLOCK_DIV_2:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV2;
+		break;
+	case DRV_AIN_ADC_CLOCK_DIV_4:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV4;
+		break;
+	case DRV_AIN_ADC_CLOCK_DIV_8:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV8;
+		break;
+	case DRV_AIN_ADC_CLOCK_DIV_16:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV16;
+		break;
+	case DRV_AIN_ADC_CLOCK_DIV_32:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV32;
+		break;
+	case DRV_AIN_ADC_CLOCK_DIV_64:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV64;
+		break;
+	case DRV_AIN_ADC_CLOCK_DIV_128:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV128;
+		break;
+	case DRV_AIN_ADC_CLOCK_DIV_256:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV256;
+		break;
+	}
+	if (HAL_ADC_Init(&prvDRV_AIN_DEVICE_ADC_HANDLER) != HAL_OK) return DRV_AIN_STATUS_ERROR;
 	return DRV_AIN_STATUS_OK;
 }
 drv_ain_status 						DRV_AIN_SetChannelsSamplingTime(drv_ain_adc_t adc, drv_ain_adc_sample_time_t stime)
 {
-
+	if(prvDRV_AIN_ACQUISITION_STATUS == DRV_AIN_ADC_ACQUISITION_STATUS_ACTIVE) return DRV_AIN_STATUS_ERROR;
+	switch(stime)
+	{
+	case DRV_AIN_ADC_SAMPLE_TIME_1C5:
+		prvDRV_AIN_ADC_CHANNEL_1_CONFIG.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+		prvDRV_AIN_ADC_CHANNEL_2_CONFIG.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+		break;
+	case DRV_AIN_ADC_SAMPLE_TIME_2C5:
+		prvDRV_AIN_ADC_CHANNEL_1_CONFIG.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+		prvDRV_AIN_ADC_CHANNEL_2_CONFIG.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+		break;
+	case DRV_AIN_ADC_SAMPLE_TIME_8C5:
+		prvDRV_AIN_ADC_CHANNEL_1_CONFIG.SamplingTime = ADC_SAMPLETIME_8CYCLES_5;
+		prvDRV_AIN_ADC_CHANNEL_2_CONFIG.SamplingTime = ADC_SAMPLETIME_8CYCLES_5;
+		break;
+	case DRV_AIN_ADC_SAMPLE_TIME_16C5:
+		prvDRV_AIN_ADC_CHANNEL_1_CONFIG.SamplingTime = ADC_SAMPLETIME_16CYCLES_5;
+		prvDRV_AIN_ADC_CHANNEL_2_CONFIG.SamplingTime = ADC_SAMPLETIME_16CYCLES_5;
+		break;
+	case DRV_AIN_ADC_SAMPLE_TIME_32C5:
+		prvDRV_AIN_ADC_CHANNEL_1_CONFIG.SamplingTime = ADC_SAMPLETIME_32CYCLES_5;
+		prvDRV_AIN_ADC_CHANNEL_2_CONFIG.SamplingTime = ADC_SAMPLETIME_32CYCLES_5;
+		break;
+	case DRV_AIN_ADC_SAMPLE_TIME_64C5:
+		prvDRV_AIN_ADC_CHANNEL_1_CONFIG.SamplingTime = ADC_SAMPLETIME_64CYCLES_5;
+		prvDRV_AIN_ADC_CHANNEL_2_CONFIG.SamplingTime = ADC_SAMPLETIME_64CYCLES_5;
+		break;
+	case DRV_AIN_ADC_SAMPLE_TIME_387C5:
+		prvDRV_AIN_ADC_CHANNEL_1_CONFIG.SamplingTime = ADC_SAMPLETIME_387CYCLES_5;
+		prvDRV_AIN_ADC_CHANNEL_2_CONFIG.SamplingTime = ADC_SAMPLETIME_387CYCLES_5;
+		break;
+	case DRV_AIN_ADC_SAMPLE_TIME_810C5:
+		prvDRV_AIN_ADC_CHANNEL_1_CONFIG.SamplingTime = ADC_SAMPLETIME_810CYCLES_5;
+		prvDRV_AIN_ADC_CHANNEL_2_CONFIG.SamplingTime = ADC_SAMPLETIME_810CYCLES_5;
+		break;
+	default:
+		return DRV_AIN_STATUS_ERROR;
+	}
+	if (HAL_ADC_ConfigChannel(&prvDRV_AIN_DEVICE_ADC_HANDLER, &prvDRV_AIN_ADC_CHANNEL_1_CONFIG) != HAL_OK) return DRV_AIN_STATUS_ERROR;
+	if (HAL_ADC_ConfigChannel(&prvDRV_AIN_DEVICE_ADC_HANDLER, &prvDRV_AIN_ADC_CHANNEL_2_CONFIG) != HAL_OK) return DRV_AIN_STATUS_ERROR;
 	return DRV_AIN_STATUS_OK;
 }
 drv_ain_status 						DRV_AIN_SetSamplingResolutionTime(drv_ain_adc_t adc, uint32_t time)

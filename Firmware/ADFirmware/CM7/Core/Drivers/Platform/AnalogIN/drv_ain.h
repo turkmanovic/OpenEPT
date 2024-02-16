@@ -16,6 +16,7 @@
 
 
 #define DRV_AIN_ADC_BUFFER_MAX_SIZE	CONF_AIN_MAX_BUFFER_SIZE
+#define DRV_AIN_ADC_BUFFER_NO		CONF_AIN_MAX_BUFFER_NO
 
 typedef enum
 {
@@ -46,27 +47,38 @@ typedef enum
 
 typedef enum
 {
-	DRV_AIN_ADC_RESOLUTION_8BIT,
-	DRV_AIN_ADC_RESOLUTION_10BIT,
-	DRV_AIN_ADC_RESOLUTION_12BIT,
-	DRV_AIN_ADC_RESOLUTION_14BIT,
-	DRV_AIN_ADC_RESOLUTION_16BIT
+	DRV_AIN_ADC_RESOLUTION_8BIT 	= 8,
+	DRV_AIN_ADC_RESOLUTION_10BIT 	= 10,
+	DRV_AIN_ADC_RESOLUTION_12BIT 	= 12,
+	DRV_AIN_ADC_RESOLUTION_14BIT 	= 14,
+	DRV_AIN_ADC_RESOLUTION_16BIT 	= 16
 }drv_ain_adc_resolution_t;
 
 typedef enum
 {
-	DRV_AIN_ADC_SAMPLE_TIME_1C5,
-	DRV_AIN_ADC_SAMPLE_TIME_2C5,
-	DRV_AIN_ADC_SAMPLE_TIME_8C5,
-	DRV_AIN_ADC_SAMPLE_TIME_16C5,
-	DRV_AIN_ADC_SAMPLE_TIME_32C5,
-	DRV_AIN_ADC_SAMPLE_TIME_64C5,
-	DRV_AIN_ADC_SAMPLE_TIME_387C5,
-	DRV_AIN_ADC_SAMPLE_TIME_810C5,
+	DRV_AIN_ADC_SAMPLE_TIME_1C5 	= 1,
+	DRV_AIN_ADC_SAMPLE_TIME_2C5 	= 2,
+	DRV_AIN_ADC_SAMPLE_TIME_8C5 	= 8,
+	DRV_AIN_ADC_SAMPLE_TIME_16C5 	= 16,
+	DRV_AIN_ADC_SAMPLE_TIME_32C5 	= 32,
+	DRV_AIN_ADC_SAMPLE_TIME_64C5 	= 64,
+	DRV_AIN_ADC_SAMPLE_TIME_387C5 	= 387,
+	DRV_AIN_ADC_SAMPLE_TIME_810C5 	= 810
 }drv_ain_adc_sample_time_t;
+typedef enum
+{
+	DRV_AIN_ADC_CLOCK_DIV_1			=	1,
+	DRV_AIN_ADC_CLOCK_DIV_2			=	2,
+	DRV_AIN_ADC_CLOCK_DIV_4			=	4,
+	DRV_AIN_ADC_CLOCK_DIV_8			=	8,
+	DRV_AIN_ADC_CLOCK_DIV_16		=	16,
+	DRV_AIN_ADC_CLOCK_DIV_32		=	32,
+	DRV_AIN_ADC_CLOCK_DIV_64		=	64,
+	DRV_AIN_ADC_CLOCK_DIV_128		=	128,
+	DRV_AIN_ADC_CLOCK_DIV_256		=	256
+}drv_ain_adc_clock_div_t;
 
 typedef uint8_t	drv_ain_adc_channel_t;
-typedef uint8_t	drv_ain_adc_clock_div_t;
 
 typedef void (*drv_ain_adc_stream_callback)(uint32_t);
 
@@ -82,7 +94,8 @@ drv_ain_status 						DRV_AIN_Init(drv_ain_adc_t adc, drv_ain_adc_config_t* confi
 drv_ain_status 						DRV_AIN_Start(drv_ain_adc_t adc);
 drv_ain_status 						DRV_AIN_Stop(drv_ain_adc_t adc);
 drv_ain_adc_acquisition_status_t 	DRV_AIN_GetAcquisitonStatus(drv_ain_adc_t adc);
-drv_ain_status 						DRV_AIN_SetChannelResolution(drv_ain_adc_t adc, drv_ain_adc_resolution_t res);
+drv_ain_status 						DRV_AIN_SetResolution(drv_ain_adc_t adc, drv_ain_adc_resolution_t res);
+drv_ain_status 						DRV_AIN_SetClockDiv(drv_ain_adc_t adc, drv_ain_adc_clock_div_t div);
 drv_ain_status 						DRV_AIN_SetChannelsSamplingTime(drv_ain_adc_t adc, drv_ain_adc_sample_time_t stime);
 drv_ain_status 						DRV_AIN_SetSamplingResolutionTime(drv_ain_adc_t adc, uint32_t time);
 drv_ain_adc_resolution_t 			DRV_AIN_GetResolution(drv_ain_adc_t adc);
