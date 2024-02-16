@@ -4,14 +4,14 @@
 #include <QString>
 #include <QMetaType>
 
-struct advConfigurationData {
+typedef struct{
     QString resolution;
     QString clockDiv;
     QString sampleTime;
     QString averaginRatio;
     QString voltageOffset;
     QString currentOffset;
-};
+}advConfigurationData;
 
 Q_DECLARE_METATYPE(advConfigurationData)
 #endif // ADVCOFIGURATIONDATA_H

@@ -54,7 +54,7 @@ void Device::sendControlMsg(QString msg)
 {
     /* call controLink execute Commnad to communicate with FW -> */
     QString response;
-    if(!controlLink->executeCommand(msg, &response, 1000)) return;
+    if(!controlLink->executeCommand(msg, &response, 1000))return;
     /* emit Response to deviceContainer <- */
     emit sigNewResponseReceived(response);
 }
@@ -62,7 +62,7 @@ void Device::sendControlMsg(QString msg)
 bool Device::setResolution(device_adc_resolution_t resolution)
 {
     QString response;
-    QString command = "device resolution set -value=";
+    QString command = "device adc chresolution set -value=";
     switch(resolution)
     {
     case DEVICE_ADC_RESOLUTION_UKNOWN:
@@ -93,7 +93,7 @@ bool Device::setResolution(device_adc_resolution_t resolution)
 bool Device::setClockDiv(device_adc_clock_div_t clockDiv)
 {
     QString response;
-    QString command = "device clkdiv set -value=";
+    QString command = "device adc chclkdiv set -value=";
     switch(clockDiv)
     {
     case DEVICE_ADC_CLOCK_DIV_UKNOWN:
@@ -144,7 +144,7 @@ bool Device::setClockDiv(device_adc_clock_div_t clockDiv)
 bool Device::setSampleTime(device_adc_sampling_time_t sampleTime)
 {
     QString response;
-    QString command = "device stime set -value=";
+    QString command = "device adc chstime set -value=";
     switch(sampleTime)
     {
     case DEVICE_ADC_SAMPLING_TIME_UKNOWN:

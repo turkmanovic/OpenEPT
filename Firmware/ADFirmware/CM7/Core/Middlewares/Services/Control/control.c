@@ -599,12 +599,12 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	CMPARSE_AddCommand("device slink create", 	prvCONTROL_CreateStatusLink);
 	CMPARSE_AddCommand("device slink send", 	prvCONTROL_StatusLinkSendMessage);
 
-	CMPARSE_AddCommand("device resolution set", 	prvCONTROL_SetResolution);
-	CMPARSE_AddCommand("device resolution get", 	prvCONTROL_GetResolution);
-	CMPARSE_AddCommand("device clkdiv set", 		prvCONTROL_SetClkdiv);
-	CMPARSE_AddCommand("device clkdiv get", 		prvCONTROL_GetClkdiv);
-	CMPARSE_AddCommand("device stime set", 			prvCONTROL_SetSampletime);
-	CMPARSE_AddCommand("device stime get", 			prvCONTROL_GetSampletime);
+	CMPARSE_AddCommand("device adc chresolution set", 	prvCONTROL_SetResolution);
+	CMPARSE_AddCommand("device adc chresolution get", 	prvCONTROL_GetResolution);
+	CMPARSE_AddCommand("device adc chclkdiv set", 		prvCONTROL_SetClkdiv);
+	CMPARSE_AddCommand("device adc chclkdiv get", 		prvCONTROL_GetClkdiv);
+	CMPARSE_AddCommand("device adc chstime set", 		prvCONTROL_SetSampletime);
+	CMPARSE_AddCommand("device adc chstime get", 		prvCONTROL_GetSampletime);
 
 	return CONTROL_STATUS_OK;
 }
