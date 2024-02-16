@@ -92,9 +92,6 @@
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.symbolsrec.848625610" name="MCU Output Converter Motorola S-rec with symbols" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.symbolsrec"/>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1957845872.1419832766" name="lwip.c" rcbsApplicability="disable" resourcePath="Core/Middlewares/Services/Network/lwip.c" toolsToInvoke="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1363249477.699590618">
-						<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1363249477.699590618" name="MCU GCC Compiler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1363249477"/>
-					</fileInfo>
 					<sourceEntries>
 						<entry excluding="Core/Middlewares/Services/Network/lwip.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
@@ -206,15 +203,6 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
-	<storageModule moduleId="scannerConfiguration">
-		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.1068931773;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.1068931773.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.982745553;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.545617674">
-			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1957845872;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1957845872.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1363249477;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.818621821">
-			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-	</storageModule>
 	<storageModule moduleId="refreshScope" versionNumber="2">
 		<configuration configurationName="Debug">
 			<resource resourceType="PROJECT" workspacePath="/ADFirmware_CM7"/>
@@ -223,4 +211,5 @@
 			<resource resourceType="PROJECT" workspacePath="/ADFirmware_CM7"/>
 		</configuration>
 	</storageModule>
+	<storageModule moduleId="scannerConfiguration"/>
 </cproject>
