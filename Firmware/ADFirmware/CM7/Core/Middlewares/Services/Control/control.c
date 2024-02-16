@@ -78,6 +78,7 @@ static control_status_link_data_t	prvCONTROL_STATUS_LINK_DATA[CONTROL_STATUS_LIN
  * @defgroup CONTROL_PRIVATE_FUNCTIONS Control service private functions
  * @{
  */
+
 /**
  * @brief	Prepare response in case of error
  * @param	response: buffer where response message will be stored
@@ -131,6 +132,21 @@ static void inline prvCONTROL_PrepareOkResponse(char* response, uint16_t* respon
 	memcpy(tmpResponsePtr, "\r\n", 2);
 	tmpResponsePtr	+= 2;
 	*responseSize	+= 2;
+}
+/**
+ * @brief	Get device name from system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_UndefinedCommand(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	*responseSize = 0;
+
+	prvCONTROL_PrepareErrorResponse(response, responseSize);
+	return;
 }
 /**
  * @brief	Get device name from system service
@@ -594,10 +610,11 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	if(xSemaphoreTake(prvCONTROL_DATA.initSig, pdMS_TO_TICKS(initTimeout)) != pdTRUE) return CONTROL_STATUS_ERROR;
 
 	/* Add commands */
-	CMPARSE_AddCommand("device hello", 			prvCONTROL_GetDeviceName);
-	CMPARSE_AddCommand("device setname", 		prvCONTROL_SetDeviceName);
-	CMPARSE_AddCommand("device slink create", 	prvCONTROL_CreateStatusLink);
-	CMPARSE_AddCommand("device slink send", 	prvCONTROL_StatusLinkSendMessage);
+	CMPARSE_AddCommand("", 								prvCONTROL_UndefinedCommand);
+	CMPARSE_AddCommand("device hello", 					prvCONTROL_GetDeviceName);
+	CMPARSE_AddCommand("device setname", 				prvCONTROL_SetDeviceName);
+	CMPARSE_AddCommand("device slink create", 			prvCONTROL_CreateStatusLink);
+	CMPARSE_AddCommand("device slink send", 			prvCONTROL_StatusLinkSendMessage);
 
 	CMPARSE_AddCommand("device adc chresolution set", 	prvCONTROL_SetResolution);
 	CMPARSE_AddCommand("device adc chresolution get", 	prvCONTROL_GetResolution);

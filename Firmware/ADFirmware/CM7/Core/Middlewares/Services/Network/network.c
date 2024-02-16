@@ -142,8 +142,6 @@ static void prvNETWORK_Task()
 			/* Set the link callback function, this function is called on change of link status*/
 			netif_set_link_callback(&prvNETWORK_DATA.gnetif, prvNETWORK_LinkStatusUpdated);
 
-
-			lwiperf_start_tcp_server_default(NULL, NULL);
 			xSemaphoreGive(prvNETWORK_DATA.initSig);
 			prvNETWORK_DATA.state = NETWORK_STATE_SERVICE;
 			break;

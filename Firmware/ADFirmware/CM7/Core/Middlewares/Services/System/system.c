@@ -59,8 +59,6 @@ static void prvSYSTEM_Task()
 		switch(prvSYSTEM_DATA.state)
 		{
 		case SYSTEM_STATE_INIT:
-			/* init code for LWIP */
-
 			userLedConf.mode = DRV_GPIO_PIN_MODE_OUTPUT_PP;
 			userLedConf.pullState = DRV_GPIO_PIN_PULL_NOPULL;
 			uint32_t	state = 0x01;

@@ -11,6 +11,7 @@
 
 static cmparse_command_t 		prvCMPARSE_COMMANDS[CMPARSE_MAX_COMMANDS_NO];
 static uint16_t					prvCMPARSE_REGISTERED_COMMANDS_NO;
+static CommandCallBack			prvCMPARSE_DEFAULT_CALLBACK;
 
 static CommandCallBack prvCMPARSE_FindCallback(const char* command)
 {
@@ -78,6 +79,7 @@ cmparse_status_t	CMPARSE_Init()
 {
 	memset(prvCMPARSE_COMMANDS, 0, CMPARSE_MAX_COMMANDS_NO*sizeof(cmparse_command_t));
 	prvCMPARSE_REGISTERED_COMMANDS_NO = 0;
+	prvCMPARSE_DEFAULT_CALLBACK = 0;
 	return CMPARSE_STATUS_OK;
 }
 
@@ -85,6 +87,11 @@ cmparse_status_t	CMPARSE_AddCommand(const char* command, CommandCallBack callbac
 {
 	if(prvCMPARSE_REGISTERED_COMMANDS_NO == CMPARSE_MAX_COMMANDS_NO) return CMPARSE_STATUS_ERROR;
 	if(strlen(command) > CMPARSE_MAX_COMMAND_NAME_LENGTH) return CMPARSE_STATUS_ERROR;
+	if(strlen(command) == 0)
+	{
+		prvCMPARSE_DEFAULT_CALLBACK = callback;
+		return CMPARSE_STATUS_OK;
+	}
 
 	prvCMPARSE_COMMANDS[prvCMPARSE_REGISTERED_COMMANDS_NO].commandLength = strlen(command);
 	memcpy(prvCMPARSE_COMMANDS[prvCMPARSE_REGISTERED_COMMANDS_NO].command,
@@ -104,11 +111,17 @@ cmparse_status_t 	CMPARSE_Execute(const char* command, char* response, uint16_t*
 	uint16_t argumentsBufferSize = CMPARSE_MAX_ARG_BUFFER_SIZE;
 	CommandCallBack commandCallBack = prvCMPARSE_FindCallback(command);
 
-	if(commandCallBack == NULL) return CMPARSE_STATUS_ERROR;
+	if(commandCallBack == NULL){
+		if(prvCMPARSE_DEFAULT_CALLBACK == NULL) return CMPARSE_STATUS_ERROR;
+		prvCMPARSE_DEFAULT_CALLBACK(NULL, 0, response, responseSize);
+	}
+	else
+	{
+		if(prvCMPARSE_GetArguments(command, arguments, &argumentsBufferSize) != CMPARSE_STATUS_OK) return CMPARSE_STATUS_ERROR;
 
-	if(prvCMPARSE_GetArguments(command, arguments, &argumentsBufferSize) != CMPARSE_STATUS_OK) return CMPARSE_STATUS_ERROR;
+		commandCallBack(arguments, argumentsBufferSize, response, responseSize);
+	}
 
-	commandCallBack(arguments, argumentsBufferSize, response, responseSize);
 
 
 	return CMPARSE_STATUS_OK;
