@@ -592,6 +592,7 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	CMPARSE_AddCommand("device stime set", 			prvCONTROL_SetSampletime);
 	CMPARSE_AddCommand("device stime get", 			prvCONTROL_GetSampletime);
 
+
 	return CONTROL_STATUS_OK;
 }
 

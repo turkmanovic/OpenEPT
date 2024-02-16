@@ -120,6 +120,7 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     connect(advanceConfigurationWnd, SIGNAL(sigAdvResolutionChanged(int)), this, SLOT(onAdvResolutionChanged(int)));
     connect(advanceConfigurationWnd, SIGNAL(sigAdvClockDivChanged(int)), this, SLOT(onAdvClockDivChanged(int)));
     connect(advanceConfigurationWnd, SIGNAL(sigAdvSampleTimeChanged(int)), this, SLOT(onAdvSampleTimeChanged(int)));
+    connect(advanceConfigurationWnd, SIGNAL(sigAdvConfigurationChanged(QVariant)), this, SLOT(onAdvConfigurationChanged(QVariant)));
 }
 
 void    DeviceWnd::onNewControlMsgRcvd(QString text)
@@ -153,6 +154,14 @@ void DeviceWnd::onAdvSampleTimeChanged(int index)
     ui->sampleTimeComb->blockSignals(true);
     ui->sampleTimeComb->setCurrentIndex(index);
     ui->sampleTimeComb->blockSignals(false);
+}
+
+void DeviceWnd::onAdvConfigurationChanged(QVariant data)
+{
+    advConfigurationData adata = data.value<advConfigurationData>();
+    ui->resolutionComb  ->  setCurrentText(adata.resolution);
+    ui->sampleTimeComb  ->  setCurrentText(adata.sampleTime);
+    ui->clockDivComb    ->  setCurrentText(adata.clockDiv);
 }
 
 void DeviceWnd::onResolutionChanged(int index)

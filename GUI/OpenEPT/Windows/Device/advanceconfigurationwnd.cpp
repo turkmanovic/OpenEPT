@@ -234,6 +234,7 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
     connect(ui->adcResolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onAdvResolutionChanged(int)));
     connect(ui->adcClockDivComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onAdvClkDivChanged(int)));
     connect(ui->adcSampleTimeComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onAdvSampleTimeChanged(int)));
+    connect(ui->configurePusb, SIGNAL(clicked(bool)), this, SLOT(onAdvConfigurationPressed(void)));
 }
 
 
@@ -376,6 +377,20 @@ void    AdvanceConfigurationWnd::onAdvSampleTimeChanged(int index)
     palette.setColor(QPalette::Text, Qt::red); // Set text color to red
     ui->adcSampleTimeComb->setPalette(palette);
     //emit sigAdvSampleTimeChanged(index);
+}
+
+void    AdvanceConfigurationWnd::onAdvConfigurationPressed(void)
+{
+    advConfigurationData cdata;
+    QVariant data;
+    cdata.resolution = ui->adcResolutionComb->currentText();
+    cdata.sampleTime = ui->adcSampleTimeComb->currentText();
+    cdata.clockDiv = ui->adcClockDivComb->currentText();
+    cdata.averaginRatio = ui->averagingRatioComb->currentText();
+    cdata.voltageOffset = ui->voltageOffsetLine->text();
+    cdata.currentOffset = ui->currentOffsetLine->text();
+    data.setValue(cdata);
+    emit sigAdvConfigurationChanged(data);
 }
 
 void     AdvanceConfigurationWnd::assignResolutionList(const QStringList *items)

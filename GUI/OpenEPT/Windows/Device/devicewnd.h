@@ -5,6 +5,7 @@
 #include "Windows/Plot/plot.h"
 #include "Windows/Device/advanceconfigurationwnd.h"
 #include "Windows/Console/consolewnd.h"
+#include "Windows/Device/advcofigurationdata.h"
 
 typedef enum
 {
@@ -66,6 +67,7 @@ public slots:
     void            onAdvResolutionChanged(int index);
     void            onAdvClockDivChanged(int index);
     void            onAdvSampleTimeChanged(int index);
+    void            onAdvConfigurationChanged(QVariant data);
 
 private:
     Ui::DeviceWnd               *ui;
