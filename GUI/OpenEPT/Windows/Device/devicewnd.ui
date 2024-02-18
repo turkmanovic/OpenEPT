@@ -97,6 +97,67 @@
               </widget>
              </item>
              <item>
+              <layout class="QHBoxLayout" name="deviceVerlSamplingTimeHorl">
+               <item>
+                <widget class="QLabel" name="samplingTimeLabe">
+                 <property name="minimumSize">
+                  <size>
+                   <width>120</width>
+                   <height>10</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>120</width>
+                   <height>50</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Sampling Time</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="samplingTimeLine">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>80</width>
+                   <height>10</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>80</width>
+                   <height>50</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_2">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Minimum</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
               <layout class="QHBoxLayout" name="deviceVerlResolutionHorl">
                <item>
                 <widget class="QLabel" name="resolutionLabe">
@@ -113,7 +174,7 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>Resolution</string>
+                  <string>ADC Resolution</string>
                  </property>
                 </widget>
                </item>
@@ -174,7 +235,7 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>Sample time</string>
+                  <string>ADC Sample time</string>
                  </property>
                 </widget>
                </item>
@@ -235,7 +296,7 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>Clock div</string>
+                  <string>ADC Clock div</string>
                  </property>
                 </widget>
                </item>

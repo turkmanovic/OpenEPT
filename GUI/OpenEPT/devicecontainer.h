@@ -27,6 +27,10 @@ public slots:
     void    onResolutionChanged(int index);
     void    onClockDivChanged(int index);
     void    onSampleTimeChanged(int index);
+    void    onSamplingTimeChanged(QString time);
+    void    onAvrRatioChanged(int index);
+    void    onVOffsetChanged(QString off);
+    void    onCOffsetChanged(QString off);
 
 private:
     DeviceWnd*  deviceWnd;

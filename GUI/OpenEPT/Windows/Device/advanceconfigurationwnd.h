@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QLineEdit>
+#include <QComboBox>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include "Windows/Device/advcofigurationdata.h"
@@ -31,6 +32,10 @@ public:
     void     SetResolutionFromDevWnd(int index);
     void     SetClockDivFromDevWnd(int index);
     void     SetSampleTimeFromDevWnd(int index);
+    void     SetAvrRatioFromDevWnd();
+    void     SetVOffsetFromDevWnd();
+    void     SetCOffsetFromDevWnd();
+    void     SetSamplingTimeFromDevWnd(QString time);
     void     assignResolutionList(const QStringList *items);
     void     assignClockDivList(const QStringList *items);
     void     assignSampleTimeList(const QStringList *items);
@@ -40,12 +45,17 @@ signals:
     void    sigAdvResolutionChanged(int resolution);
     void    sigAdvClockDivChanged(int clkDiv);
     void    sigAdvSampleTimeChanged(int sampleTime);
+    void    sigAdvSamplingTimeChanged(QString time);
     void    sigAdvConfigurationChanged(QVariant data);
 public slots:
     void    onLoadProfileChanged(int loadIndex);
     void    onAdvResolutionChanged(int index);
     void    onAdvClkDivChanged(int index);
+    void    onAdvAvrRatioChanged(int index);
     void    onAdvSampleTimeChanged(int index);
+    void    onAdvSamplingTimeChanged(QString time);
+    void    onAdvVOffsetChanged(QString off);
+    void    onAdvCOffsetChanged(QString off);
     void    onAdvConfigurationPressed(void);
 private:
     Ui::AdvanceConfigurationWnd *ui;
@@ -56,7 +66,9 @@ private:
     void    RemoveProfileTypeStatic();
     void    SetProfileTypeRamp();
     void    RemoveProfileTypeRamp();
-
+    void    LabelChangedNotUpdated();
+    void    LabelChangedUpdated();
+    void    SetTextRed(QComboBox* cb, QLineEdit* le1, QLineEdit* le2, QLineEdit* le3);
 
     QHBoxLayout*        uknownProfileLayout;
     QWidget*            uknownProfileWidg;

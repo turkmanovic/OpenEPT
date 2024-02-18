@@ -11,7 +11,7 @@
 #include "cmparse_util.h"
 #include "stdint.h"
 
-#define CMPARSE_MAX_COMMANDS_NO		15
+#define CMPARSE_MAX_COMMANDS_NO		25
 #define CMPARSE_MAX_VALUE_SIZE		100
 #define CMPARSE_MAX_ARG_BUFFER_SIZE	100
 

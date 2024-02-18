@@ -8,7 +8,8 @@ typedef struct{
     QString resolution;
     QString clockDiv;
     QString sampleTime;
-    QString averaginRatio;
+    QString samplingTime;
+    int     averaginRatioIndex;
     QString voltageOffset;
     QString currentOffset;
 }advConfigurationData;

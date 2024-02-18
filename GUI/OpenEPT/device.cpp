@@ -183,6 +183,95 @@ bool Device::setSampleTime(device_adc_sampling_time_t sampleTime)
     return true;
 }
 
+bool Device::setAvrRatio(device_adc_averaging_t averagingRatio)
+{
+    QString response;
+    QString command = "device adc chavrratio set -value=";
+    switch(averagingRatio)
+    {
+    case DEVICE_ADC_AVERAGING_UKNOWN:
+        return false;
+        break;
+    case DEVICE_ADC_AVERAGING_DISABLED:
+        command += "1";
+        break;
+    case DEVICE_ADC_AVERAGING_2:
+        command += "2";
+        break;
+    case DEVICE_ADC_AVERAGING_4:
+        command += "4";
+        break;
+    case DEVICE_ADC_AVERAGING_8:
+        command += "8";
+        break;
+    case DEVICE_ADC_AVERAGING_16:
+        command += "16";
+        break;
+    case DEVICE_ADC_AVERAGING_32:
+        command += "32";
+        break;
+    case DEVICE_ADC_AVERAGING_64:
+        command += "64";
+        break;
+    case DEVICE_ADC_AVERAGING_128:
+        command += "128";
+        break;
+    case DEVICE_ADC_AVERAGING_256:
+        command += "256";
+        break;
+    case DEVICE_ADC_AVERAGING_512:
+        command += "512";
+        break;
+    case DEVICE_ADC_AVERAGING_1024:
+        command += "1024";
+        break;
+    }
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    if(response != "OK"){
+        return false;
+    }
+    adcAveraging = averagingRatio;
+    return true;
+}
+bool Device::setSamplingTime(QString time)
+{
+    QString response;
+    QString command = "device stime set -value=";
+    command += time;
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    if(response != "OK"){
+        return false;
+    }
+    samplingTime = time;
+    return true;
+}
+
+bool Device::setVOffset(QString off)
+{
+    QString response;
+    QString command = "device voffset set -value=";
+    command += off;
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    if(response != "OK"){
+        return false;
+    }
+    voltageOffset = off;
+    return true;
+}
+
+bool Device::setCOffset(QString off)
+{
+    QString response;
+    QString command = "device coffset set -value=";
+    command += off;
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    if(response != "OK"){
+        return false;
+    }
+    currentOffset = off;
+    return true;
+}
+
 void Device::onControlLinkConnected()
 {
     emit sigControlLinkConnected();

@@ -10,6 +10,7 @@
 #define ADVANCEWNDCONFIG_STREAM_SIZE        100
 #define ADVANCEWNDCONFIG_VOLTAGE_OFFSET     100
 #define ADVANCEWNDCONFIG_CURRENT_OFFSET     100
+#define ADVANCEWNDCONFIG_SAMPLING_TIME      100
 #define ADVANCEWNDCONFIG_DEVICE_PORT        50000
 
 AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
@@ -51,50 +52,7 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
     /* Set default Value for Current Offset Line*/
     ui->deviceNameLine->setText("ADevice 1");
 
-    /* Set default Value for ADC Resolution Comb
-    advResolutionOptions=(
-        QStringList()
-        <<""
-        <<"16 Bit"
-        <<"14 Bit"
-        <<"12 Bit"
-        <<"10 Bit"
-        );
-    ui->adcResolutionComb->addItems(advResolutionOptions);*/
-
-    /* Set default Value for ADC Clock Div Comb
-    advClockDivOptions=(
-        QStringList()
-        <<""
-        <<"1"
-        <<"2"
-        <<"4"
-        <<"6"
-        <<"8"
-        <<"10"
-        <<"12"
-        <<"16"
-        <<"32"
-        <<"64"
-        <<"128"
-        );
-    ui->adcClockDivComb->addItems(advClockDivOptions);
-*/
-    /* Set default Value for ADC Sample Time Comb
-    advSampleTimeOptions=(
-        QStringList()
-        <<""
-        <<"1C5"
-        <<"2C5"
-        <<"8C5"
-        <<"16C5"
-        <<"32C5"
-        <<"64C5"
-        <<"387C5"
-        <<"810C5"
-        );
-    ui->adcSampleTimeComb->addItems(advSampleTimeOptions);
-*/
+    ui->samplingTimeLine->setText(QString::number(ADVANCEWNDCONFIG_SAMPLING_TIME));
     /* Set default Value for Averaging Ratio Comb*/
     QStringList averagingRatioOptions=(
         QStringList()
@@ -112,6 +70,7 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
         <<"1024"
         );
     ui->averagingRatioComb->addItems(averagingRatioOptions);
+    ui->averagingRatioComb->setCurrentIndex(1);
 
     /* Uknown profile layout */
     QLabel*  uknownLabel = new QLabel();
@@ -231,9 +190,17 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
 
     SetProfileTypeUknown();
     activeLoadProfileType = LOAD_PROFILE_TYPE_UNKNOW;
+
+    ui->optionsLabe->setText("Plase update configuration");
+
+    SetTextRed(ui->averagingRatioComb, ui->voltageOffsetLine, ui->currentOffsetLine, ui->samplingTimeLine);
     connect(ui->adcResolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onAdvResolutionChanged(int)));
     connect(ui->adcClockDivComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onAdvClkDivChanged(int)));
     connect(ui->adcSampleTimeComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onAdvSampleTimeChanged(int)));
+    connect(ui->averagingRatioComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onAdvAvrRatioChanged(int)));
+    connect(ui->samplingTimeLine, SIGNAL(textEdited(QString)), this, SLOT(onAdvSamplingTimeChanged(QString)));
+    connect(ui->voltageOffsetLine, SIGNAL(textEdited(QString)), this, SLOT(onAdvVOffsetChanged(QString)));
+    connect(ui->currentOffsetLine, SIGNAL(textEdited(QString)), this, SLOT(onAdvCOffsetChanged(QString)));
     connect(ui->configurePusb, SIGNAL(clicked(bool)), this, SLOT(onAdvConfigurationPressed(void)));
 }
 
@@ -328,17 +295,37 @@ AdvanceConfigurationWnd::~AdvanceConfigurationWnd()
 void    AdvanceConfigurationWnd::SetResolutionFromDevWnd(int index)
 {
     QPalette palette = ui->adcResolutionComb->palette();
-    palette.setColor(QPalette::Text, Qt::black); // Set text color to red
+    palette.setColor(QPalette::Text, Qt::black); // Set text color to black
     ui->adcResolutionComb->setPalette(palette);
     ui->adcResolutionComb->blockSignals(true);
     ui->adcResolutionComb->setCurrentIndex(index);
     ui->adcResolutionComb->blockSignals(false);
 }
 
+void    AdvanceConfigurationWnd::SetAvrRatioFromDevWnd()
+{
+    QPalette palette = ui->averagingRatioComb->palette();
+    palette.setColor(QPalette::Text, Qt::black); // Set text color to black
+    ui->averagingRatioComb->setPalette(palette);
+}
+
+void    AdvanceConfigurationWnd::SetVOffsetFromDevWnd()
+{
+    QPalette palette = ui->voltageOffsetLine->palette();
+    palette.setColor(QPalette::Text, Qt::black); // Set text color to black
+    ui->voltageOffsetLine->setPalette(palette);
+}
+
+void    AdvanceConfigurationWnd::SetCOffsetFromDevWnd()
+{
+    QPalette palette = ui->currentOffsetLine->palette();
+    palette.setColor(QPalette::Text, Qt::black); // Set text color to black
+    ui->currentOffsetLine->setPalette(palette);
+}
 void    AdvanceConfigurationWnd::SetClockDivFromDevWnd(int index)
 {
     QPalette palette = ui->adcClockDivComb->palette();
-    palette.setColor(QPalette::Text, Qt::black); // Set text color to red
+    palette.setColor(QPalette::Text, Qt::black); // Set text color to black
     ui->adcClockDivComb->setPalette(palette);
     ui->adcClockDivComb->blockSignals(true);
     ui->adcClockDivComb->setCurrentIndex(index);
@@ -348,18 +335,29 @@ void    AdvanceConfigurationWnd::SetClockDivFromDevWnd(int index)
 void    AdvanceConfigurationWnd::SetSampleTimeFromDevWnd(int index)
 {
     QPalette palette = ui->adcSampleTimeComb->palette();
-    palette.setColor(QPalette::Text, Qt::black); // Set text color to red
+    palette.setColor(QPalette::Text, Qt::black); // Set text color to black
     ui->adcSampleTimeComb->setPalette(palette);
     ui->adcSampleTimeComb->blockSignals(true);
     ui->adcSampleTimeComb->setCurrentIndex(index);
     ui->adcSampleTimeComb->blockSignals(false);
 }
 
+void    AdvanceConfigurationWnd::SetSamplingTimeFromDevWnd(QString time)
+{
+    QPalette palette = ui->samplingTimeLine->palette();
+    palette.setColor(QPalette::Text, Qt::black); // Set text color to black
+    ui->samplingTimeLine->setPalette(palette);
+    ui->samplingTimeLine->blockSignals(true);
+    ui->samplingTimeLine->setText(time);
+    ui->samplingTimeLine->blockSignals(false);
+}
 void    AdvanceConfigurationWnd::onAdvResolutionChanged(int index)
 {
     QPalette palette = ui->adcResolutionComb->palette();
     palette.setColor(QPalette::Text, Qt::red); // Set text color to red
     ui->adcResolutionComb->setPalette(palette);
+    LabelChangedNotUpdated();
+
     //emit sigAdvResolutionChanged(index);
 }
 
@@ -368,17 +366,54 @@ void    AdvanceConfigurationWnd::onAdvClkDivChanged(int index)
     QPalette palette = ui->adcClockDivComb->palette();
     palette.setColor(QPalette::Text, Qt::red); // Set text color to red
     ui->adcClockDivComb->setPalette(palette);
+    LabelChangedNotUpdated();
     //emit sigAdvClockDivChanged(index);
 }
 
+void    AdvanceConfigurationWnd::onAdvAvrRatioChanged(int index)
+{
+    QPalette palette = ui->averagingRatioComb->palette();
+    palette.setColor(QPalette::Text, Qt::red); // Set text color to red
+    ui->averagingRatioComb->setPalette(palette);
+    LabelChangedNotUpdated();
+    //emit sigAdvClockDivChanged(index);
+}
 void    AdvanceConfigurationWnd::onAdvSampleTimeChanged(int index)
 {
     QPalette palette = ui->adcSampleTimeComb->palette();
     palette.setColor(QPalette::Text, Qt::red); // Set text color to red
     ui->adcSampleTimeComb->setPalette(palette);
+    LabelChangedNotUpdated();
     //emit sigAdvSampleTimeChanged(index);
 }
 
+void    AdvanceConfigurationWnd::onAdvSamplingTimeChanged(QString time)
+{
+    QPalette palette = ui->samplingTimeLine->palette();
+    palette.setColor(QPalette::Text, Qt::red); // Set text color to red
+    ui->samplingTimeLine->setPalette(palette);
+    LabelChangedNotUpdated();
+    //QString time = ui->samplingTimeLine->text();
+    sigAdvSamplingTimeChanged(time);
+}
+
+void    AdvanceConfigurationWnd::onAdvVOffsetChanged(QString off)
+{
+    QPalette palette = ui->voltageOffsetLine->palette();
+    palette.setColor(QPalette::Text, Qt::red); // Set text color to red
+    ui->voltageOffsetLine->setPalette(palette);
+    LabelChangedNotUpdated();
+    //QString time = ui->samplingTimeLine->text();
+}
+
+void    AdvanceConfigurationWnd::onAdvCOffsetChanged(QString off)
+{
+    QPalette palette = ui->currentOffsetLine->palette();
+    palette.setColor(QPalette::Text, Qt::red); // Set text color to red
+    ui->currentOffsetLine->setPalette(palette);
+    LabelChangedNotUpdated();
+    //QString time = ui->samplingTimeLine->text();
+}
 void    AdvanceConfigurationWnd::onAdvConfigurationPressed(void)
 {
     advConfigurationData cdata;
@@ -386,24 +421,54 @@ void    AdvanceConfigurationWnd::onAdvConfigurationPressed(void)
     cdata.resolution = ui->adcResolutionComb->currentText();
     cdata.sampleTime = ui->adcSampleTimeComb->currentText();
     cdata.clockDiv = ui->adcClockDivComb->currentText();
-    cdata.averaginRatio = ui->averagingRatioComb->currentText();
+    cdata.averaginRatioIndex = ui->averagingRatioComb->currentIndex();
     cdata.voltageOffset = ui->voltageOffsetLine->text();
     cdata.currentOffset = ui->currentOffsetLine->text();
+    cdata.samplingTime = ui->samplingTimeLine->text();
     data.setValue(cdata);
+    LabelChangedUpdated();
     emit sigAdvConfigurationChanged(data);
 }
 
 void     AdvanceConfigurationWnd::assignResolutionList(const QStringList *items)
 {
     ui->adcResolutionComb->addItems(*items);
+    ui->adcResolutionComb->setCurrentIndex(1);
 }
 
 void     AdvanceConfigurationWnd::assignClockDivList(const QStringList *items)
 {
     ui->adcClockDivComb->addItems(*items);
+    ui->adcClockDivComb->setCurrentIndex(1);
 }
 
 void     AdvanceConfigurationWnd::assignSampleTimeList(const QStringList *items)
 {
     ui->adcSampleTimeComb->addItems(*items);
+    ui->adcSampleTimeComb->setCurrentIndex(1);
+}
+
+void    AdvanceConfigurationWnd::LabelChangedNotUpdated()
+{
+    ui->optionsLabe->setText("Configuration changed but not updated");
+    QPalette palette = ui->optionsLabe->palette();
+    palette.setColor(QPalette::Text, Qt::red); // Set text color to red
+    ui->optionsLabe->setPalette(palette);
+}
+
+void    AdvanceConfigurationWnd::LabelChangedUpdated()
+{
+    QPalette palette = ui->optionsLabe->palette();
+    palette.setColor(QPalette::Text, Qt::black); // Set text color to red
+    ui->optionsLabe->setPalette(palette);
+    ui->optionsLabe->setText("Configuration updated");
+}
+void    AdvanceConfigurationWnd::SetTextRed(QComboBox* cb, QLineEdit* le1, QLineEdit* le2, QLineEdit* le3)
+{
+    QPalette palette = cb->palette();
+    palette.setColor(QPalette::Text, Qt::red); // Set text color to red
+    cb->setPalette(palette);
+    le1->setPalette(palette);
+    le2->setPalette(palette);
+    le3->setPalette(palette);
 }
