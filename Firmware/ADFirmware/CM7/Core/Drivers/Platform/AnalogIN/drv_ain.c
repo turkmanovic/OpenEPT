@@ -54,7 +54,11 @@ void TIM1_CC_IRQHandler(void)
 void BDMA_Channel0_IRQHandler(void)
 {
 	HAL_DMA_IRQHandler(&prvDRV_AIN_DEVICE_DMA_HANDLER);
-	DRV_GPIO_Pin_ToogleFromISR(DRV_GPIO_PORT_E, 15);
+	//DRV_GPIO_Pin_ToogleFromISR(DRV_GPIO_PORT_E, 15);
+	HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_15);
+
+	/*Enable for debugging purposes*/
+	//ITM_SendChar('a');
 }
 
 /**
@@ -100,13 +104,13 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
 
 	    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_ADC;
 	    PeriphClkInitStruct.PLL2.PLL2M = 4;
-	    PeriphClkInitStruct.PLL2.PLL2N = 9;
+	    PeriphClkInitStruct.PLL2.PLL2N = 10;
 	    PeriphClkInitStruct.PLL2.PLL2P = 2;
 	    PeriphClkInitStruct.PLL2.PLL2Q = 2;
 	    PeriphClkInitStruct.PLL2.PLL2R = 2;
 	    PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_3;
 	    PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOMEDIUM;
-	    PeriphClkInitStruct.PLL2.PLL2FRACN = 3072;
+	    PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
 	    PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_PLL2;
 	    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
 	    {
@@ -191,9 +195,9 @@ static drv_ain_status				prvDRV_AIN_InitDeviceTimer()
 	TIM_MasterConfigTypeDef sMasterConfig = {0};
 
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Instance = TIM1;
-	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Prescaler = 10000-1;
+	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Prescaler = 1;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.CounterMode = TIM_COUNTERMODE_UP;
-	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Period = 40000;
+	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Period = 1;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.RepetitionCounter = 0;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -259,15 +263,19 @@ static drv_ain_status				prvDRV_AIN_InitDeviceADC()
 
 drv_ain_status 						DRV_AIN_Init(drv_ain_adc_t adc, drv_ain_adc_config_t* configuration)
 {
-	drv_gpio_pin_init_conf_t userLedConf;
-	userLedConf.mode = DRV_GPIO_PIN_MODE_OUTPUT_PP;
-	userLedConf.pullState = DRV_GPIO_PIN_PULL_NOPULL;
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	GPIO_InitStruct.Pin  = GPIO_PIN_15;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+
+    __HAL_RCC_GPIOE_CLK_ENABLE();
+    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_SET);
 	prvDRV_AIN_DMAInit();
 	prvDRV_AIN_InitDeviceADC();
 	prvDRV_AIN_InitDeviceTimer();
-	DRV_GPIO_Port_Init(DRV_GPIO_PORT_E);
-	DRV_GPIO_Pin_Init(DRV_GPIO_PORT_E, 15, &userLedConf);
 	prvDRV_AIN_ACQUISITION_STATUS = DRV_AIN_ADC_ACQUISITION_STATUS_UKNOWN;
+	DRV_AIN_Start(DRV_AIN_ADC_3);
 	return DRV_AIN_STATUS_OK;
 }
 drv_ain_status 						DRV_AIN_Start(drv_ain_adc_t adc)
@@ -409,7 +417,11 @@ drv_ain_adc_sample_time_t 			DRV_AIN_GetSamplingTime(drv_ain_adc_t adc)
 
 	return DRV_AIN_STATUS_OK;
 }
-
+drv_ain_status 						DRV_AIN_GetADCClk(drv_ain_adc_t adc, uint32_t *clk)
+{
+	*clk = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_ADC);
+	return DRV_AIN_STATUS_OK;
+}
 drv_ain_status 						DRV_AIN_Stream_Enable(drv_ain_adc_t adc, uint32_t sampleSize)
 {
 

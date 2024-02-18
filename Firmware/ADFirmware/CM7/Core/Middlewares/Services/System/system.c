@@ -41,7 +41,7 @@ typedef  struct
 static system_data_t prvSYSTEM_DATA;
 
 
-static TaskHandle_t prvSYSTEM_TASK_HANDLE;
+static TaskHandle_t  prvSYSTEM_TASK_HANDLE;
 
 
 
@@ -95,17 +95,12 @@ static void prvSYSTEM_Task()
 				break;
 			}
 			LOGGING_Write("System", LOGGING_MSG_TYPE_INFO, "Control service successfully initialized\r\n");
-
-
-
 			xSemaphoreGive(prvSYSTEM_DATA.initSig);
 			prvSYSTEM_DATA.state = SYSTEM_STATE_SERVICE;
 			break;
 		case SYSTEM_STATE_SERVICE:
+			/*Main application logic goes here*/
 			vTaskDelay(pdMS_TO_TICKS(portMAX_DELAY));
-			state ^= 0x01;
-			DRV_GPIO_Pin_SetState(SYSTEM_LINK_STATUS_DIODE_PORT, SYSTEM_LINK_STATUS_DIODE_PIN, state);
-			osDelay(1000);
 			break;
 		case SYSTEM_STATE_ERROR:
 			SYSTEM_ReportError(SYSTEM_ERROR_LEVEL_LOW);
