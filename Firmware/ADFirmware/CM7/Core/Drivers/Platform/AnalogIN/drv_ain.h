@@ -47,6 +47,7 @@ typedef enum
 
 typedef enum
 {
+	DRV_AIN_ADC_RESOLUTION_UKNOWN 	= 0,
 	DRV_AIN_ADC_RESOLUTION_8BIT 	= 8,
 	DRV_AIN_ADC_RESOLUTION_10BIT 	= 10,
 	DRV_AIN_ADC_RESOLUTION_12BIT 	= 12,
@@ -56,6 +57,7 @@ typedef enum
 
 typedef enum
 {
+	DRV_AIN_ADC_SAMPLE_TIME_UKNOWN	= 0,
 	DRV_AIN_ADC_SAMPLE_TIME_1C5 	= 1,
 	DRV_AIN_ADC_SAMPLE_TIME_2C5 	= 2,
 	DRV_AIN_ADC_SAMPLE_TIME_8C5 	= 8,
@@ -67,6 +69,7 @@ typedef enum
 }drv_ain_adc_sample_time_t;
 typedef enum
 {
+	DRV_AIN_ADC_CLOCK_DIV_UKNOWN	=	0,
 	DRV_AIN_ADC_CLOCK_DIV_1			=	1,
 	DRV_AIN_ADC_CLOCK_DIV_2			=	2,
 	DRV_AIN_ADC_CLOCK_DIV_4			=	4,
@@ -82,13 +85,19 @@ typedef uint8_t	drv_ain_adc_channel_t;
 
 typedef void (*drv_ain_adc_stream_callback)(uint32_t);
 
-
 typedef struct
 {
-	drv_ain_adc_channel_t 		channelNo;
-	drv_ain_adc_clock_div_t 	clockDiv;
-	drv_ain_adc_resolution_t 	resolution;
+	drv_ain_adc_channel_t			channel;
+	drv_ain_adc_sample_time_t		sampleTime;
+}drv_ain_adc_channel_config_t;
+typedef struct
+{
+	drv_ain_adc_clock_div_t 		clockDiv;
+	drv_ain_adc_resolution_t 		resolution;
+	drv_ain_adc_channel_config_t 	ch1;
+	drv_ain_adc_channel_config_t 	ch2;
 }drv_ain_adc_config_t;
+
 
 drv_ain_status 						DRV_AIN_Init(drv_ain_adc_t adc, drv_ain_adc_config_t* configuration);
 drv_ain_status 						DRV_AIN_Start(drv_ain_adc_t adc);
@@ -99,7 +108,7 @@ drv_ain_status 						DRV_AIN_SetClockDiv(drv_ain_adc_t adc, drv_ain_adc_clock_di
 drv_ain_status 						DRV_AIN_SetChannelsSamplingTime(drv_ain_adc_t adc, drv_ain_adc_sample_time_t stime);
 drv_ain_status 						DRV_AIN_SetSamplingResolutionTime(drv_ain_adc_t adc, uint32_t time);
 drv_ain_adc_resolution_t 			DRV_AIN_GetResolution(drv_ain_adc_t adc);
-drv_ain_adc_sample_time_t 			DRV_AIN_GetSamplingTime(drv_ain_adc_t adc);
+drv_ain_adc_sample_time_t 			DRV_AIN_GetSamplingTime(drv_ain_adc_t adc, drv_ain_adc_channel_t channel);
 drv_ain_status 						DRV_AIN_GetADCClk(drv_ain_adc_t adc, uint32_t *clk);
 
 drv_ain_status 						DRV_AIN_Stream_Enable(drv_ain_adc_t adc, uint32_t sampleSize); // Enable DMA
