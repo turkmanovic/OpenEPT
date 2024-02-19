@@ -67,6 +67,7 @@
 									<listOptionValue builtIn="false" value="&quot;${PROJECT_PATH}/CM7/Core/Drivers/Platform/UART&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${PROJECT_PATH}/CM7/Core/Middlewares/Services/Logging/&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${PROJECT_PATH}/CM7/Core/Middlewares/Services/Control/&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${PROJECT_PATH}/CM7/Core/Middlewares/Services/SamplesStream/&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.818621821" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -92,9 +93,6 @@
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.symbolsrec.848625610" name="MCU Output Converter Motorola S-rec with symbols" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.objcopy.symbolsrec"/>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1957845872.1419832766" name="lwip.c" rcbsApplicability="disable" resourcePath="Core/Middlewares/Services/Network/lwip.c" toolsToInvoke="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1363249477.699590618">
-						<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1363249477.699590618" name="MCU GCC Compiler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1363249477"/>
-					</fileInfo>
 					<sourceEntries>
 						<entry excluding="Core/Middlewares/Services/Network/lwip.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>

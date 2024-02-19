@@ -28,6 +28,7 @@
 #include "logging.h"
 #include "network.h"
 #include "control.h"
+#include "sstream.h"
 
 
 
@@ -53,6 +54,7 @@ static void	prvBUTTON_Callback(drv_gpio_pin pin)
 static void prvSYSTEM_Task()
 {
 	drv_gpio_pin_init_conf_t userLedConf;
+	sstream_connection_info		connectionInfo;
 
 	for(;;)
 	{
@@ -95,6 +97,22 @@ static void prvSYSTEM_Task()
 				break;
 			}
 			LOGGING_Write("System", LOGGING_MSG_TYPE_INFO, "Control service successfully initialized\r\n");
+
+			if(SSTREAM_Init() != SSTREAM_STATUS_OK)
+			{
+				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
+				break;
+			}
+			connectionInfo.serverIp[0] = 192;
+			connectionInfo.serverIp[1] = 168;
+			connectionInfo.serverIp[2] = 1;
+			connectionInfo.serverIp[3] = 112;
+			connectionInfo.serverport	=	500;
+			if(SSTREAM_CreateChannel(&connectionInfo, 2000) != SSTREAM_STATUS_OK)
+			{
+				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
+				break;
+			}
 			xSemaphoreGive(prvSYSTEM_DATA.initSig);
 			prvSYSTEM_DATA.state = SYSTEM_STATE_SERVICE;
 			break;

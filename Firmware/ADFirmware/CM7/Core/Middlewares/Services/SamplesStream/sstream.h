@@ -14,13 +14,20 @@
 #include <stdint.h>
 #include "globalConfig.h"
 
-#define 	SSTREAM_TASK_NAME		CONF_SSTREAM_TASK_NAME
-#define 	SSTREAM_TASK_PRIO		CONF_SSTREAM_TASK_PRIO
-#define 	SSTREAM_TASK_STACK_SIZE	CONF_SSTREAM_TASK_STACK_SIZE
-#define 	SSTREAM_UDP_STREAM_PORT	CONF_SSTREAM_UDP_PORT
+#define 	SSTREAM_TASK_NAME			CONF_SSTREAM_TASK_NAME
+#define 	SSTREAM_TASK_PRIO			CONF_SSTREAM_TASK_PRIO
+#define 	SSTREAM_TASK_STACK_SIZE		CONF_SSTREAM_TASK_STACK_SIZE
+#define 	SSTREAM_CONNECTIONS_MAX_NO	CONF_SSTREAM_CONNECTIONS_MAX_NO
 
-
-#define  	SSTREAM_TASK_NEW_FRAME_RECEIVED		0x00000020
+/**
+ * @brief Samples stream service task state
+ */
+typedef enum
+{
+	SSTREAM_STATE_INIT,			/*!< Samples stream service initialization state */
+	SSTREAM_STATE_SERVICE,		/*!< Samples stream service is in service state */
+	SSTREAM_STATE_ERROR			/*!< Samples stream service is in error state */
+}sstream_state_t;
 
 typedef enum{
 	SSTREAM_STATUS_OK,
@@ -35,32 +42,40 @@ typedef enum{
 }sstream_adc_resolution_t;
 
 typedef enum{
-	SSTREAM_ADC_SAMPLING_SPEED_1C5,
-	SSTREAM_ADC_SAMPLING_SPEED_2C5,
-	SSTREAM_ADC_SAMPLING_SPEED_8C5,
-	SSTREAM_ADC_SAMPLING_SPEED_16C5,
-	SSTREAM_ADC_SAMPLING_SPEED_32C5,
-	SSTREAM_ADC_SAMPLING_SPEED_64C5,
-	SSTREAM_ADC_SAMPLING_SPEED_387C5,
-	SSTREAM_ADC_SAMPLING_SPEED_810C5
-}sstream_adc_sampling_speed_t;
+	SSTREAM_ADC_SAMPLING_TIME_1C5 = 1,
+	SSTREAM_ADC_SAMPLING_TIME_2C5 = 2,
+	SSTREAM_ADC_SAMPLING_TIME_8C5 = 8,
+	SSTREAM_ADC_SAMPLING_TIME_16C5 = 16,
+	SSTREAM_ADC_SAMPLING_TIME_32C5 = 32,
+	SSTREAM_ADC_SAMPLING_TIME_64C5 = 64,
+	SSTREAM_ADC_SAMPLING_TIME_387C5 = 387,
+	SSTREAM_ADC_SAMPLING_TIME_810C5 = 810
+}sstream_adc_sampling_time_t;
 
 typedef enum{
-	SSTREAM_STATE_STOP,
-	SSTREAM_STATE_START,
-	SSTREAM_STATE_STREAM
-}sstream_state_t;
+	SSTREAM_ACQUISITION_STATE_UNDEFINED = 0,
+	SSTREAM_ACQUISITION_STATE_STOP,
+	SSTREAM_ACQUISITION_STATE_START,
+	SSTREAM_ACQUISITION_STATE_STREAM
+}sstream_acquisition_state_t;
+
+typedef struct
+{
+	uint8_t		serverIp[4];
+	uint16_t	serverport;
+	uint32_t	id;
+}sstream_connection_info;
 
 
 
-sstream_status_t			SSTREAM_Init(void);
-sstream_status_t			SSTREAM_Start();
-sstream_status_t			SSTREAM_Stop();
-sstream_status_t			SSTREAM_SetResolution(sstream_adc_resolution_t resolution);
-sstream_adc_resolution_t	SSTREAM_GetReolsution();
-sstream_status_t			SSTREAM_SetSamplingSpeed(sstream_adc_sampling_speed_t samplingSpeed);
-sstream_state_t				SSTREAM_GetState();
-sstream_status_t			SSTREAM_WaitStart(uint32_t timeoutMs);
-sstream_status_t			SSTREAM_WaitStop(uint32_t timeoutMs);
+sstream_status_t				SSTREAM_Init(void);
+sstream_status_t				SSTREAM_CreateChannel(sstream_connection_info* connectionHandler, uint32_t timeout);
+sstream_status_t				SSTREAM_Start(sstream_connection_info* connectionHandler);
+sstream_status_t				SSTREAM_Stop(sstream_connection_info* connectionHandler);
+sstream_status_t				SSTREAM_SetResolution(sstream_connection_info* connectionHandler, sstream_adc_resolution_t resolution, uint32_t timeout);
+sstream_status_t				SSTREAM_SetChannelSamplingTime(sstream_connection_info* connectionHandler, uint32_t channel, sstream_adc_sampling_time_t stime, uint32_t timeout);
+sstream_adc_resolution_t		SSTREAM_GetResolution(sstream_connection_info* connectionHandler, uint32_t timeout);
+sstream_adc_sampling_time_t		SSTREAM_GetChannelSamplingSpeed(sstream_connection_info* connectionHandler, uint32_t channel, uint32_t timeout);
+sstream_status_t				SSTREAM_Calibrate(sstream_connection_info* connectionHandler);
 
 #endif /* CORE_MIDDLEWARES_SERVICES_SAMPLESSTREAM_SSTREAM_H_ */

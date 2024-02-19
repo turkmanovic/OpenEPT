@@ -30,7 +30,7 @@
 #define CONF_SSTREAM_TASK_NAME					"Sample stream"
 #define CONF_SSTREAM_TASK_PRIO					4
 #define CONF_SSTREAM_TASK_STACK_SIZE			1024
-#define CONF_SSTREAM_UDP_PORT					5100
+#define CONF_SSTREAM_CONNECTIONS_MAX_NO			2
 
 /**/
 #define CONF_SYSTEM_TASK_NAME					"System task"
