@@ -117,9 +117,12 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     connect(ui->resolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onResolutionChanged(int)));
     connect(ui->clockDivComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onClockDivChanged(int)));
     connect(ui->sampleTimeComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onSampleTimeChanged(int)));
+    connect(ui->samplingTimeLine, SIGNAL(returnPressed()), this, SLOT(onSamplingTimeChanged()));
+    connect(ui->samplingTimeLine, SIGNAL(textChanged(QString)), this, SLOT(onSamplingTimeTxtChanged(QString)));
     connect(advanceConfigurationWnd, SIGNAL(sigAdvResolutionChanged(int)), this, SLOT(onAdvResolutionChanged(int)));
     connect(advanceConfigurationWnd, SIGNAL(sigAdvClockDivChanged(int)), this, SLOT(onAdvClockDivChanged(int)));
     connect(advanceConfigurationWnd, SIGNAL(sigAdvSampleTimeChanged(int)), this, SLOT(onAdvSampleTimeChanged(int)));
+    //connect(advanceConfigurationWnd, SIGNAL(sigAdvSamplingTimeChanged(QString)), this, SLOT(onAdvSamplingTimeChanged(QString)));
     connect(advanceConfigurationWnd, SIGNAL(sigAdvConfigurationChanged(QVariant)), this, SLOT(onAdvConfigurationChanged(QVariant)));
 }
 
@@ -156,12 +159,42 @@ void DeviceWnd::onAdvSampleTimeChanged(int index)
     ui->sampleTimeComb->blockSignals(false);
 }
 
+void DeviceWnd::onAdvSamplingTimeChanged(QString time)
+{
+    ui->samplingTimeLine->blockSignals(true);
+    ui->samplingTimeLine->setText(time);
+    ui->samplingTimeLine->blockSignals(false);
+}
 void DeviceWnd::onAdvConfigurationChanged(QVariant data)
 {
     advConfigurationData adata = data.value<advConfigurationData>();
     ui->resolutionComb  ->  setCurrentText(adata.resolution);
     ui->sampleTimeComb  ->  setCurrentText(adata.sampleTime);
     ui->clockDivComb    ->  setCurrentText(adata.clockDiv);
+    samplingTextChanged = true;
+    ui->samplingTimeLine->  setText(adata.samplingTime);
+    DeviceWnd::onAvrRatioChanged(adata.averaginRatioIndex);
+    DeviceWnd::onVOffsetChanged(adata.voltageOffset);
+    DeviceWnd::onCOffsetChanged(adata.currentOffset);
+
+}
+
+void DeviceWnd::onVOffsetChanged(QString off)
+{
+    advanceConfigurationWnd->SetVOffsetFromDevWnd();
+    emit sigVOffsetChanged(off);
+}
+
+void DeviceWnd::onCOffsetChanged(QString off)
+{
+    advanceConfigurationWnd->SetCOffsetFromDevWnd();
+    emit sigCOffsetChanged(off);
+}
+
+void DeviceWnd::onAvrRatioChanged(int index)
+{
+    advanceConfigurationWnd->SetAvrRatioFromDevWnd();
+    emit sigAvrRatioChanged(index);
 }
 
 void DeviceWnd::onResolutionChanged(int index)
@@ -180,6 +213,27 @@ void DeviceWnd::onSampleTimeChanged(int index)
 {
     advanceConfigurationWnd->SetSampleTimeFromDevWnd(index);
     emit sigSampleTimeChanged(index);
+}
+
+void DeviceWnd::onSamplingTimeChanged()
+{
+    QString time = ui->samplingTimeLine->text();
+    advanceConfigurationWnd->SetSamplingTimeFromDevWnd(time);
+    emit sigSamplingTimeChanged(time);
+}
+
+void DeviceWnd::onSamplingTimeTxtChanged(QString time)
+{
+    if (samplingTextChanged != true)
+    {
+        samplingTextChanged = false;
+        return;
+    } else
+    {
+        advanceConfigurationWnd->SetSamplingTimeFromDevWnd(time);
+        samplingTextChanged = false;
+        emit sigSamplingTimeChanged(time);
+    }
 }
 
 void    DeviceWnd::onAdvanceConfigurationButtonPressed(bool pressed)

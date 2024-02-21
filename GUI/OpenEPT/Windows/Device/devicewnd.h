@@ -33,10 +33,13 @@ public:
 
 signals:
     void            sigWndClosed();
-    void            sigSamplingTimeChanged(QString samplingTime);
+    void            sigSamplingTimeChanged(QString time);
     void            sigResolutionChanged(int resolution);
     void            sigClockDivChanged(int clockDiv);
     void            sigSampleTimeChanged(int sampleTime);
+    void            sigAvrRatioChanged(int index);
+    void            sigVOffsetChanged(QString off);
+    void            sigCOffsetChanged(QString off);
     void            saveToFileEnabled(bool enableStatus);
     void            startAcquisition();
     void            pauseAcquisition();
@@ -64,9 +67,12 @@ public slots:
     void            onResolutionChanged(int index);
     void            onClockDivChanged(int index);
     void            onSampleTimeChanged(int index);
+    void            onSamplingTimeChanged();
+    void            onSamplingTimeTxtChanged(QString time);
     void            onAdvResolutionChanged(int index);
     void            onAdvClockDivChanged(int index);
     void            onAdvSampleTimeChanged(int index);
+    void            onAdvSamplingTimeChanged(QString time);
     void            onAdvConfigurationChanged(QVariant data);
 
 private:
@@ -83,9 +89,12 @@ private:
     QStringList*                resolutionOptions;
     QStringList*                clockDivOptions;
     QStringList                 sampleAveraginOptions;
+    QString                     samplingTime;
 
     /* File info */
     bool                        saveToFileFlag;
+
+    bool                        samplingTextChanged = false;
 
     /* */
     device_state_t              deviceState;
@@ -93,6 +102,9 @@ private:
     /* */
     void            setDeviceStateDisconnected();
     void            setDeviceStateConnected();
+    void            onAvrRatioChanged(int index);
+    void            onVOffsetChanged(QString off);
+    void            onCOffsetChanged(QString off);
 };
 
 #endif // DEVICEWND_H

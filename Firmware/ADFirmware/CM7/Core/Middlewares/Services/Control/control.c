@@ -297,6 +297,117 @@ static void prvCONTROL_GetSampletime(const char* arguments, uint16_t argumentsLe
 	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device sample time successfully get\r\n");
 }
 
+/**
+ * @brief	Set device sampling time by utilizing system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_SetSamplingtime(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device sampling time successfully set\r\n");
+}
+
+/**
+ * @brief	Get device sampling time by utilizing system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_GetSamplingtime(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device sampling time successfully get\r\n");
+}
+
+/**
+ * @brief	Set device averaging ratio by utilizing system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_SetAveragingratio(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device averaging ratio successfully set\r\n");
+}
+
+/**
+ * @brief	Get device averaging ratio by utilizing system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_GetAveragingratio(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device averaging ratio successfully get\r\n");
+}
+
+/**
+ * @brief	Set device voltage offset by utilizing system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_SetVoltageoffset(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device voltage offset successfully set\r\n");
+}
+
+/**
+ * @brief	Get device voltage offset by utilizing system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_GetVoltageoffset(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device voltage offset successfully get\r\n");
+}
+
+/**
+ * @brief	Set device current offset by utilizing system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_SetCurrentoffset(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device current offset successfully set\r\n");
+}
+
+/**
+ * @brief	Get device current offset by utilizing system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_GetCurrentoffset(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device current offset successfully get\r\n");
+}
 //TODO: This is just for testing purposes. It should never be used as it is now. Remove!
 control_status_link_instance_t statusLinkInstance;
 /**
@@ -622,6 +733,14 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	CMPARSE_AddCommand("device adc chclkdiv get", 		prvCONTROL_GetClkdiv);
 	CMPARSE_AddCommand("device adc chstime set", 		prvCONTROL_SetSampletime);
 	CMPARSE_AddCommand("device adc chstime get", 		prvCONTROL_GetSampletime);
+	CMPARSE_AddCommand("device adc chavrratio set", 		prvCONTROL_SetAveragingratio);
+	CMPARSE_AddCommand("device adc chavrratio get", 		prvCONTROL_GetAveragingratio);
+	CMPARSE_AddCommand("device stime set", 		prvCONTROL_SetSamplingtime);
+	CMPARSE_AddCommand("device stime get", 		prvCONTROL_GetSamplingtime);
+	CMPARSE_AddCommand("device voffset set", 		prvCONTROL_SetVoltageoffset);
+	CMPARSE_AddCommand("device voffset get", 		prvCONTROL_GetVoltageoffset);
+	CMPARSE_AddCommand("device coffset set", 		prvCONTROL_SetCurrentoffset);
+	CMPARSE_AddCommand("device coffset get", 		prvCONTROL_GetCurrentoffset);
 
 	return CONTROL_STATUS_OK;
 }

@@ -18,6 +18,10 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(deviceWnd, SIGNAL(sigResolutionChanged(int)), this, SLOT(onResolutionChanged(int)));
     connect(deviceWnd, SIGNAL(sigClockDivChanged(int)), this, SLOT(onClockDivChanged(int)));
     connect(deviceWnd, SIGNAL(sigSampleTimeChanged(int)), this, SLOT(onSampleTimeChanged(int)));
+    connect(deviceWnd, SIGNAL(sigSamplingTimeChanged(QString)), this, SLOT(onSamplingTimeChanged(QString)));
+    connect(deviceWnd, SIGNAL(sigAvrRatioChanged(int)), this, SLOT(onAvrRatioChanged(int)));
+    connect(deviceWnd, SIGNAL(sigVOffsetChanged(QString)), this, SLOT(onVOffsetChanged(QString)));
+    connect(deviceWnd, SIGNAL(sigCOffsetChanged(QString)), this, SLOT(onCOffsetChanged(QString)));
 
     log->printLogMessage("Device container successfully created", LOG_MESSAGE_TYPE_INFO);
     device->statusLinkCreate();
@@ -117,7 +121,7 @@ void DeviceContainer::onClockDivChanged(int index)
     QString tmpClockDivString = "";
     switch(index){
     default:
-        deviceWnd->printConsoleMsg("Unable to set resolution");
+        deviceWnd->printConsoleMsg("Unable to set clock div");
         return;
     case 0:
         tmpClockDiv = DEVICE_ADC_CLOCK_DIV_UKNOWN;
@@ -185,7 +189,7 @@ void DeviceContainer::onSampleTimeChanged(int index)
     QString tmpSampleTimeString = "";
     switch(index){
     default:
-        deviceWnd->printConsoleMsg("Unable to set resolution");
+        deviceWnd->printConsoleMsg("Unable to set sample time");
         return;
     case 0:
         tmpSampleTime = DEVICE_ADC_SAMPLING_TIME_UKNOWN;
@@ -231,5 +235,130 @@ void DeviceContainer::onSampleTimeChanged(int index)
     else
     {
         log->printLogMessage("Sample time: " + tmpSampleTimeString, LOG_MESSAGE_TYPE_INFO);
+    }
+}
+
+void DeviceContainer::onAvrRatioChanged(int index)
+{
+    /* call deviceWnd function with recieved msg from FW <- */
+    device_adc_averaging_t tmpAveragingRatio;
+    QString tmpAveragingRatioString = "";
+    switch(index){
+    default:
+        deviceWnd->printConsoleMsg("Unable to set averaging ratio");
+        return;
+    case 0:
+        tmpAveragingRatio = DEVICE_ADC_AVERAGING_UKNOWN;
+        tmpAveragingRatioString = "Uknown";
+        break;
+    case 1:
+        tmpAveragingRatio = DEVICE_ADC_AVERAGING_DISABLED;
+        tmpAveragingRatioString = "1";
+        break;
+    case 2:
+        tmpAveragingRatio = DEVICE_ADC_AVERAGING_2;
+        tmpAveragingRatioString = "2";
+        break;
+    case 3:
+        tmpAveragingRatio = DEVICE_ADC_AVERAGING_4;
+        tmpAveragingRatioString = "4";
+        break;
+    case 4:
+        tmpAveragingRatio = DEVICE_ADC_AVERAGING_8;
+        tmpAveragingRatioString = "8";
+        break;
+    case 5:
+        tmpAveragingRatio = DEVICE_ADC_AVERAGING_16;
+        tmpAveragingRatioString = "16";
+        break;
+    case 6:
+        tmpAveragingRatio = DEVICE_ADC_AVERAGING_32;
+        tmpAveragingRatioString = "32";
+        break;
+    case 7:
+        tmpAveragingRatio = DEVICE_ADC_AVERAGING_64;
+        tmpAveragingRatioString = "64";
+        break;
+    case 8:
+        tmpAveragingRatio = DEVICE_ADC_AVERAGING_128;
+        tmpAveragingRatioString = "128";
+        break;
+    case 9:
+        tmpAveragingRatio = DEVICE_ADC_AVERAGING_256;
+        tmpAveragingRatioString = "256";
+        break;
+    case 10:
+        tmpAveragingRatio = DEVICE_ADC_AVERAGING_512;
+        tmpAveragingRatioString = "512";
+        break;
+    case 11:
+        tmpAveragingRatio = DEVICE_ADC_AVERAGING_1024;
+        tmpAveragingRatioString = "1024";
+        break;
+    }
+    if(!device->setAvrRatio(tmpAveragingRatio))
+    {
+        log->printLogMessage("Unable to set averaging ratio: " + tmpAveragingRatioString, LOG_MESSAGE_TYPE_ERROR);
+    }
+    else
+    {
+        log->printLogMessage("Averaging ratio: " + tmpAveragingRatioString, LOG_MESSAGE_TYPE_INFO);
+    }
+}
+
+void DeviceContainer::onSamplingTimeChanged(QString time)
+{
+    bool conversionOk;
+    int  numericValue = time.toInt(&conversionOk);
+    if(!(conversionOk && numericValue >0))
+    {
+        return;
+    }
+
+    if(!device->setSamplingTime(time))
+    {
+        log->printLogMessage("Unable to set sampling time: " + time, LOG_MESSAGE_TYPE_ERROR);
+    }
+    else
+    {
+        log->printLogMessage("Sampling time: " + time, LOG_MESSAGE_TYPE_INFO);
+    }
+}
+
+void DeviceContainer::onVOffsetChanged(QString off)
+{
+    bool conversionOk;
+    int  numericValue = off.toInt(&conversionOk);
+    if(!(conversionOk && numericValue >0))
+    {
+        return;
+    }
+
+    if(!device->setVOffset(off))
+    {
+        log->printLogMessage("Unable to set voltage offset: " + off, LOG_MESSAGE_TYPE_ERROR);
+    }
+    else
+    {
+        log->printLogMessage("Voltage offset: " + off, LOG_MESSAGE_TYPE_INFO);
+    }
+}
+
+void DeviceContainer::onCOffsetChanged(QString off)
+{
+    bool conversionOk;
+    int  numericValue = off.toInt(&conversionOk);
+    if(!(conversionOk && numericValue >0))
+    {
+        return;
+    }
+
+    if(!device->setCOffset(off))
+    {
+        log->printLogMessage("Unable to set current offset: " + off, LOG_MESSAGE_TYPE_ERROR);
+    }
+    else
+    {
+        log->printLogMessage("Current offset: " + off, LOG_MESSAGE_TYPE_INFO);
     }
 }
