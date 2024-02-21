@@ -237,7 +237,7 @@ static void prvCONTROL_SetResolution(const char* arguments, uint16_t argumentsLe
  */
 static void prvCONTROL_GetResolution(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
-	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	prvCONTROL_PrepareOkResponse(response, responseSize, "16", 2);
 	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device Resolution successfully get\r\n");
 }
 
@@ -265,7 +265,7 @@ static void prvCONTROL_SetClkdiv(const char* arguments, uint16_t argumentsLength
  */
 static void prvCONTROL_GetClkdiv(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
-	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	prvCONTROL_PrepareOkResponse(response, responseSize, "2", 1);
 	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device Clock div successfully get\r\n");
 }
 
@@ -293,7 +293,7 @@ static void prvCONTROL_SetSampletime(const char* arguments, uint16_t argumentsLe
  */
 static void prvCONTROL_GetSampletime(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
-	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	prvCONTROL_PrepareOkResponse(response, responseSize, "2", 1);
 	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device sample time successfully get\r\n");
 }
 
@@ -321,7 +321,7 @@ static void prvCONTROL_SetSamplingtime(const char* arguments, uint16_t arguments
  */
 static void prvCONTROL_GetSamplingtime(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
-	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	prvCONTROL_PrepareOkResponse(response, responseSize, "1300", 4);
 	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device sampling time successfully get\r\n");
 }
 
@@ -349,7 +349,7 @@ static void prvCONTROL_SetAveragingratio(const char* arguments, uint16_t argumen
  */
 static void prvCONTROL_GetAveragingratio(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
-	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	prvCONTROL_PrepareOkResponse(response, responseSize, "128", 3);
 	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device averaging ratio successfully get\r\n");
 }
 
@@ -377,7 +377,7 @@ static void prvCONTROL_SetVoltageoffset(const char* arguments, uint16_t argument
  */
 static void prvCONTROL_GetVoltageoffset(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
-	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	prvCONTROL_PrepareOkResponse(response, responseSize, "1432", 4);
 	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device voltage offset successfully get\r\n");
 }
 
@@ -405,7 +405,7 @@ static void prvCONTROL_SetCurrentoffset(const char* arguments, uint16_t argument
  */
 static void prvCONTROL_GetCurrentoffset(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
-	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+	prvCONTROL_PrepareOkResponse(response, responseSize, "24", 2);
 	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device current offset successfully get\r\n");
 }
 //TODO: This is just for testing purposes. It should never be used as it is now. Remove!
@@ -733,14 +733,14 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	CMPARSE_AddCommand("device adc chclkdiv get", 		prvCONTROL_GetClkdiv);
 	CMPARSE_AddCommand("device adc chstime set", 		prvCONTROL_SetSampletime);
 	CMPARSE_AddCommand("device adc chstime get", 		prvCONTROL_GetSampletime);
-	CMPARSE_AddCommand("device adc chavrratio set", 		prvCONTROL_SetAveragingratio);
-	CMPARSE_AddCommand("device adc chavrratio get", 		prvCONTROL_GetAveragingratio);
-	CMPARSE_AddCommand("device stime set", 		prvCONTROL_SetSamplingtime);
-	CMPARSE_AddCommand("device stime get", 		prvCONTROL_GetSamplingtime);
-	CMPARSE_AddCommand("device voffset set", 		prvCONTROL_SetVoltageoffset);
-	CMPARSE_AddCommand("device voffset get", 		prvCONTROL_GetVoltageoffset);
-	CMPARSE_AddCommand("device coffset set", 		prvCONTROL_SetCurrentoffset);
-	CMPARSE_AddCommand("device coffset get", 		prvCONTROL_GetCurrentoffset);
+	CMPARSE_AddCommand("device adc chavrratio set", 	prvCONTROL_SetAveragingratio);
+	CMPARSE_AddCommand("device adc chavrratio get", 	prvCONTROL_GetAveragingratio);
+	CMPARSE_AddCommand("device stime set", 				prvCONTROL_SetSamplingtime);
+	CMPARSE_AddCommand("device stime get", 				prvCONTROL_GetSamplingtime);
+	CMPARSE_AddCommand("device voffset set", 			prvCONTROL_SetVoltageoffset);
+	CMPARSE_AddCommand("device voffset get", 			prvCONTROL_GetVoltageoffset);
+	CMPARSE_AddCommand("device coffset set", 			prvCONTROL_SetCurrentoffset);
+	CMPARSE_AddCommand("device coffset get", 			prvCONTROL_GetCurrentoffset);
 
 	return CONTROL_STATUS_OK;
 }

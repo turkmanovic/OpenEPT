@@ -212,5 +212,13 @@
 			<resource resourceType="PROJECT" workspacePath="/ADFirmware_CM7"/>
 		</configuration>
 	</storageModule>
-	<storageModule moduleId="scannerConfiguration"/>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.1068931773;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.1068931773.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.982745553;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.545617674">
+			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1957845872;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1957845872.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1363249477;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.818621821">
+			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+	</storageModule>
 </cproject>

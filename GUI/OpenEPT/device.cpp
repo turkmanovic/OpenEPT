@@ -1,3 +1,4 @@
+#include "stdio.h"
 #include "device.h"
 
 Device::Device(QObject *parent)
@@ -87,6 +88,36 @@ bool Device::setResolution(device_adc_resolution_t resolution)
         return false;
     }
     adcResolution = resolution;
+    return true;
+}
+
+bool Device::getResolution(device_adc_resolution_t *resolution)
+{
+    QString response;
+    QString command = "device adc chresolution get";
+    int tmpResolution;
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    //Parse response
+    tmpResolution = response.toInt();
+    switch(tmpResolution)
+    {
+    case 16:
+        adcResolution = DEVICE_ADC_RESOLUTION_16BIT;
+        break;
+    case 14:
+        adcResolution = DEVICE_ADC_RESOLUTION_14BIT;
+        break;
+    case 12:
+        adcResolution = DEVICE_ADC_RESOLUTION_12BIT;
+        break;
+    case 10:
+        adcResolution = DEVICE_ADC_RESOLUTION_10BIT;
+        break;
+    default:
+        adcResolution = DEVICE_ADC_RESOLUTION_UKNOWN;
+        break;
+    }
+    if(resolution != NULL) *resolution = adcResolution;
     return true;
 }
 
@@ -269,6 +300,12 @@ bool Device::setCOffset(QString off)
         return false;
     }
     currentOffset = off;
+    return true;
+}
+
+bool Device::acquireDeviceConfiguration()
+{
+    getResolution();
     return true;
 }
 

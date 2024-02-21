@@ -70,12 +70,14 @@ public:
     void        controlLinkReconnect();
     void        sendControlMsg(QString msg);
     bool        setResolution(device_adc_resolution_t resolution);
+    bool        getResolution(device_adc_resolution_t* resolution = NULL);
     bool        setClockDiv(device_adc_clock_div_t clockDiv);
     bool        setSampleTime(device_adc_sampling_time_t sampleTime);
     bool        setAvrRatio(device_adc_averaging_t averagingRatio);
     bool        setSamplingTime(QString time);
     bool        setVOffset(QString off);
     bool        setCOffset(QString off);
+    bool        acquireDeviceConfiguration();
 
 signals:
     void        sigControlLinkConnected();
