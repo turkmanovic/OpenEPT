@@ -59,11 +59,62 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 	TickType_t				blockingTime = portMAX_DELAY;
 	channel_data_t			*connectionData;
 	connectionData 			= (channel_data_t*)pvParam;
+	LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Samples stream service created\r\n");
 	for(;;)
 	{
 		switch(connectionData->state)
 		{
 		case SSTREAM_STATE_INIT:
+			/* Try to configure default resolution */
+			if(DRV_AIN_SetResolution(DRV_AIN_ADC_3, SSTREAM_AIN_DEFAULT_RESOLUTION) == DRV_AIN_STATUS_OK)
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "%d bit resolution set\r\n", SSTREAM_AIN_DEFAULT_RESOLUTION);
+				connectionData->ainConfig.resolution = SSTREAM_AIN_DEFAULT_RESOLUTION;
+			}
+			else
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem with AIN resolution setting\r\n");
+				connectionData->ainConfig.resolution = DRV_AIN_ADC_RESOLUTION_UKNOWN;
+			}
+
+			/* Try to configure default clok div */
+			if(DRV_AIN_SetClockDiv(DRV_AIN_ADC_3, SSTREAM_AIN_DEFAULT_CLOCK_DIV) == DRV_AIN_STATUS_OK)
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Clock div resolution set\r\n", SSTREAM_AIN_DEFAULT_CLOCK_DIV);
+				connectionData->ainConfig.clockDiv = SSTREAM_AIN_DEFAULT_CLOCK_DIV;
+			}
+			else
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem with AIN clock div setting\r\n");
+				connectionData->ainConfig.resolution = DRV_AIN_ADC_CLOCK_DIV_UKNOWN;
+			}
+
+			/* Try to configure channels default sampling time */
+			if(DRV_AIN_SetChannelsSamplingTime(DRV_AIN_ADC_3, SSTREAM_AIN_DEFAULT_CH_SAMPLE_TIME) == DRV_AIN_STATUS_OK)
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Channels sampling time %d set\r\n", SSTREAM_AIN_DEFAULT_CH_SAMPLE_TIME);
+				connectionData->ainConfig.ch1.sampleTime = SSTREAM_AIN_DEFAULT_CH_SAMPLE_TIME;
+				connectionData->ainConfig.ch2.sampleTime = SSTREAM_AIN_DEFAULT_CH_SAMPLE_TIME;
+			}
+			else
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem with AIN channels sampling time setting\r\n");
+				connectionData->ainConfig.ch1.sampleTime = DRV_AIN_ADC_SAMPLE_TIME_UKNOWN;
+				connectionData->ainConfig.ch2.sampleTime = DRV_AIN_ADC_SAMPLE_TIME_UKNOWN;
+			}
+
+			/* Try to configure default sampling time */
+			if(DRV_AIN_SetSamplingResolutionTime(DRV_AIN_ADC_3, SSTREAM_AIN_DEFAULT_SAMPLE_TIME) == DRV_AIN_STATUS_OK)
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Sampling time %d [us] set\r\n", SSTREAM_AIN_DEFAULT_SAMPLE_TIME);
+				connectionData->ainConfig.samplingTime = SSTREAM_AIN_DEFAULT_SAMPLE_TIME;
+			}
+			else
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem with AIN sampling time\r\n");
+				connectionData->ainConfig.samplingTime = 0;
+			}
+
 			if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
 			{
 				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem with init semaphore\r\n");
@@ -88,6 +139,16 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 			}
 			if(notifyValue & SSTREAM_TASK_SET_ADC_RESOLUTION_BIT)
 			{
+				/* Try to configure default resolution */
+				if(DRV_AIN_SetResolution(DRV_AIN_ADC_3, connectionData->ainConfig.resolution) == DRV_AIN_STATUS_OK)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "%d bit resolution set\r\n", connectionData->ainConfig.resolution);
+				}
+				else
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem with AIN resolution setting\r\n");
+				}
+
 				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
 				{
 					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem with ADC configuration\r\n");
@@ -155,9 +216,44 @@ sstream_status_t			SSTREAM_CreateChannel(sstream_connection_info* connectionHand
 	if(prvSSTREAM_DATA.connections[currentId].guard == NULL) return SSTREAM_STATUS_ERROR;
 	if(xSemaphoreTake(prvSSTREAM_DATA.connections[currentId].initSig,
 			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
-	connectionHandler->id = currentId;
+	prvSSTREAM_DATA.connections[currentId].connectionInfo.id = currentId;
 	prvSSTREAM_DATA.activeConnectionsNo += 1;
 	return SSTREAM_STATUS_OK;
+}
+sstream_status_t				SSTREAM_GetConnectionByIP(sstream_connection_info* connectionHandler, uint8_t ip[4], uint16_t port)
+{
+	uint32_t 	connectionIterator = 0;
+	uint8_t 	ipIterator = 0;
+	while(connectionIterator < prvSSTREAM_DATA.activeConnectionsNo)
+	{
+		for(ipIterator = 0; ipIterator < 4; ipIterator++){
+			if(prvSSTREAM_DATA.connections[connectionIterator].connectionInfo.serverIp[ipIterator] == ip[ipIterator]) continue;
+			break;
+		}
+		if(ipIterator == 4 && prvSSTREAM_DATA.connections[connectionIterator].connectionInfo.serverport == port)
+		{
+			connectionHandler = &prvSSTREAM_DATA.connections[connectionIterator].connectionInfo;
+			return SSTREAM_STATUS_OK;
+		}
+		connectionIterator += 1;
+	}
+	return SSTREAM_STATUS_ERROR;
+
+}
+sstream_status_t				SSTREAM_GetConnectionByID(sstream_connection_info** connectionHandler, uint32_t id)
+{
+	uint32_t 	connectionIterator = 0;
+	while(connectionIterator < prvSSTREAM_DATA.activeConnectionsNo)
+	{
+		if(prvSSTREAM_DATA.connections[connectionIterator].connectionInfo.id == id)
+		{
+			*connectionHandler = &prvSSTREAM_DATA.connections[connectionIterator].connectionInfo;
+			return SSTREAM_STATUS_OK;
+		}
+		connectionIterator += 1;
+	}
+
+	return SSTREAM_STATUS_ERROR;
 }
 sstream_status_t				SSTREAM_Start(sstream_connection_info* connectionHandler)
 {

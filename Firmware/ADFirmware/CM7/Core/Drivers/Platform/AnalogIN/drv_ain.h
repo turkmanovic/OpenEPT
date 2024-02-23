@@ -96,6 +96,7 @@ typedef struct
 	drv_ain_adc_resolution_t 		resolution;
 	drv_ain_adc_channel_config_t 	ch1;
 	drv_ain_adc_channel_config_t 	ch2;
+	uint32_t						samplingTime;
 }drv_ain_adc_config_t;
 
 

@@ -28,6 +28,7 @@
 #include "control.h"
 #include "logging.h"
 #include "system.h"
+#include "sstream.h"
 #include "CMParse/cmparse.h"
 
 
@@ -212,18 +213,42 @@ static void prvCONTROL_SetDeviceName(const char* arguments, uint16_t argumentsLe
  */
 static void prvCONTROL_SetResolution(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
-	cmparse_value_t	value;
-	uint32_t		valueNumber;
+	cmparse_value_t				value;
+	uint32_t					valueNumber;
+	uint32_t					streamID;
+	sstream_connection_info*  	connectionInfo;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n", valueNumber);
+		return;
+	}
+	sscanf(value.value, "%u", &streamID);
 
 	memset(&value, 0, sizeof(cmparse_value_t));
 	if(CMPARSE_GetArgValue(arguments, argumentsLength, "value", &value) != CMPARSE_STATUS_OK)
 	{
 		prvCONTROL_PrepareErrorResponse(response, responseSize);
-		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain device resolution\r\n", valueNumber);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain device resolution from control message\r\n", valueNumber);
 		return;
 	}
 	sscanf(value.value, "%u", &valueNumber);
-	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "%d bit resolution successfully set\r\n", valueNumber);
+
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream connection info\r\n");
+		return;
+	}
+
+	if(SSTREAM_SetResolution(connectionInfo, valueNumber, 1000) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to set %d resolution\r\n", value);
+		return;
+	}
 	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
 }
 
@@ -237,8 +262,32 @@ static void prvCONTROL_SetResolution(const char* arguments, uint16_t argumentsLe
  */
 static void prvCONTROL_GetResolution(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
-	prvCONTROL_PrepareOkResponse(response, responseSize, "16", 2);
-	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device Resolution successfully get\r\n");
+	cmparse_value_t				value;
+	sstream_adc_resolution_t 	adcResolution;
+	sstream_connection_info*  	connectionInfo;
+	char						adcResolutionString[5];
+	uint32_t					adcResolutionStringLength = 0;
+	uint32_t					streamID;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	memset(adcResolutionString, 0, 5);
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+	adcResolution = SSTREAM_GetResolution(connectionInfo, 1000);
+	adcResolutionStringLength = sprintf(adcResolutionString, "%d", adcResolution);
+	prvCONTROL_PrepareOkResponse(response, responseSize, adcResolutionString, adcResolutionStringLength);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device Resolution successfully obtained\r\n");
 }
 
 /**
@@ -407,6 +456,49 @@ static void prvCONTROL_GetCurrentoffset(const char* arguments, uint16_t argument
 {
 	prvCONTROL_PrepareOkResponse(response, responseSize, "24", 2);
 	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device current offset successfully get\r\n");
+}
+
+
+static void prvCONTROL_StreamCreate(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	cmparse_value_t				value;
+	sstream_connection_info		connectionInfo = {0};
+	char						streamIDString[5];
+	uint32_t					streamIDStringLength = 0;
+	ip_addr_t					ip = {0};
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "ip", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain ip address\r\n");
+		return;
+	}
+	//sscanf(value.value, "%hhu.%hhu.%hhu.%hhu", &connectionInfo.serverIp[0], &connectionInfo.serverIp[1], &connectionInfo.serverIp[2], &connectionInfo.serverIp[3]);
+	ipaddr_aton(value.value, &ip);
+	connectionInfo.serverIp[0] = (uint8_t)ip.addr;
+	connectionInfo.serverIp[1] = (uint8_t)(ip.addr>>8);
+	connectionInfo.serverIp[2] = (uint8_t)(ip.addr>>16);
+	connectionInfo.serverIp[3] = (uint8_t)(ip.addr>>24);
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "port", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain port number\r\n");
+		return;
+	}
+	sscanf(value.value, "%hu", &connectionInfo.serverport);
+
+	if(SSTREAM_CreateChannel(&connectionInfo, 2000) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to create stream channel\r\n");
+		return;
+	}
+	streamIDStringLength = sprintf(streamIDString, "%lu", connectionInfo.id);
+	prvCONTROL_PrepareOkResponse(response, responseSize, streamIDString, streamIDStringLength);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Stream successfully created\r\n");
 }
 //TODO: This is just for testing purposes. It should never be used as it is now. Remove!
 control_status_link_instance_t statusLinkInstance;
@@ -741,6 +833,7 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	CMPARSE_AddCommand("device voffset get", 			prvCONTROL_GetVoltageoffset);
 	CMPARSE_AddCommand("device coffset set", 			prvCONTROL_SetCurrentoffset);
 	CMPARSE_AddCommand("device coffset get", 			prvCONTROL_GetCurrentoffset);
+	CMPARSE_AddCommand("device stream create", 			prvCONTROL_StreamCreate);
 
 	return CONTROL_STATUS_OK;
 }

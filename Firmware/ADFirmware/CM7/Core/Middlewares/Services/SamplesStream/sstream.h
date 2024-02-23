@@ -14,10 +14,15 @@
 #include <stdint.h>
 #include "globalConfig.h"
 
-#define 	SSTREAM_TASK_NAME			CONF_SSTREAM_TASK_NAME
-#define 	SSTREAM_TASK_PRIO			CONF_SSTREAM_TASK_PRIO
-#define 	SSTREAM_TASK_STACK_SIZE		CONF_SSTREAM_TASK_STACK_SIZE
-#define 	SSTREAM_CONNECTIONS_MAX_NO	CONF_SSTREAM_CONNECTIONS_MAX_NO
+#define 	SSTREAM_TASK_NAME					CONF_SSTREAM_TASK_NAME
+#define 	SSTREAM_TASK_PRIO					CONF_SSTREAM_TASK_PRIO
+#define 	SSTREAM_TASK_STACK_SIZE				CONF_SSTREAM_TASK_STACK_SIZE
+#define 	SSTREAM_CONNECTIONS_MAX_NO			CONF_SSTREAM_CONNECTIONS_MAX_NO
+
+#define		SSTREAM_AIN_DEFAULT_RESOLUTION		CONF_SSTREAM_AIN_DEFAULT_RESOLUTION
+#define		SSTREAM_AIN_DEFAULT_CLOCK_DIV		CONF_SSTREAM_AIN_DEFAULT_CLOCK_DIV
+#define		SSTREAM_AIN_DEFAULT_CH_SAMPLE_TIME	CONF_SSTREAM_AIN_DEFAULT_CH_SAMPLE_TIME
+#define		SSTREAM_AIN_DEFAULT_SAMPLE_TIME		CONF_SSTREAM_AIN_DEFAULT_SAMPLE_TIME
 
 /**
  * @brief Samples stream service task state
@@ -70,6 +75,8 @@ typedef struct
 
 sstream_status_t				SSTREAM_Init(void);
 sstream_status_t				SSTREAM_CreateChannel(sstream_connection_info* connectionHandler, uint32_t timeout);
+sstream_status_t				SSTREAM_GetConnectionByID(sstream_connection_info** connectionHandler, uint32_t id);
+sstream_status_t				SSTREAM_GetConnectionByIP(sstream_connection_info* connectionHandler, uint8_t ip[4], uint16_t port);
 sstream_status_t				SSTREAM_Start(sstream_connection_info* connectionHandler);
 sstream_status_t				SSTREAM_Stop(sstream_connection_info* connectionHandler);
 sstream_status_t				SSTREAM_SetResolution(sstream_connection_info* connectionHandler, sstream_adc_resolution_t resolution, uint32_t timeout);

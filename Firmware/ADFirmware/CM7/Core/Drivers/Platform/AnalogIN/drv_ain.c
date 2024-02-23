@@ -296,8 +296,8 @@ drv_ain_status 						DRV_AIN_Init(drv_ain_adc_t adc, drv_ain_adc_config_t* confi
 	/* Set initial acquisition status*/
 	prvDRV_AIN_ACQUISITION_STATUS = DRV_AIN_ADC_ACQUISITION_STATUS_UKNOWN;
 
-	/* Start ADC */
-	DRV_AIN_Start(DRV_AIN_ADC_3);
+//	/* Start ADC */
+//	DRV_AIN_Start(DRV_AIN_ADC_3);
 	return DRV_AIN_STATUS_OK;
 }
 drv_ain_status 						DRV_AIN_Start(drv_ain_adc_t adc)
