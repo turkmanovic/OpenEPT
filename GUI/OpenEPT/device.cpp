@@ -182,7 +182,49 @@ bool Device::setClockDiv(device_adc_clock_div_t clockDiv)
     return true;
 }
 
-bool Device::setSampleTime(device_adc_sampling_time_t sampleTime)
+bool Device::getClockDiv(device_adc_clock_div_t *clockDiv)
+{
+    QString response;
+    QString command = "device adc chclkdiv get -sid=" + QString::number(streamID);
+    int tmpClkDiv;
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    //Parse response
+    tmpClkDiv = response.toInt();
+    switch(tmpClkDiv)
+    {
+    case 1:
+        adcClockingDiv = DEVICE_ADC_CLOCK_DIV_1;
+        break;
+    case 2:
+        adcClockingDiv = DEVICE_ADC_CLOCK_DIV_2;
+        break;
+    case 4:
+        adcClockingDiv = DEVICE_ADC_CLOCK_DIV_4;
+        break;
+    case 8:
+        adcClockingDiv = DEVICE_ADC_CLOCK_DIV_8;
+        break;
+    case 16:
+        adcClockingDiv = DEVICE_ADC_CLOCK_DIV_16;
+        break;
+    case 32:
+        adcClockingDiv = DEVICE_ADC_CLOCK_DIV_32;
+        break;
+    case 64:
+        adcClockingDiv = DEVICE_ADC_CLOCK_DIV_64;
+        break;
+    case 128:
+        adcClockingDiv = DEVICE_ADC_CLOCK_DIV_128;
+        break;
+    default:
+        adcClockingDiv = DEVICE_ADC_CLOCK_DIV_UKNOWN;
+        break;
+    }
+    if(clockDiv != NULL) *clockDiv = adcClockingDiv;
+    return true;
+}
+
+bool Device::setChSampleTime(device_adc_sampling_time_t sampleTime)
 {
     QString response;
     QString command = "device adc chstime set -sid=" + QString::number(streamID) + " -value=";
@@ -277,13 +319,26 @@ bool Device::setAvrRatio(device_adc_averaging_t averagingRatio)
 bool Device::setSamplingTime(QString time)
 {
     QString response;
-    QString command = "device stime set -sid=" + QString::number(streamID) + " -value=";
+    QString command = "device adc stime set -sid=" + QString::number(streamID) + " -value=";
     command += time;
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     if(response != "OK"){
         return false;
     }
     samplingTime = time;
+    return true;
+}
+
+bool Device::getSamplingTime(QString *time)
+{
+    QString response;
+    QString command = "device adc stime get -sid=" + QString::number(streamID);
+    unsigned int tmpSTime;
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    //Parse response
+    tmpSTime = response.toInt();
+    samplingTime = response;
+    if(time != NULL) *time = QString::number(tmpSTime);
     return true;
 }
 
@@ -316,6 +371,8 @@ bool Device::setCOffset(QString off)
 bool Device::acquireDeviceConfiguration()
 {
     getResolution();
+    getClockDiv();
+    getSamplingTime();
     return true;
 }
 

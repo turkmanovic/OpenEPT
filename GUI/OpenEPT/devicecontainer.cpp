@@ -229,7 +229,7 @@ void DeviceContainer::onSampleTimeChanged(int index)
         tmpSampleTimeString = "810";
         break;
     }
-    if(!device->setSampleTime(tmpSampleTime))
+    if(!device->setChSampleTime(tmpSampleTime))
     {
         log->printLogMessage("Unable to set sample time: " + tmpSampleTimeString, LOG_MESSAGE_TYPE_ERROR);
     }
