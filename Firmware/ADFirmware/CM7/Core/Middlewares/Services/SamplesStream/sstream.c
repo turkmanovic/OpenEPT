@@ -161,7 +161,7 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 			if(notifyValue & SSTREAM_TASK_SET_ADC_CLOCK_DIV_BIT)
 			{
 				/* Try to configure ADC clock div */
-				if(DRV_AIN_SetResolution(DRV_AIN_ADC_3, connectionData->ainConfig.clockDiv) == DRV_AIN_STATUS_OK)
+				if(DRV_AIN_SetClockDiv(DRV_AIN_ADC_3, connectionData->ainConfig.clockDiv) == DRV_AIN_STATUS_OK)
 				{
 					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Clok div %d set\r\n", connectionData->ainConfig.clockDiv);
 				}
