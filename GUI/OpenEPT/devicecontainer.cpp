@@ -186,7 +186,7 @@ void DeviceContainer::onClockDivChanged(int index)
 void DeviceContainer::onSampleTimeChanged(int index)
 {
     /* call deviceWnd function with recieved msg from FW <- */
-    device_adc_sampling_time_t tmpSampleTime;
+    device_adc_ch_sampling_time_t tmpSampleTime;
     QString tmpSampleTimeString = "";
     switch(index){
     default:

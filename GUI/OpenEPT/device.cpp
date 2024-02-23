@@ -4,12 +4,12 @@
 Device::Device(QObject *parent)
     : QObject{parent}
 {
-    adcResolution       = DEVICE_ADC_RESOLUTION_UKNOWN;
-    adcSamplingTime     = DEVICE_ADC_SAMPLING_TIME_UKNOWN;
-    adcAveraging        = DEVICE_ADC_AVERAGING_UKNOWN;
-    adcClockingDiv      = DEVICE_ADC_CLOCK_DIV_UKNOWN;
-    deviceName          = "";
-    controlLink         = NULL;
+    adcResolution           = DEVICE_ADC_RESOLUTION_UKNOWN;
+    adcChSamplingTime       = DEVICE_ADC_SAMPLING_TIME_UKNOWN;
+    adcAveraging            = DEVICE_ADC_AVERAGING_UKNOWN;
+    adcClockingDiv          = DEVICE_ADC_CLOCK_DIV_UKNOWN;
+    deviceName              = "";
+    controlLink             = NULL;
 }
 
 Device::~Device()
@@ -224,7 +224,7 @@ bool Device::getClockDiv(device_adc_clock_div_t *clockDiv)
     return true;
 }
 
-bool Device::setChSampleTime(device_adc_sampling_time_t sampleTime)
+bool Device::setChSampleTime(device_adc_ch_sampling_time_t sampleTime)
 {
     QString response;
     QString command = "device adc chstime set -sid=" + QString::number(streamID) + " -value=";
@@ -262,7 +262,46 @@ bool Device::setChSampleTime(device_adc_sampling_time_t sampleTime)
     if(response != "OK"){
         return false;
     }
-    adcSamplingTime = sampleTime;
+    adcChSamplingTime = sampleTime;
+    return true;
+}
+
+bool Device::getChSampleTime(device_adc_ch_sampling_time_t *sampleTime)
+{
+    QString response;
+    QString command = "device adc chstime get -sid=" + QString::number(streamID);
+    int tmpChSTime;
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    //Parse response
+    tmpChSTime = response.toInt();
+    switch(tmpChSTime)
+    {
+    case 1:
+        adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_1C5;
+        break;
+    case 2:
+        adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_2C5;
+        break;
+    case 8:
+        adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_8C5;
+        break;
+    case 16:
+        adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_16C5;
+        break;
+    case 32:
+        adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_32C5;
+        break;
+    case 64:
+        adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_64C5;
+        break;
+    case 128:
+        adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_387C5;
+        break;
+    default:
+        adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_810C5;
+        break;
+    }
+    if(sampleTime != NULL) *sampleTime = adcChSamplingTime;
     return true;
 }
 

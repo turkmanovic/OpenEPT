@@ -24,7 +24,7 @@ typedef enum{
     DEVICE_ADC_SAMPLING_TIME_64C5     = 64,
     DEVICE_ADC_SAMPLING_TIME_387C5    = 387,
     DEVICE_ADC_SAMPLING_TIME_810C5    = 810
-}device_adc_sampling_time_t;
+}device_adc_ch_sampling_time_t;
 
 typedef enum{
     DEVICE_ADC_CLOCK_DIV_UKNOWN        = 0,
@@ -74,7 +74,8 @@ public:
     bool        getResolution(device_adc_resolution_t* resolution = NULL);
     bool        setClockDiv(device_adc_clock_div_t clockDiv);
     bool        getClockDiv(device_adc_clock_div_t* clockDiv = NULL);
-    bool        setChSampleTime(device_adc_sampling_time_t sampleTime);
+    bool        setChSampleTime(device_adc_ch_sampling_time_t sampleTime);
+    bool        getChSampleTime(device_adc_ch_sampling_time_t* sampleTime=NULL);
     bool        setAvrRatio(device_adc_averaging_t averagingRatio);
     bool        setSamplingTime(QString time);
     bool        getSamplingTime(QString* time = NULL);
@@ -98,12 +99,12 @@ private slots:
     void        onStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
 
 private:
-    QString                     deviceName;
-    QString                     samplingTime;
-    device_adc_resolution_t     adcResolution;
-    device_adc_sampling_time_t  adcSamplingTime;
-    device_adc_clock_div_t      adcClockingDiv;
-    device_adc_averaging_t      adcAveraging;
+    QString                         deviceName;
+    QString                         samplingTime;
+    device_adc_resolution_t         adcResolution;
+    device_adc_ch_sampling_time_t   adcChSamplingTime;
+    device_adc_clock_div_t          adcClockingDiv;
+    device_adc_averaging_t          adcAveraging;
 
     ControlLink*                controlLink;
     StatusLink*                 statusLink;
