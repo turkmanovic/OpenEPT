@@ -22,6 +22,7 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(deviceWnd, SIGNAL(sigAvrRatioChanged(int)), this, SLOT(onAvrRatioChanged(int)));
     connect(deviceWnd, SIGNAL(sigVOffsetChanged(QString)), this, SLOT(onVOffsetChanged(QString)));
     connect(deviceWnd, SIGNAL(sigCOffsetChanged(QString)), this, SLOT(onCOffsetChanged(QString)));
+    connect(deviceWnd, SIGNAL(sigNewInterfaceSelected(QString)), this, SLOT(onInterfaceChanged(QString)));
 
     log->printLogMessage("Device container successfully created", LOG_MESSAGE_TYPE_INFO);
     device->statusLinkCreate();
@@ -322,6 +323,21 @@ void DeviceContainer::onSamplingTimeChanged(QString time)
     else
     {
         log->printLogMessage("Sampling time: " + time, LOG_MESSAGE_TYPE_INFO);
+    }
+}
+
+void DeviceContainer::onInterfaceChanged(QString interfaceIp)
+{
+    if(!device->createStreamLink(interfaceIp, 11223))
+    {
+        log->printLogMessage("Unable to create stream link: ", LOG_MESSAGE_TYPE_ERROR);
+        deviceWnd->setDeviceInterfaceSelectionState(DEVICE_INTERFACE_SELECTION_STATE_UNDEFINED);
+    }
+    else
+    {
+        log->printLogMessage("Stream link sucessfully created: ", LOG_MESSAGE_TYPE_INFO);
+        deviceWnd->setDeviceInterfaceSelectionState(DEVICE_INTERFACE_SELECTION_STATE_SELECTED);
+        device->acquireDeviceConfiguration();
     }
 }
 

@@ -66,6 +66,7 @@ public:
     bool        setName(QString aNewDeviceName);
     bool        getName(QString* aDeviceName);
     void        controlLinkAssign(ControlLink* link);
+    bool        createStreamLink(QString ip, quint16 port);
     void        statusLinkCreate();
     void        controlLinkReconnect();
     void        sendControlMsg(QString msg);
@@ -106,6 +107,8 @@ private:
     StatusLink*                 statusLink;
     QString                     voltageOffset;
     QString                     currentOffset;
+    /*This should be removed when stream link is defined*/
+    int                         streamID;
 
 };
 

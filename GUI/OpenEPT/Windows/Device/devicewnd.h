@@ -14,6 +14,12 @@ typedef enum
     DEVICE_STATE_UNDEFINED
 }device_state_t;
 
+typedef enum
+{
+    DEVICE_INTERFACE_SELECTION_STATE_UNDEFINED,
+    DEVICE_INTERFACE_SELECTION_STATE_SELECTED
+}device_interface_selection_state_t;
+
 
 namespace Ui {
 class DeviceWnd;
@@ -30,6 +36,7 @@ public:
     QPlainTextEdit* getLogWidget();
     void            setDeviceState(device_state_t aDeviceState);
     void            printConsoleMsg(QString msg);
+    void            setDeviceInterfaceSelectionState(device_interface_selection_state_t selectionState=DEVICE_INTERFACE_SELECTION_STATE_UNDEFINED);
 
 signals:
     void            sigWndClosed();
@@ -41,6 +48,7 @@ signals:
     void            sigVOffsetChanged(QString off);
     void            sigCOffsetChanged(QString off);
     void            saveToFileEnabled(bool enableStatus);
+    void            sigNewInterfaceSelected(QString interfaceIp);
     void            startAcquisition();
     void            pauseAcquisition();
     void            stopAcquisition();
@@ -72,6 +80,7 @@ public slots:
     void            onAdvResolutionChanged(int index);
     void            onAdvClockDivChanged(int index);
     void            onAdvSampleTimeChanged(int index);
+    void            onInterfaceChanged(QString interfaceInfo);
     void            onAdvSamplingTimeChanged(QString time);
     void            onAdvConfigurationChanged(QVariant data);
 
@@ -88,6 +97,7 @@ private:
     QStringList*                sampleTimeOptions;
     QStringList*                resolutionOptions;
     QStringList*                clockDivOptions;
+    QStringList*                networkInterfacesNames;
     QStringList                 sampleAveraginOptions;
     QString                     samplingTime;
 
@@ -97,14 +107,15 @@ private:
     bool                        samplingTextChanged = false;
 
     /* */
-    device_state_t              deviceState;
+    device_state_t                      deviceState;
+    device_interface_selection_state_t  interfaceState;
 
     /* */
-    void            setDeviceStateDisconnected();
-    void            setDeviceStateConnected();
-    void            onAvrRatioChanged(int index);
-    void            onVOffsetChanged(QString off);
-    void            onCOffsetChanged(QString off);
+    void                        setDeviceStateDisconnected();
+    void                        setDeviceStateConnected();
+    void                        onAvrRatioChanged(int index);
+    void                        onVOffsetChanged(QString off);
+    void                        onCOffsetChanged(QString off);
 };
 
 #endif // DEVICEWND_H

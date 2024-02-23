@@ -128,7 +128,7 @@
                  <property name="minimumSize">
                   <size>
                    <width>80</width>
-                   <height>10</height>
+                   <height>20</height>
                   </size>
                  </property>
                  <property name="maximumSize">
@@ -189,7 +189,7 @@
                  <property name="minimumSize">
                   <size>
                    <width>80</width>
-                   <height>10</height>
+                   <height>20</height>
                   </size>
                  </property>
                  <property name="maximumSize">
@@ -250,7 +250,7 @@
                  <property name="minimumSize">
                   <size>
                    <width>80</width>
-                   <height>10</height>
+                   <height>20</height>
                   </size>
                  </property>
                  <property name="maximumSize">
@@ -305,7 +305,7 @@
                  <property name="minimumSize">
                   <size>
                    <width>80</width>
-                   <height>10</height>
+                   <height>20</height>
                   </size>
                  </property>
                  <property name="maximumSize">
@@ -446,6 +446,90 @@
                 <set>Qt::AlignCenter</set>
                </property>
               </widget>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="systemVerlServerInterfaceVerl">
+               <item>
+                <layout class="QHBoxLayout" name="SystemInterfaceVerlInterfaceSelectHorl">
+                 <property name="sizeConstraint">
+                  <enum>QLayout::SetDefaultConstraint</enum>
+                 </property>
+                 <item>
+                  <layout class="QVBoxLayout" name="InterfaceSelectHorlStreamServerInterfVerl">
+                   <property name="sizeConstraint">
+                    <enum>QLayout::SetDefaultConstraint</enum>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="streamServerInterfLabe">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>200</width>
+                       <height>10</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>200</width>
+                       <height>50</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>Samples stream server interface</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QComboBox" name="streamServerInterfComb">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>200</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>200</width>
+                       <height>50</height>
+                      </size>
+                     </property>
+                     <property name="mouseTracking">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <spacer name="interfaceSelectSpac">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeType">
+                    <enum>QSizePolicy::Minimum</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+              </layout>
              </item>
              <item>
               <layout class="QHBoxLayout" name="systemVerlAcquisitionTypeConAverHorl">
@@ -641,7 +725,7 @@
                  <property name="minimumSize">
                   <size>
                    <width>80</width>
-                   <height>10</height>
+                   <height>20</height>
                   </size>
                  </property>
                  <property name="maximumSize">

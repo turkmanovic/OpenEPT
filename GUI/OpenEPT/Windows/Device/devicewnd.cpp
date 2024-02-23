@@ -2,6 +2,7 @@
 #include "ui_devicewnd.h"
 #include "Windows/Console/consolewnd.h"
 #include <QFileDialog>
+#include <QNetworkInterface>
 
 /*TODO: Declare this in config file*/
 #define PLOT_MINIMUM_SIZE_WIDTH     600
@@ -71,6 +72,28 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
         ;
     ui->sampleTimeComb->addItems(*sampleTimeOptions);
 
+
+    networkInterfacesNames = new QStringList();
+    *networkInterfacesNames << "";
+
+    QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
+
+    foreach(QNetworkInterface a, interfaces)
+    {
+        QList<QNetworkAddressEntry> allEntries = a.addressEntries();
+        if(a.flags() & QNetworkInterface::IsUp){
+            qDebug() << "Interface Name:" << a.name();
+            QNetworkAddressEntry entry;
+            foreach (entry, allEntries) {
+                if( entry.ip().protocol() == QAbstractSocket::IPv4Protocol){
+                    *networkInterfacesNames <<   "<" + a.name() + ">:" + entry.ip().toString();
+                }
+            }
+        }
+    }
+
+    ui->streamServerInterfComb->addItems(*networkInterfacesNames);
+
     advanceConfigurationWnd  = new AdvanceConfigurationWnd();
     advanceConfigurationWnd->hide();
     //Prethodno se lista kreira dinamicki
@@ -105,6 +128,7 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     ui->GraphicsTopHorl->addWidget(voltageChart);
     ui->GraphicsTopHorl->addWidget(currentChart);
     ui->GraphicsBottomVerl->addWidget(consumptionChart, Qt::AlignCenter);
+    setDeviceInterfaceSelectionState(DEVICE_INTERFACE_SELECTION_STATE_UNDEFINED);
 
     connect(ui->saveToFileCheb, SIGNAL(stateChanged(int)), this, SLOT(onSaveToFileChanged(int)));
     connect(ui->pathPusb, SIGNAL(clicked(bool)), this, SLOT(onPathInfo()));
@@ -119,6 +143,7 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     connect(ui->sampleTimeComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onSampleTimeChanged(int)));
     connect(ui->samplingTimeLine, SIGNAL(returnPressed()), this, SLOT(onSamplingTimeChanged()));
     connect(ui->samplingTimeLine, SIGNAL(textChanged(QString)), this, SLOT(onSamplingTimeTxtChanged(QString)));
+    connect(ui->streamServerInterfComb, SIGNAL(currentTextChanged(QString)), this, SLOT(onInterfaceChanged(QString)));
     connect(advanceConfigurationWnd, SIGNAL(sigAdvResolutionChanged(int)), this, SLOT(onAdvResolutionChanged(int)));
     connect(advanceConfigurationWnd, SIGNAL(sigAdvClockDivChanged(int)), this, SLOT(onAdvClockDivChanged(int)));
     connect(advanceConfigurationWnd, SIGNAL(sigAdvSampleTimeChanged(int)), this, SLOT(onAdvSampleTimeChanged(int)));
@@ -157,6 +182,15 @@ void DeviceWnd::onAdvSampleTimeChanged(int index)
     ui->sampleTimeComb->blockSignals(true);
     ui->sampleTimeComb->setCurrentIndex(index);
     ui->sampleTimeComb->blockSignals(false);
+}
+
+void DeviceWnd::onInterfaceChanged(QString interfaceInfo)
+{
+    QString ip;
+    QStringList interfaceInfoParts;
+    interfaceInfoParts = interfaceInfo.split(":");
+    ip = interfaceInfoParts[1];
+    emit sigNewInterfaceSelected(ip);
 }
 
 void DeviceWnd::onAdvSamplingTimeChanged(QString time)
@@ -365,4 +399,38 @@ void DeviceWnd::printConsoleMsg(QString msg)
 {
     /* call consoleWnd print Message to display recieved msg form FW <- */
     consoleWnd->printMessage(msg);
+}
+
+void DeviceWnd::setDeviceInterfaceSelectionState(device_interface_selection_state_t selectionState)
+{
+    switch(selectionState)
+    {
+    case DEVICE_INTERFACE_SELECTION_STATE_UNDEFINED:
+        ui->samplingTimeLine->setEnabled(false);
+        ui->resolutionComb->setEnabled(false);
+        ui->clockDivComb->setEnabled(false);
+        ui->sampleTimeComb->setEnabled(false);
+        ui->advanceOptionPusb->setEnabled(false);
+        ui->maxNumOfPacketsLine->setEnabled(false);
+        ui->saveToFileCheb->setEnabled(false);
+        ui->dischargeControlPusb1->setEnabled(false);
+        ui->dischargeControlPusb2->setEnabled(false);
+        ui->pathPusb->setEnabled(false);
+        ui->streamServerInterfComb->setEnabled(true);
+        break;
+    case DEVICE_INTERFACE_SELECTION_STATE_SELECTED:
+        ui->samplingTimeLine->setEnabled(true);
+        ui->resolutionComb->setEnabled(true);
+        ui->clockDivComb->setEnabled(true);
+        ui->sampleTimeComb->setEnabled(true);
+        ui->advanceOptionPusb->setEnabled(true);
+        ui->maxNumOfPacketsLine->setEnabled(true);
+        ui->saveToFileCheb->setEnabled(true);
+        ui->dischargeControlPusb1->setEnabled(true);
+        ui->dischargeControlPusb2->setEnabled(true);
+        ui->pathPusb->setEnabled(true);
+        ui->streamServerInterfComb->setEnabled(false);
+        break;
+    }
+    interfaceState = selectionState;
 }

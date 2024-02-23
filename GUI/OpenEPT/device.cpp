@@ -38,6 +38,16 @@ void Device::controlLinkAssign(ControlLink* link)
 
 }
 
+bool Device::createStreamLink(QString ip, quint16 port)
+{
+    QString response;
+    QString command = "device stream create -ip=" + ip +  " -port=" + QString::number(port) + "\r\n";
+    if(controlLink == NULL) return false;
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    streamID = response.toInt();
+    return true;
+}
+
 void Device::statusLinkCreate()
 {
     statusLink  = new StatusLink();
@@ -63,7 +73,7 @@ void Device::sendControlMsg(QString msg)
 bool Device::setResolution(device_adc_resolution_t resolution)
 {
     QString response;
-    QString command = "device adc chresolution set -value=";
+    QString command = "device adc chresolution set -sid=" + QString::number(streamID) + " -value=";
     switch(resolution)
     {
     case DEVICE_ADC_RESOLUTION_UKNOWN:
@@ -94,7 +104,7 @@ bool Device::setResolution(device_adc_resolution_t resolution)
 bool Device::getResolution(device_adc_resolution_t *resolution)
 {
     QString response;
-    QString command = "device adc chresolution get";
+    QString command = "device adc chresolution get -sid=" + QString::number(streamID);
     int tmpResolution;
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     //Parse response
@@ -124,7 +134,7 @@ bool Device::getResolution(device_adc_resolution_t *resolution)
 bool Device::setClockDiv(device_adc_clock_div_t clockDiv)
 {
     QString response;
-    QString command = "device adc chclkdiv set -value=";
+    QString command = "device adc chclkdiv set -sid=" + QString::number(streamID) + " -value=";
     switch(clockDiv)
     {
     case DEVICE_ADC_CLOCK_DIV_UKNOWN:
@@ -175,7 +185,7 @@ bool Device::setClockDiv(device_adc_clock_div_t clockDiv)
 bool Device::setSampleTime(device_adc_sampling_time_t sampleTime)
 {
     QString response;
-    QString command = "device adc chstime set -value=";
+    QString command = "device adc chstime set -sid=" + QString::number(streamID) + " -value=";
     switch(sampleTime)
     {
     case DEVICE_ADC_SAMPLING_TIME_UKNOWN:
@@ -217,7 +227,7 @@ bool Device::setSampleTime(device_adc_sampling_time_t sampleTime)
 bool Device::setAvrRatio(device_adc_averaging_t averagingRatio)
 {
     QString response;
-    QString command = "device adc chavrratio set -value=";
+    QString command = "device adc chavrratio set -sid=" + QString::number(streamID) + " -value=";
     switch(averagingRatio)
     {
     case DEVICE_ADC_AVERAGING_UKNOWN:
@@ -267,7 +277,7 @@ bool Device::setAvrRatio(device_adc_averaging_t averagingRatio)
 bool Device::setSamplingTime(QString time)
 {
     QString response;
-    QString command = "device stime set -value=";
+    QString command = "device stime set -sid=" + QString::number(streamID) + " -value=";
     command += time;
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     if(response != "OK"){
@@ -280,7 +290,7 @@ bool Device::setSamplingTime(QString time)
 bool Device::setVOffset(QString off)
 {
     QString response;
-    QString command = "device voffset set -value=";
+    QString command = "device voffset set -sid=" + QString::number(streamID) + " -value=";
     command += off;
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     if(response != "OK"){
@@ -293,7 +303,7 @@ bool Device::setVOffset(QString off)
 bool Device::setCOffset(QString off)
 {
     QString response;
-    QString command = "device coffset set -value=";
+    QString command = "device coffset set -sid=" + QString::number(streamID) + " -value=";
     command += off;
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     if(response != "OK"){
