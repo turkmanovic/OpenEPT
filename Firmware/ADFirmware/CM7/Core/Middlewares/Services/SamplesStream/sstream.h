@@ -58,6 +58,18 @@ typedef enum{
 }sstream_adc_sampling_time_t;
 
 typedef enum{
+	SSTREAM_ADC_CLK_DIV_1 			= 1,
+	SSTREAM_ADC_CLK_DIV_2 			= 2,
+	SSTREAM_ADC_CLK_DIV_4 			= 4,
+	SSTREAM_ADC_CLK_DIV_8 			= 8,
+	SSTREAM_ADC_CLK_DIV_16 			= 16,
+	SSTREAM_ADC_CLK_DIV_32 			= 32,
+	SSTREAM_ADC_CLK_DIV_64 			= 64,
+	SSTREAM_ADC_CLK_DIV_128 		= 128,
+	SSTREAM_ADC_CLK_DIV_256 		= 256,
+}sstream_adc_clk_div_t;
+
+typedef enum{
 	SSTREAM_ACQUISITION_STATE_UNDEFINED = 0,
 	SSTREAM_ACQUISITION_STATE_STOP,
 	SSTREAM_ACQUISITION_STATE_START,
@@ -80,9 +92,13 @@ sstream_status_t				SSTREAM_GetConnectionByIP(sstream_connection_info* connectio
 sstream_status_t				SSTREAM_Start(sstream_connection_info* connectionHandler);
 sstream_status_t				SSTREAM_Stop(sstream_connection_info* connectionHandler);
 sstream_status_t				SSTREAM_SetResolution(sstream_connection_info* connectionHandler, sstream_adc_resolution_t resolution, uint32_t timeout);
+sstream_status_t				SSTREAM_SetSamplingTime(sstream_connection_info* connectionHandler, uint32_t stime, uint32_t timeout);
+sstream_status_t				SSTREAM_SetClkDiv(sstream_connection_info* connectionHandler, sstream_adc_clk_div_t adcClkDiv, uint32_t timeout);
 sstream_status_t				SSTREAM_SetChannelSamplingTime(sstream_connection_info* connectionHandler, uint32_t channel, sstream_adc_sampling_time_t stime, uint32_t timeout);
 sstream_adc_resolution_t		SSTREAM_GetResolution(sstream_connection_info* connectionHandler, uint32_t timeout);
+sstream_adc_clk_div_t			SSTREAM_GetClkDiv(sstream_connection_info* connectionHandler, uint32_t timeout);
 sstream_adc_sampling_time_t		SSTREAM_GetChannelSamplingSpeed(sstream_connection_info* connectionHandler, uint32_t channel, uint32_t timeout);
 sstream_status_t				SSTREAM_Calibrate(sstream_connection_info* connectionHandler);
+uint32_t						SSTREAM_GetSamplingTime(sstream_connection_info* connectionHandler, uint32_t timeout);
 
 #endif /* CORE_MIDDLEWARES_SERVICES_SAMPLESSTREAM_SSTREAM_H_ */

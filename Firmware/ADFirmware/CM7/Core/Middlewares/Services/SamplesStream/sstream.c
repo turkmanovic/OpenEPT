@@ -158,18 +158,36 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 			}
 			if(notifyValue & SSTREAM_TASK_SET_ADC_CLOCK_DIV_BIT)
 			{
+				/* Try to configure ADC clock div */
+				if(DRV_AIN_SetResolution(DRV_AIN_ADC_3, connectionData->ainConfig.clockDiv) == DRV_AIN_STATUS_OK)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Clok div %d set\r\n", connectionData->ainConfig.clockDiv);
+				}
+				else
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem with AIN clock div\r\n");
+				}
 				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
 				{
-					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem with ADC configuration\r\n");
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release init semaphore\r\n");
 					connectionData->state = SSTREAM_STATE_ERROR;
 					break;
 				}
 			}
 			if(notifyValue & SSTREAM_TASK_SET_ADC_STIME_BIT)
 			{
+				/* Try to configure ADC clock div */
+				if(DRV_AIN_SetSamplingResolutionTime(DRV_AIN_ADC_3, connectionData->ainConfig.samplingTime) == DRV_AIN_STATUS_OK)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Sampling time %d set\r\n", connectionData->ainConfig.samplingTime);
+				}
+				else
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to set sampling time\r\n");
+				}
 				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
 				{
-					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem with ADC configuration\r\n");
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release init semaphore\r\n");
 					connectionData->state = SSTREAM_STATE_ERROR;
 					break;
 				}
@@ -286,6 +304,38 @@ sstream_status_t				SSTREAM_SetResolution(sstream_connection_info* connectionHan
 			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 	return SSTREAM_STATUS_OK;
 }
+sstream_status_t				SSTREAM_SetSamplingTime(sstream_connection_info* connectionHandler, uint32_t stime, uint32_t timeout)
+{
+	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.samplingTime = stime;
+	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
+	/* Send request to configure AIN*/
+	if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+			SSTREAM_TASK_SET_ADC_STIME_BIT,
+			eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
+
+	/* Wait until configuration is applied*/
+	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
+			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	return SSTREAM_STATUS_OK;
+}
+sstream_status_t				SSTREAM_SetClkDiv(sstream_connection_info* connectionHandler, sstream_adc_clk_div_t adcClkDiv, uint32_t timeout)
+{
+	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.clockDiv = adcClkDiv;
+	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
+	/* Send request to configure AIN*/
+	if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+			SSTREAM_TASK_SET_ADC_CLOCK_DIV_BIT,
+			eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
+
+	/* Wait until configuration is applied*/
+	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
+			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	return SSTREAM_STATUS_OK;
+}
 sstream_status_t				SSTREAM_SetChannelSamplingTime(sstream_connection_info* connectionHandler, uint32_t channel, sstream_adc_sampling_time_t stime, uint32_t timeout)
 {
 	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
@@ -319,6 +369,26 @@ sstream_adc_resolution_t		SSTREAM_GetResolution(sstream_connection_info* connect
 	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	return resolution;
+}
+sstream_adc_clk_div_t			SSTREAM_GetClkDiv(sstream_connection_info* connectionHandler, uint32_t timeout)
+{
+	sstream_adc_clk_div_t adcClockDiv;
+
+	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	adcClockDiv = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.clockDiv;
+	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
+	return adcClockDiv;
+}
+uint32_t						SSTREAM_GetSamplingTime(sstream_connection_info* connectionHandler, uint32_t timeout)
+{
+	uint32_t stime;
+
+	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	stime = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.samplingTime;
+	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
+	return stime;
 }
 sstream_adc_sampling_time_t		SSTREAM_GetChannelSamplingSpeed(sstream_connection_info* connectionHandler, uint32_t channel, uint32_t timeout)
 {
