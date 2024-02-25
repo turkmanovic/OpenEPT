@@ -28,6 +28,13 @@ private:
     Ui::ConsoleWnd *ui;
     Log             logUtil;
 
+    QStringList     entries;
+    int             lastIndex;
+
+protected:
+    void keyPressEvent(QKeyEvent *event);
+
+
 };
 
 #endif // CONSOLEWND_H
