@@ -28,10 +28,12 @@
 #define  	SSTREAM_TASK_STREAM_BIT					0x00000004
 #define  	SSTREAM_TASK_SET_ADC_RESOLUTION_BIT		0x00000008
 #define  	SSTREAM_TASK_SET_ADC_STIME_BIT			0x00000010
-#define  	SSTREAM_TASK_SET_ADC_CH1_STIME_BIT		0x00000020
-#define  	SSTREAM_TASK_SET_ADC_CH2_STIME_BIT		0x00000040
-#define  	SSTREAM_TASK_SET_ADC_CLOCK_DIV_BIT		0x00000080
-#define  	SSTREAM_TASK_SET_ADC_AVERAGING_RATIO	0x00000100
+#define  	SSTREAM_TASK_SET_ADC_CLOCK_DIV_BIT		0x00000020
+#define  	SSTREAM_TASK_SET_ADC_CH1_STIME_BIT		0x00000040
+#define  	SSTREAM_TASK_SET_ADC_CH2_STIME_BIT		0x00000080
+#define  	SSTREAM_TASK_SET_ADC_CH1_OFFSET_BIT		0x00000100
+#define  	SSTREAM_TASK_SET_ADC_CH2_OFFSET_BIT		0x00000200
+#define  	SSTREAM_TASK_SET_ADC_AVERAGING_RATIO	0x00000400
 
 
 
@@ -230,6 +232,42 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 					break;
 				}
 			}
+			if(notifyValue & SSTREAM_TASK_SET_ADC_CH1_OFFSET_BIT)
+			{
+				/* Try to configure ADC channel 1 sampling time */
+				if(DRV_AIN_SetChannelOffset(DRV_AIN_ADC_3, 1, connectionData->ainConfig.ch1.offset) == DRV_AIN_STATUS_OK)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Channel 1 offset %d successfully set\r\n", connectionData->ainConfig.ch1.offset);
+				}
+				else
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "Unable to set channel 1 offset\r\n");
+				}
+				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release init semaphore\r\n");
+					connectionData->state = SSTREAM_STATE_ERROR;
+					break;
+				}
+			}
+			if(notifyValue & SSTREAM_TASK_SET_ADC_CH2_OFFSET_BIT)
+			{
+				/* Try to configure ADC channel 1 sampling time */
+				if(DRV_AIN_SetChannelOffset(DRV_AIN_ADC_3, 2, connectionData->ainConfig.ch2.offset) == DRV_AIN_STATUS_OK)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Channel 2 offset %d successfully set\r\n", connectionData->ainConfig.ch2.offset);
+				}
+				else
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "Unable to set channel 1 offset\r\n");
+				}
+				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release init semaphore\r\n");
+					connectionData->state = SSTREAM_STATE_ERROR;
+					break;
+				}
+			}
 			if(notifyValue & SSTREAM_TASK_SET_ADC_AVERAGING_RATIO)
 			{
 				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
@@ -407,6 +445,39 @@ sstream_status_t				SSTREAM_SetChannelSamplingTime(sstream_connection_info* conn
 
 	return SSTREAM_STATUS_OK;
 }
+sstream_status_t				SSTREAM_SetChannelOffset(sstream_connection_info* connectionHandler, uint32_t channel, uint32_t offset, uint32_t timeout)
+{
+	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(channel == 1)
+	{
+		prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch1.offset = offset;
+	}
+	if(channel == 2)
+	{
+		prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch2.offset = offset;
+	}
+	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
+	/* Send request to configure AIN*/
+	if(channel == 1)
+	{
+		if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+				SSTREAM_TASK_SET_ADC_CH1_OFFSET_BIT,
+				eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
+	}
+	if(channel == 2)
+	{
+		if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+				SSTREAM_TASK_SET_ADC_CH2_OFFSET_BIT,
+				eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
+	}
+
+	/* Wait until configuration is applied*/
+	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
+			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
+	return SSTREAM_STATUS_OK;
+}
 sstream_adc_resolution_t		SSTREAM_GetResolution(sstream_connection_info* connectionHandler, uint32_t timeout)
 {
 	sstream_adc_resolution_t resolution;
@@ -453,6 +524,23 @@ sstream_adc_sampling_time_t		SSTREAM_GetChannelSamplingTime(sstream_connection_i
 	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	return chstime;
+}
+uint32_t						SSTREAM_GetChannelOffset(sstream_connection_info* connectionHandler, uint32_t channel, uint32_t timeout)
+{
+	uint32_t choffset;
+
+	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(channel == 1)
+	{
+		choffset = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch1.offset;
+	}
+	if(channel == 2)
+	{
+		choffset = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch2.offset;
+	}
+	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
+	return choffset;
 }
 
 

@@ -23,6 +23,8 @@
 #define		SSTREAM_AIN_DEFAULT_CLOCK_DIV		CONF_SSTREAM_AIN_DEFAULT_CLOCK_DIV
 #define		SSTREAM_AIN_DEFAULT_CH_SAMPLE_TIME	CONF_SSTREAM_AIN_DEFAULT_CH_SAMPLE_TIME
 #define		SSTREAM_AIN_DEFAULT_SAMPLE_TIME		CONF_SSTREAM_AIN_DEFAULT_SAMPLE_TIME
+#define 	SSTREAM_AIN_VOLTAGE_CHANNEL			CONF_SSTREAM_AIN_VOLTAGE_CHANNEL
+#define 	SSTREAM_AIN_CURRENT_CHANNEL			CONF_SSTREAM_AIN_CURRENT_CHANNEL
 
 /**
  * @brief Samples stream service task state
@@ -95,10 +97,12 @@ sstream_status_t				SSTREAM_SetResolution(sstream_connection_info* connectionHan
 sstream_status_t				SSTREAM_SetSamplingTime(sstream_connection_info* connectionHandler, uint32_t stime, uint32_t timeout);
 sstream_status_t				SSTREAM_SetClkDiv(sstream_connection_info* connectionHandler, sstream_adc_clk_div_t adcClkDiv, uint32_t timeout);
 sstream_status_t				SSTREAM_SetChannelSamplingTime(sstream_connection_info* connectionHandler, uint32_t channel, sstream_adc_sampling_time_t stime, uint32_t timeout);
+sstream_status_t				SSTREAM_SetChannelOffset(sstream_connection_info* connectionHandler, uint32_t channel, uint32_t offset, uint32_t timeout);
 sstream_adc_resolution_t		SSTREAM_GetResolution(sstream_connection_info* connectionHandler, uint32_t timeout);
 sstream_adc_clk_div_t			SSTREAM_GetClkDiv(sstream_connection_info* connectionHandler, uint32_t timeout);
 sstream_status_t				SSTREAM_Calibrate(sstream_connection_info* connectionHandler);
 uint32_t						SSTREAM_GetSamplingTime(sstream_connection_info* connectionHandler, uint32_t timeout);
 sstream_adc_sampling_time_t		SSTREAM_GetChannelSamplingTime(sstream_connection_info* connectionHandler, uint32_t channel, uint32_t timeout);
+uint32_t						SSTREAM_GetChannelOffset(sstream_connection_info* connectionHandler, uint32_t channel, uint32_t timeout);
 
 #endif /* CORE_MIDDLEWARES_SERVICES_SAMPLESSTREAM_SSTREAM_H_ */
