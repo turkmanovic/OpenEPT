@@ -38,6 +38,9 @@
    <iconset resource="../../resource.qrc">
     <normaloff>:/images/console.png</normaloff>:/images/console.png</iconset>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
     <layout class="QVBoxLayout" name="mainConsVerl">
