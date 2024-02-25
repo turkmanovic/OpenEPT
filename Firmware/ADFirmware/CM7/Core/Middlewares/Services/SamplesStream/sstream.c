@@ -155,6 +155,20 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 			if(notifyValue & SSTREAM_TASK_START_BIT)
 			{
 				connectionData->acquisitionState = SSTREAM_ACQUISITION_STATE_START;
+				if(DRV_AIN_Start(DRV_AIN_ADC_3) == DRV_AIN_STATUS_OK)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Stream started \r\n");
+				}
+				else
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Unable to start stream\r\n");
+				}
+				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release init semaphore\r\n");
+					connectionData->state = SSTREAM_STATE_ERROR;
+					break;
+				}
 			}
 			if(notifyValue & SSTREAM_TASK_STREAM_BIT)
 			{
@@ -163,6 +177,20 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 			if(notifyValue & SSTREAM_TASK_STOP_BIT)
 			{
 				connectionData->acquisitionState = SSTREAM_ACQUISITION_STATE_STOP;
+				if(DRV_AIN_Stop(DRV_AIN_ADC_3) == DRV_AIN_STATUS_OK)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Stream stoped \r\n");
+				}
+				else
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Unable to stop stream\r\n");
+				}
+				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release init semaphore\r\n");
+					connectionData->state = SSTREAM_STATE_ERROR;
+					break;
+				}
 			}
 			if(notifyValue & SSTREAM_TASK_SET_ADC_RESOLUTION_BIT)
 			{
@@ -399,18 +427,26 @@ sstream_status_t				SSTREAM_GetConnectionByID(sstream_connection_info** connecti
 
 	return SSTREAM_STATUS_ERROR;
 }
-sstream_status_t				SSTREAM_Start(sstream_connection_info* connectionHandler)
+sstream_status_t				SSTREAM_Start(sstream_connection_info* connectionHandler, uint32_t timeout)
 {
 	if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
-			SSTREAM_TASK_START_BIT | SSTREAM_TASK_STREAM_BIT,
+			SSTREAM_TASK_START_BIT,
 			eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
+
+	/* Wait until configuration is applied*/
+	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
+			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 	return SSTREAM_STATUS_OK;
 }
-sstream_status_t				SSTREAM_Stop(sstream_connection_info* connectionHandler)
+sstream_status_t				SSTREAM_Stop(sstream_connection_info* connectionHandler, uint32_t timeout)
 {
 	if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
 			SSTREAM_TASK_STOP_BIT,
 			eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
+
+	/* Wait until configuration is applied*/
+	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
+			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 	return SSTREAM_STATUS_OK;
 }
 sstream_status_t				SSTREAM_SetResolution(sstream_connection_info* connectionHandler, sstream_adc_resolution_t resolution, uint32_t timeout)
