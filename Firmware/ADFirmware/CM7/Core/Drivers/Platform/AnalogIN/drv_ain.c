@@ -465,6 +465,12 @@ drv_ain_status 						DRV_AIN_SetChannelOffset(drv_ain_adc_t adc, uint32_t channe
 
 	return DRV_AIN_STATUS_OK;
 }
+
+drv_ain_status 						DRV_AIN_SetChannelAvgRatio(drv_ain_adc_t adc, uint32_t channel,  drv_adc_ch_avg_ratio_t avgRatio)
+{
+
+	return DRV_AIN_STATUS_OK;
+}
 drv_ain_status 						DRV_AIN_SetSamplingResolutionTime(drv_ain_adc_t adc, uint32_t time)
 {
 
