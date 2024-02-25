@@ -23,17 +23,18 @@
 #include "drv_ain.h"
 
 
-#define  	SSTREAM_TASK_START_BIT					0x00000001
-#define  	SSTREAM_TASK_STOP_BIT					0x00000002
-#define  	SSTREAM_TASK_STREAM_BIT					0x00000004
-#define  	SSTREAM_TASK_SET_ADC_RESOLUTION_BIT		0x00000008
-#define  	SSTREAM_TASK_SET_ADC_STIME_BIT			0x00000010
-#define  	SSTREAM_TASK_SET_ADC_CLOCK_DIV_BIT		0x00000020
-#define  	SSTREAM_TASK_SET_ADC_CH1_STIME_BIT		0x00000040
-#define  	SSTREAM_TASK_SET_ADC_CH2_STIME_BIT		0x00000080
-#define  	SSTREAM_TASK_SET_ADC_CH1_OFFSET_BIT		0x00000100
-#define  	SSTREAM_TASK_SET_ADC_CH2_OFFSET_BIT		0x00000200
-#define  	SSTREAM_TASK_SET_ADC_AVERAGING_RATIO	0x00000400
+#define  	SSTREAM_TASK_START_BIT						0x00000001
+#define  	SSTREAM_TASK_STOP_BIT						0x00000002
+#define  	SSTREAM_TASK_STREAM_BIT						0x00000004
+#define  	SSTREAM_TASK_SET_ADC_RESOLUTION_BIT			0x00000008
+#define  	SSTREAM_TASK_SET_ADC_STIME_BIT				0x00000010
+#define  	SSTREAM_TASK_SET_ADC_CLOCK_DIV_BIT			0x00000020
+#define  	SSTREAM_TASK_SET_ADC_CH1_STIME_BIT			0x00000040
+#define  	SSTREAM_TASK_SET_ADC_CH2_STIME_BIT			0x00000080
+#define  	SSTREAM_TASK_SET_ADC_CH1_OFFSET_BIT			0x00000100
+#define  	SSTREAM_TASK_SET_ADC_CH2_OFFSET_BIT			0x00000200
+#define  	SSTREAM_TASK_SET_ADC_CH1_AVERAGING_RATIO	0x00000400
+#define  	SSTREAM_TASK_SET_ADC_CH2_AVERAGING_RATIO	0x00000800
 
 
 
@@ -108,15 +109,37 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 			}
 
 			/* Try to configure default sampling time */
-			if(DRV_AIN_SetSamplingResolutionTime(DRV_AIN_ADC_3, SSTREAM_AIN_DEFAULT_SAMPLE_TIME) == DRV_AIN_STATUS_OK)
+			if(DRV_AIN_SetChannelAvgRatio(DRV_AIN_ADC_3, 1, SSTREAM_AIN_DEFAULT_CH_AVG_RATIO) == DRV_AIN_STATUS_OK)
 			{
-				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Sampling time %d [us] set\r\n", SSTREAM_AIN_DEFAULT_SAMPLE_TIME);
-				connectionData->ainConfig.samplingTime = SSTREAM_AIN_DEFAULT_SAMPLE_TIME;
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Channel 1 averaging ration %d set\r\n", SSTREAM_AIN_DEFAULT_CH_AVG_RATIO);
+				connectionData->ainConfig.ch1.avgRatio = SSTREAM_AIN_DEFAULT_CH_AVG_RATIO;
 			}
 			else
 			{
-				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem with AIN sampling time\r\n");
-				connectionData->ainConfig.samplingTime = 0;
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to set default channel 1 averaging ration\r\n");
+				connectionData->ainConfig.ch1.avgRatio = 0;
+			}
+
+			/* Try to configure default sampling time */
+			if(DRV_AIN_SetChannelAvgRatio(DRV_AIN_ADC_3, 2, SSTREAM_AIN_DEFAULT_CH_AVG_RATIO) == DRV_AIN_STATUS_OK)
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Channel 2 averaging ration %d set\r\n", SSTREAM_AIN_DEFAULT_CH_AVG_RATIO);
+				connectionData->ainConfig.ch1.avgRatio = SSTREAM_AIN_DEFAULT_CH_AVG_RATIO;
+			}
+			else
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to set default channel 1 averaging ration\r\n");
+				connectionData->ainConfig.ch1.avgRatio = 0;
+			}
+
+			/*Obtain ADC input clk*/
+			if(DRV_AIN_GetADCClk(DRV_AIN_ADC_3, &connectionData->ainConfig.inputClk) == DRV_AIN_STATUS_OK)
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "ADC Input clk %d\r\n", connectionData->ainConfig.inputClk);
+			}
+			else
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Unable to obtain ADC clock\r\n");
 			}
 
 			if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
@@ -268,11 +291,38 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 					break;
 				}
 			}
-			if(notifyValue & SSTREAM_TASK_SET_ADC_AVERAGING_RATIO)
+			if(notifyValue & SSTREAM_TASK_SET_ADC_CH1_AVERAGING_RATIO)
 			{
+				/* Try to configure ADC channel 1 sampling time */
+				if(DRV_AIN_SetChannelAvgRatio(DRV_AIN_ADC_3, 1, connectionData->ainConfig.ch1.avgRatio) == DRV_AIN_STATUS_OK)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Channel 1 averaging ration %d successfully set\r\n", connectionData->ainConfig.ch1.avgRatio);
+				}
+				else
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "Unable to set channel 1 averaging ratio\r\n");
+				}
 				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
 				{
-					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem with ADC configuration\r\n");
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release init semaphore\r\n");
+					connectionData->state = SSTREAM_STATE_ERROR;
+					break;
+				}
+			}
+			if(notifyValue & SSTREAM_TASK_SET_ADC_CH2_AVERAGING_RATIO)
+			{
+				/* Try to configure ADC channel 1 sampling time */
+				if(DRV_AIN_SetChannelAvgRatio(DRV_AIN_ADC_3, 2, connectionData->ainConfig.ch2.avgRatio) == DRV_AIN_STATUS_OK)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Channel 2 averaging ration %d successfully set\r\n", connectionData->ainConfig.ch1.avgRatio);
+				}
+				else
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "Unable to set channel 2 averaging ratio\r\n");
+				}
+				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release init semaphore\r\n");
 					connectionData->state = SSTREAM_STATE_ERROR;
 					break;
 				}
@@ -478,6 +528,40 @@ sstream_status_t				SSTREAM_SetChannelOffset(sstream_connection_info* connection
 
 	return SSTREAM_STATUS_OK;
 }
+
+sstream_status_t				SSTREAM_SetChannelAvgRatio(sstream_connection_info* connectionHandler, uint32_t channel, sstream_adc_ch_avg_ratio_t avgRatio, uint32_t timeout)
+{
+	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(channel == 1)
+	{
+		prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch1.avgRatio = avgRatio;
+	}
+	if(channel == 2)
+	{
+		prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch2.avgRatio = avgRatio;
+	}
+	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
+	/* Send request to configure AIN*/
+	if(channel == 1)
+	{
+		if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+				SSTREAM_TASK_SET_ADC_CH1_AVERAGING_RATIO,
+				eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
+	}
+	if(channel == 2)
+	{
+		if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+				SSTREAM_TASK_SET_ADC_CH2_AVERAGING_RATIO,
+				eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
+	}
+
+	/* Wait until configuration is applied*/
+	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
+			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
+	return SSTREAM_STATUS_OK;
+}
 sstream_adc_resolution_t		SSTREAM_GetResolution(sstream_connection_info* connectionHandler, uint32_t timeout)
 {
 	sstream_adc_resolution_t resolution;
@@ -541,6 +625,35 @@ uint32_t						SSTREAM_GetChannelOffset(sstream_connection_info* connectionHandle
 	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	return choffset;
+}
+
+sstream_adc_ch_avg_ratio_t		SSTREAM_GetChannelAvgRatio(sstream_connection_info* connectionHandler, uint32_t channel, uint32_t timeout)
+{
+	sstream_adc_ch_avg_ratio_t avgRatio;
+
+	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(channel == 1)
+	{
+		avgRatio = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch1.avgRatio;
+	}
+	if(channel == 2)
+	{
+		avgRatio = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch2.avgRatio;
+	}
+	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
+	return avgRatio;
+}
+
+uint32_t						SSTREAM_GetAdcInputClk(sstream_connection_info* connectionHandler, uint32_t timeout)
+{
+	uint32_t inputClk;
+
+	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	inputClk = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.inputClk;
+	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
+	return inputClk;
 }
 
 

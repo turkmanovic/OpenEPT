@@ -22,6 +22,7 @@
 #define		SSTREAM_AIN_DEFAULT_RESOLUTION		CONF_SSTREAM_AIN_DEFAULT_RESOLUTION
 #define		SSTREAM_AIN_DEFAULT_CLOCK_DIV		CONF_SSTREAM_AIN_DEFAULT_CLOCK_DIV
 #define		SSTREAM_AIN_DEFAULT_CH_SAMPLE_TIME	CONF_SSTREAM_AIN_DEFAULT_CH_SAMPLE_TIME
+#define		SSTREAM_AIN_DEFAULT_CH_AVG_RATIO	CONF_SSTREAM_AIN_DEFAULT_CH_AVG_RATIO
 #define		SSTREAM_AIN_DEFAULT_SAMPLE_TIME		CONF_SSTREAM_AIN_DEFAULT_SAMPLE_TIME
 #define 	SSTREAM_AIN_VOLTAGE_CHANNEL			CONF_SSTREAM_AIN_VOLTAGE_CHANNEL
 #define 	SSTREAM_AIN_CURRENT_CHANNEL			CONF_SSTREAM_AIN_CURRENT_CHANNEL
@@ -72,6 +73,21 @@ typedef enum{
 }sstream_adc_clk_div_t;
 
 typedef enum{
+	SSTREAM_ADC_AVG_RATIO_UNDEFINE	= 0,
+	SSTREAM_ADC_AVG_RATIO_1 		= 1,
+	SSTREAM_ADC_AVG_RATIO_2 		= 2,
+	SSTREAM_ADC_AVG_RATIO_4 		= 4,
+	SSTREAM_ADC_AVG_RATIO_8 		= 8,
+	SSTREAM_ADC_AVG_RATIO_16 		= 16,
+	SSTREAM_ADC_AVG_RATIO_32 		= 32,
+	SSTREAM_ADC_AVG_RATIO_64 		= 64,
+	SSTREAM_ADC_AVG_RATIO_128 		= 128,
+	SSTREAM_ADC_AVG_RATIO_256 		= 256,
+	SSTREAM_ADC_AVG_RATIO_512 		= 512,
+	SSTREAM_ADC_AVG_RATIO_1024 		= 1024
+}sstream_adc_ch_avg_ratio_t;
+
+typedef enum{
 	SSTREAM_ACQUISITION_STATE_UNDEFINED = 0,
 	SSTREAM_ACQUISITION_STATE_STOP,
 	SSTREAM_ACQUISITION_STATE_START,
@@ -98,11 +114,14 @@ sstream_status_t				SSTREAM_SetSamplingTime(sstream_connection_info* connectionH
 sstream_status_t				SSTREAM_SetClkDiv(sstream_connection_info* connectionHandler, sstream_adc_clk_div_t adcClkDiv, uint32_t timeout);
 sstream_status_t				SSTREAM_SetChannelSamplingTime(sstream_connection_info* connectionHandler, uint32_t channel, sstream_adc_sampling_time_t stime, uint32_t timeout);
 sstream_status_t				SSTREAM_SetChannelOffset(sstream_connection_info* connectionHandler, uint32_t channel, uint32_t offset, uint32_t timeout);
+sstream_status_t				SSTREAM_SetChannelAvgRatio(sstream_connection_info* connectionHandler, uint32_t channel, sstream_adc_ch_avg_ratio_t avgRatio, uint32_t timeout);
 sstream_adc_resolution_t		SSTREAM_GetResolution(sstream_connection_info* connectionHandler, uint32_t timeout);
 sstream_adc_clk_div_t			SSTREAM_GetClkDiv(sstream_connection_info* connectionHandler, uint32_t timeout);
 sstream_status_t				SSTREAM_Calibrate(sstream_connection_info* connectionHandler);
 uint32_t						SSTREAM_GetSamplingTime(sstream_connection_info* connectionHandler, uint32_t timeout);
 sstream_adc_sampling_time_t		SSTREAM_GetChannelSamplingTime(sstream_connection_info* connectionHandler, uint32_t channel, uint32_t timeout);
 uint32_t						SSTREAM_GetChannelOffset(sstream_connection_info* connectionHandler, uint32_t channel, uint32_t timeout);
+sstream_adc_ch_avg_ratio_t		SSTREAM_GetChannelAvgRatio(sstream_connection_info* connectionHandler, uint32_t channel, uint32_t timeout);
+uint32_t						SSTREAM_GetAdcInputClk(sstream_connection_info* connectionHandler, uint32_t timeout);
 
 #endif /* CORE_MIDDLEWARES_SERVICES_SAMPLESSTREAM_SSTREAM_H_ */
