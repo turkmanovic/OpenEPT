@@ -36,6 +36,12 @@ public slots:
     void    onAcquisitionStop();
     void    onAcquisitionPause();
 
+
+    void    onDeviceResolutionObtained(QString resolution);
+    void    onDeviceClkDivObtained(QString clkDiv);
+    void    onDeviceChSampleTimeObtained(QString stime);
+    void    onDeviceSTimeObtained(QString stime);
+
 private:
     DeviceWnd*  deviceWnd;
     Device*     device;

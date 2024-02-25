@@ -41,6 +41,12 @@ public:
     QStringList*    getChAvgRationOptions();
     QStringList*    getClockDivOptions();
     QStringList*    getResolutionOptions();
+    bool            setChSamplingTime(QString sTime);
+    bool            setChAvgRatio(QString avgRatio);
+    bool            setClkDiv(QString clkDiv);
+    bool            setResolution(QString resolution);
+    bool            setSTime(QString stime);
+    bool            setADCClk(QString adcClk);
 
 signals:
     void            sigWndClosed();
@@ -63,10 +69,6 @@ protected:
 
 public slots:
     void            onAdvanceConfigurationButtonPressed(bool pressed);
-    //void            onClockDivCombIndexChanged(int index);
-    //void            onResolutionCombIndexChanged(int index);
-    //void            onSamplingTimeCombIndexChanged(int index);
-    //void            onInfoSaveToFileEnabled(bool enableStatus);
     void            onSaveToFileChanged(int value);
     void            onStartAcquisition();
     void            onPauseAcquisition();

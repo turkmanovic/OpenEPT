@@ -14,22 +14,6 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     ui(new Ui::DeviceWnd)
 {
     ui->setupUi(this);
-//    if (!consoleWnd) {
-//        qDebug() << "Error: Failed to allocate memory for consoleWnd.";
-//        // Handle the error appropriately, e.g., return or exit
-//    }
-    /* Set default Value for ADC Resolution Comb*/
-    /*
-    resolutionOptions=(
-        QStringList()
-        <<""
-        <<"16 Bit"
-        <<"14 Bit"
-        <<"12 Bit"
-        <<"10 Bit"
-        );
-    ui->resolutionComb->addItems(resolutionOptions);
-    */
     resolutionOptions = new QStringList();
     *resolutionOptions
         <<""
@@ -147,7 +131,6 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     connect(advanceConfigurationWnd, SIGNAL(sigAdvResolutionChanged(int)), this, SLOT(onAdvResolutionChanged(int)));
     connect(advanceConfigurationWnd, SIGNAL(sigAdvClockDivChanged(int)), this, SLOT(onAdvClockDivChanged(int)));
     connect(advanceConfigurationWnd, SIGNAL(sigAdvSampleTimeChanged(int)), this, SLOT(onAdvSampleTimeChanged(int)));
-    //connect(advanceConfigurationWnd, SIGNAL(sigAdvSamplingTimeChanged(QString)), this, SLOT(onAdvSamplingTimeChanged(QString)));
     connect(advanceConfigurationWnd, SIGNAL(sigAdvConfigurationChanged(QVariant)), this, SLOT(onAdvConfigurationChanged(QVariant)));
 }
 
@@ -291,12 +274,6 @@ void    DeviceWnd::onSaveToFileChanged(int value)
         emit saveToFileEnabled(false);
     }
 }
-/*
-void DeviceWnd::onInfoSaveToFileEnabled(bool enableStatus)
-{
-    saveToFileFlag = enableStatus;
-}
-*/
 
 void DeviceWnd::onConsolePressed()
 {
@@ -346,23 +323,6 @@ void DeviceWnd::setDeviceStateConnected()
     ui->deviceConnectedLabe->setText("Connected");
     ui->deviceConnectedLabe->setStyleSheet("QLabel { background-color : green; color : black; }");
 }
-
-/*
-void DeviceWnd::onClockDivCombIndexChanged(int index)
-{
-    emit sigClockDivChanged(clockDivOptions[index]);
-}
-
-void DeviceWnd::onResolutionCombIndexChanged(int index)
-{
-    emit sigResolutionChanged(resolutionOptions[index]);
-}
-
-void DeviceWnd::onSamplingTimeCombIndexChanged(int index)
-{
-    emit sigSamplingTimeChanged(sampleTimeOptions[index]);
-}
-*/
 void    DeviceWnd::closeEvent(QCloseEvent *event)
 {
     emit sigWndClosed();
@@ -453,5 +413,39 @@ QStringList *DeviceWnd::getClockDivOptions()
 QStringList *DeviceWnd::getResolutionOptions()
 {
     return resolutionOptions;
+}
+
+bool DeviceWnd::setChSamplingTime(QString sTime)
+{
+    if(!sampleTimeOptions->contains(sTime)) return false;
+    ui->sampleTimeComb->setCurrentIndex(sampleTimeOptions->indexOf(sTime));
+    return true;
+}
+
+bool DeviceWnd::setChAvgRatio(QString avgRatio)
+{
+    if(!sampleTimeOptions->contains(avgRatio)) return false;
+    ui->sampleTimeComb->setCurrentIndex(sampleTimeOptions->indexOf(avgRatio));
+    return true;
+}
+
+bool DeviceWnd::setClkDiv(QString clkDiv)
+{
+    if(!clockDivOptions->contains(clkDiv)) return false;
+    ui->clockDivComb->setCurrentIndex(clockDivOptions->indexOf(clkDiv));
+    return true;
+}
+
+bool DeviceWnd::setResolution(QString resolution)
+{
+    if(!resolutionOptions->contains(resolution + " Bit")) return false;
+    ui->resolutionComb->setCurrentIndex(resolutionOptions->indexOf(resolution + " Bit"));
+    return true;
+}
+
+bool DeviceWnd::setSTime(QString stime)
+{
+    ui->samplingTimeLine->setText(stime);
+    return true;
 }
 

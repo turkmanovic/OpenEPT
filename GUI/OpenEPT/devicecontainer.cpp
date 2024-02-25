@@ -27,6 +27,11 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(deviceWnd,  SIGNAL(sigStopAcquisition()), this, SLOT(onAcquisitionStop()));
     connect(deviceWnd,  SIGNAL(sigPauseAcquisition()), this, SLOT(onAcquisitionPause()));
 
+    connect(device,     SIGNAL(sigResolutionObtained(QString)), this, SLOT(onDeviceResolutionObtained(QString)));
+    connect(device,     SIGNAL(sigChSampleTimeObtained(QString)), this, SLOT(onDeviceChSampleTimeObtained(QString)));
+    connect(device,     SIGNAL(sigClockDivObtained(QString)), this, SLOT(onDeviceClkDivObtained(QString)));
+    connect(device,     SIGNAL(sigSampleTimeObtained(QString)), this, SLOT(onDeviceSTimeObtained(QString)));
+
     log->printLogMessage("Device container successfully created", LOG_MESSAGE_TYPE_INFO);
     device->statusLinkCreate();
 
@@ -239,6 +244,54 @@ void DeviceContainer::onAcquisitionPause()
     else
     {
         log->printLogMessage("Acquisition sucessfully paused", LOG_MESSAGE_TYPE_INFO);
+    }
+}
+
+void DeviceContainer::onDeviceResolutionObtained(QString resolution)
+{
+    if(!deviceWnd->setResolution(resolution))
+    {
+        log->printLogMessage("Unable to show obtained resolution: " + resolution + "bit", LOG_MESSAGE_TYPE_ERROR);
+    }
+    else
+    {
+        log->printLogMessage("Resolution sucessfully obtained and presented ", LOG_MESSAGE_TYPE_INFO);
+    }
+}
+
+void DeviceContainer::onDeviceClkDivObtained(QString clkDiv)
+{
+    if(!deviceWnd->setClkDiv(clkDiv))
+    {
+        log->printLogMessage("Unable to show obtained clock div: " + clkDiv, LOG_MESSAGE_TYPE_ERROR);
+    }
+    else
+    {
+        log->printLogMessage("Clock div sucessfully obained and presented ", LOG_MESSAGE_TYPE_INFO);
+    }
+}
+
+void DeviceContainer::onDeviceChSampleTimeObtained(QString stime)
+{
+    if(!deviceWnd->setChSamplingTime(stime))
+    {
+        log->printLogMessage("Unable to show obtained channels sampling time: " + stime, LOG_MESSAGE_TYPE_ERROR);
+    }
+    else
+    {
+        log->printLogMessage("Channels sampling time sucessfully obained and presented ", LOG_MESSAGE_TYPE_INFO);
+    }
+}
+
+void DeviceContainer::onDeviceSTimeObtained(QString stime)
+{
+    if(!deviceWnd->setSTime(stime))
+    {
+        log->printLogMessage("Unable to show obtained sampling time: " + stime + "us", LOG_MESSAGE_TYPE_ERROR);
+    }
+    else
+    {
+        log->printLogMessage("Sampling time sucessfully obained and presented ", LOG_MESSAGE_TYPE_INFO);
     }
 }
 

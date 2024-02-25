@@ -98,6 +98,9 @@ signals:
     void        sigNewResponseReceived(QString response);
 
     void        sigResolutionObtained(QString resolution);
+    void        sigChSampleTimeObtained(QString chstime);
+    void        sigSampleTimeObtained(QString stime);
+    void        sigClockDivObtained(QString clkDiv);
 public slots:
     void        onControlLinkConnected();
     void        onControlLinkDisconnected();

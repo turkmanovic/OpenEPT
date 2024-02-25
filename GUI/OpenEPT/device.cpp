@@ -134,6 +134,7 @@ bool Device::getResolution(device_adc_resolution_t *resolution)
     QString response;
     QString command = "device adc chresolution get -sid=" + QString::number(streamID);
     int tmpResolution;
+    QString signalResponse =  "";
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     //Parse response
     tmpResolution = response.toInt();
@@ -141,25 +142,30 @@ bool Device::getResolution(device_adc_resolution_t *resolution)
     {
     case 16:
         adcResolution = DEVICE_ADC_RESOLUTION_16BIT;
+        signalResponse += "16";
         break;
     case 14:
         adcResolution = DEVICE_ADC_RESOLUTION_14BIT;
+        signalResponse += "14";
         break;
     case 12:
         adcResolution = DEVICE_ADC_RESOLUTION_12BIT;
+        signalResponse += "12";
         break;
     case 10:
         adcResolution = DEVICE_ADC_RESOLUTION_10BIT;
+        signalResponse += "10";
         break;
     default:
         adcResolution = DEVICE_ADC_RESOLUTION_UKNOWN;
+        signalResponse += "0";
         break;
     }
     if(resolution != NULL)
     {
         *resolution = adcResolution;
     }
-    emit sigResolutionObtained(response);
+    emit sigResolutionObtained(signalResponse);
     return true;
 }
 
@@ -219,6 +225,7 @@ bool Device::getClockDiv(device_adc_clock_div_t *clockDiv)
     QString response;
     QString command = "device adc chclkdiv get -sid=" + QString::number(streamID);
     int tmpClkDiv;
+    QString signalResponse =  "";
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     //Parse response
     tmpClkDiv = response.toInt();
@@ -226,33 +233,43 @@ bool Device::getClockDiv(device_adc_clock_div_t *clockDiv)
     {
     case 1:
         adcClockingDiv = DEVICE_ADC_CLOCK_DIV_1;
+        signalResponse = "1";
         break;
     case 2:
         adcClockingDiv = DEVICE_ADC_CLOCK_DIV_2;
+        signalResponse = "2";
         break;
     case 4:
         adcClockingDiv = DEVICE_ADC_CLOCK_DIV_4;
+        signalResponse = "4";
         break;
     case 8:
         adcClockingDiv = DEVICE_ADC_CLOCK_DIV_8;
+        signalResponse = "8";
         break;
     case 16:
         adcClockingDiv = DEVICE_ADC_CLOCK_DIV_16;
+        signalResponse = "16";
         break;
     case 32:
         adcClockingDiv = DEVICE_ADC_CLOCK_DIV_32;
+        signalResponse = "32";
         break;
     case 64:
         adcClockingDiv = DEVICE_ADC_CLOCK_DIV_64;
+        signalResponse = "64";
         break;
     case 128:
         adcClockingDiv = DEVICE_ADC_CLOCK_DIV_128;
+        signalResponse = "128";
         break;
     default:
         adcClockingDiv = DEVICE_ADC_CLOCK_DIV_UKNOWN;
+        signalResponse = "0";
         break;
     }
     if(clockDiv != NULL) *clockDiv = adcClockingDiv;
+    emit sigClockDivObtained(signalResponse);
     return true;
 }
 
@@ -303,6 +320,7 @@ bool Device::getChSampleTime(device_adc_ch_sampling_time_t *sampleTime)
     QString response;
     QString command = "device adc chstime get -sid=" + QString::number(streamID);
     int tmpChSTime;
+    QString signalResponse =  "";
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     //Parse response
     tmpChSTime = response.toInt();
@@ -310,30 +328,39 @@ bool Device::getChSampleTime(device_adc_ch_sampling_time_t *sampleTime)
     {
     case 1:
         adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_1C5;
+        signalResponse      =   "1C5";
         break;
     case 2:
         adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_2C5;
+        signalResponse      =   "2C5";
         break;
     case 8:
         adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_8C5;
+        signalResponse      =   "8C5";
         break;
     case 16:
         adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_16C5;
+        signalResponse      =   "16C5";
         break;
     case 32:
         adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_32C5;
+        signalResponse      =   "32C5";
         break;
     case 64:
         adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_64C5;
+        signalResponse      =   "64C5";
         break;
     case 128:
         adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_387C5;
+        signalResponse      =   "387C5";
         break;
     default:
         adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_810C5;
+        signalResponse      =   "810C5";
         break;
     }
     if(sampleTime != NULL) *sampleTime = adcChSamplingTime;
+    emit sigChSampleTimeObtained(signalResponse);
     return true;
 }
 
@@ -461,6 +488,7 @@ bool Device::getSamplingTime(QString *time)
     tmpSTime = response.toInt();
     samplingTime = response;
     if(time != NULL) *time = QString::number(tmpSTime);
+    emit sigSampleTimeObtained(response);
     return true;
 }
 
@@ -528,6 +556,7 @@ bool Device::acquireDeviceConfiguration()
     getResolution();
     getClockDiv();
     getSamplingTime();
+    getChSampleTime();
     getVOffset();
     getCOffset();
     getAvrRatio();
