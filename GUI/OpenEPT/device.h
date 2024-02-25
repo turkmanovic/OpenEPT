@@ -80,7 +80,9 @@ public:
     bool        setSamplingTime(QString time);
     bool        getSamplingTime(QString* time = NULL);
     bool        setVOffset(QString off);
+    bool        getVOffset(QString* off=NULL);
     bool        setCOffset(QString off);
+    bool        getCOffset(QString* off=NULL);
     bool        acquireDeviceConfiguration();
 
 signals:

@@ -41,7 +41,7 @@ void Device::controlLinkAssign(ControlLink* link)
 bool Device::createStreamLink(QString ip, quint16 port)
 {
     QString response;
-    QString command = "device stream create -ip=" + ip +  " -port=" + QString::number(port) + "\r\n";
+    QString command = "device stream create -ip=" + ip +  " -port=" + QString::number(port);
     if(controlLink == NULL) return false;
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     streamID = response.toInt();
@@ -384,7 +384,7 @@ bool Device::getSamplingTime(QString *time)
 bool Device::setVOffset(QString off)
 {
     QString response;
-    QString command = "device voffset set -sid=" + QString::number(streamID) + " -value=";
+    QString command = "device adc voffset set -sid=" + QString::number(streamID) + " -value=";
     command += off;
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     if(response != "OK"){
@@ -394,10 +394,21 @@ bool Device::setVOffset(QString off)
     return true;
 }
 
+bool Device::getVOffset(QString *off)
+{
+    QString response;
+    QString command = "device adc voffset get -sid=" + QString::number(streamID);
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    //Parse response
+    voltageOffset = response;
+    if(off != NULL) *off = voltageOffset;
+    return true;
+}
+
 bool Device::setCOffset(QString off)
 {
     QString response;
-    QString command = "device coffset set -sid=" + QString::number(streamID) + " -value=";
+    QString command = "device adc coffset set -sid=" + QString::number(streamID) + " -value=";
     command += off;
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     if(response != "OK"){
@@ -407,11 +418,24 @@ bool Device::setCOffset(QString off)
     return true;
 }
 
+bool Device::getCOffset(QString *off)
+{
+    QString response;
+    QString command = "device adc coffset get -sid=" + QString::number(streamID);
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    //Parse response
+    currentOffset = response;
+    if(off != NULL) *off = currentOffset;
+    return true;
+}
+
 bool Device::acquireDeviceConfiguration()
 {
     getResolution();
     getClockDiv();
     getSamplingTime();
+    getVOffset();
+    getCOffset();
     return true;
 }
 
