@@ -434,3 +434,20 @@ void DeviceWnd::setDeviceInterfaceSelectionState(device_interface_selection_stat
     }
     interfaceState = selectionState;
 }
+
+bool DeviceWnd::setChannelsSamplingTime(QString stime)
+{
+    if(!sampleTimeOptions->contains(stime))
+    {
+        return false;
+    }
+    for(int i =0 ; i < sampleTimeOptions->length(); i++)
+    {
+        if(sampleTimeOptions->at(i) == stime)
+        {
+            ui->sampleTimeComb->setCurrentIndex(i);
+            break;
+        }
+    }
+    return true;
+}

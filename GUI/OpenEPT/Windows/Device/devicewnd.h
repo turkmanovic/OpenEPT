@@ -37,6 +37,7 @@ public:
     void            setDeviceState(device_state_t aDeviceState);
     void            printConsoleMsg(QString msg);
     void            setDeviceInterfaceSelectionState(device_interface_selection_state_t selectionState=DEVICE_INTERFACE_SELECTION_STATE_UNDEFINED);
+    bool            setChannelsSamplingTime(QString stime);
 
 signals:
     void            sigWndClosed();

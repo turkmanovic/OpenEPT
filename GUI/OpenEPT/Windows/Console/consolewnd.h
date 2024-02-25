@@ -1,6 +1,5 @@
 #ifndef CONSOLEWND_H
 #define CONSOLEWND_H
-
 #include <QWidget>
 #include "Utility/log.h"
 

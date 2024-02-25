@@ -1063,7 +1063,7 @@
                  </property>
                  <property name="icon">
                   <iconset resource="../../resource.qrc">
-                   <normaloff>:/images/console.png</normaloff>:/images/console.png</iconset>
+                   <normaloff>:/images/NewSet/console.png</normaloff>:/images/NewSet/console.png</iconset>
                  </property>
                  <property name="iconSize">
                   <size>
