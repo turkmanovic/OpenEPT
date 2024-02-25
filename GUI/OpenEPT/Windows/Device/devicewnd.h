@@ -49,10 +49,10 @@ signals:
     void            sigCOffsetChanged(QString off);
     void            saveToFileEnabled(bool enableStatus);
     void            sigNewInterfaceSelected(QString interfaceIp);
-    void            startAcquisition();
-    void            pauseAcquisition();
-    void            stopAcquisition();
-    void            refreshAcquisition();
+    void            sigStartAcquisition();
+    void            sigPauseAcquisition();
+    void            sigStopAcquisition();
+    void            sigRefreshAcquisition();
     void            sigNewControlMessageRcvd(const QString &response);
 protected:
     void            closeEvent(QCloseEvent *event);

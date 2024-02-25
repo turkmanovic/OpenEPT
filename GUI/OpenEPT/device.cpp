@@ -17,6 +17,33 @@ Device::~Device()
     delete controlLink;
 }
 
+bool Device::acquisitionStart()
+{
+    QString response;
+    QString command = "device stream start -sid=" + QString::number(streamID);
+    if(controlLink == NULL) return false;
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    return true;
+}
+
+bool Device::acquisitionStop()
+{
+    QString response;
+    QString command = "device stream stop -sid=" + QString::number(streamID);
+    if(controlLink == NULL) return false;
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    return true;
+}
+
+bool Device::acquisitionPause()
+{
+    QString response;
+    QString command = "device stream stop -sid=" + QString::number(streamID);
+    if(controlLink == NULL) return false;
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    return true;
+}
+
 bool Device::setName(QString aNewDeviceName)
 {
     deviceName  = aNewDeviceName;

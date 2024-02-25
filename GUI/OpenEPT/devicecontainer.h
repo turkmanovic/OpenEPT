@@ -32,6 +32,9 @@ public slots:
     void    onAvrRatioChanged(int index);
     void    onVOffsetChanged(QString off);
     void    onCOffsetChanged(QString off);
+    void    onAcquisitionStart();
+    void    onAcquisitionStop();
+    void    onAcquisitionPause();
 
 private:
     DeviceWnd*  deviceWnd;

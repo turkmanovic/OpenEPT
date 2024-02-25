@@ -305,22 +305,22 @@ void DeviceWnd::onConsolePressed()
 
 void DeviceWnd::onStartAcquisition()
 {
-    emit startAcquisition();
+    emit sigStartAcquisition();
 }
 
 void DeviceWnd::onPauseAcquisition()
 {
-    emit pauseAcquisition();
+    emit sigPauseAcquisition();
 }
 
 void DeviceWnd::onStopAcquisiton()
 {
-    emit stopAcquisition();
+    emit sigStopAcquisition();
 }
 
 void DeviceWnd::onRefreshAcquisiton()
 {
-    emit refreshAcquisition();
+    emit sigRefreshAcquisition();
 }
 
 void DeviceWnd::setDeviceStateDisconnected()

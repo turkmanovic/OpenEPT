@@ -8,21 +8,24 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     log         = new Log();
     log->assignLogWidget(deviceWnd->getLogWidget());
 
-    connect(deviceWnd, SIGNAL(sigWndClosed()), this, SLOT(onDeviceClosed()));
-    connect(deviceWnd, SIGNAL(sigNewControlMessageRcvd(QString)), this, SLOT(onConsoleWndMessageRcvd(QString)));
-    connect(device, SIGNAL(sigControlLinkConnected()), this, SLOT(onDeviceControlLinkConnected()));
-    connect(device, SIGNAL(sigControlLinkDisconnected()), this, SLOT(onDeviceControlLinkDisconnected()));
-    connect(device, SIGNAL(sigStatusLinkNewDeviceAdded(QString)), this, SLOT(onDeviceStatusLinkNewDeviceAdded(QString)));
-    connect(device, SIGNAL(sigStatusLinkNewMessageReceived(QString,QString)), this, SLOT(onDeviceStatusLinkNewMessageReceived(QString,QString)));
-    connect(device, SIGNAL(sigNewResponseReceived(QString)), this, SLOT(onConsoleWndHandleControlMsgResponse(QString)));
-    connect(deviceWnd, SIGNAL(sigResolutionChanged(int)), this, SLOT(onResolutionChanged(int)));
-    connect(deviceWnd, SIGNAL(sigClockDivChanged(int)), this, SLOT(onClockDivChanged(int)));
-    connect(deviceWnd, SIGNAL(sigSampleTimeChanged(int)), this, SLOT(onSampleTimeChanged(int)));
-    connect(deviceWnd, SIGNAL(sigSamplingTimeChanged(QString)), this, SLOT(onSamplingTimeChanged(QString)));
-    connect(deviceWnd, SIGNAL(sigAvrRatioChanged(int)), this, SLOT(onAvrRatioChanged(int)));
-    connect(deviceWnd, SIGNAL(sigVOffsetChanged(QString)), this, SLOT(onVOffsetChanged(QString)));
-    connect(deviceWnd, SIGNAL(sigCOffsetChanged(QString)), this, SLOT(onCOffsetChanged(QString)));
-    connect(deviceWnd, SIGNAL(sigNewInterfaceSelected(QString)), this, SLOT(onInterfaceChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigWndClosed()), this, SLOT(onDeviceClosed()));
+    connect(deviceWnd,  SIGNAL(sigNewControlMessageRcvd(QString)), this, SLOT(onConsoleWndMessageRcvd(QString)));
+    connect(device,     SIGNAL(sigControlLinkConnected()), this, SLOT(onDeviceControlLinkConnected()));
+    connect(device,     SIGNAL(sigControlLinkDisconnected()), this, SLOT(onDeviceControlLinkDisconnected()));
+    connect(device,     SIGNAL(sigStatusLinkNewDeviceAdded(QString)), this, SLOT(onDeviceStatusLinkNewDeviceAdded(QString)));
+    connect(device,     SIGNAL(sigStatusLinkNewMessageReceived(QString,QString)), this, SLOT(onDeviceStatusLinkNewMessageReceived(QString,QString)));
+    connect(device,     SIGNAL(sigNewResponseReceived(QString)), this, SLOT(onConsoleWndHandleControlMsgResponse(QString)));
+    connect(deviceWnd,  SIGNAL(sigResolutionChanged(int)), this, SLOT(onResolutionChanged(int)));
+    connect(deviceWnd,  SIGNAL(sigClockDivChanged(int)), this, SLOT(onClockDivChanged(int)));
+    connect(deviceWnd,  SIGNAL(sigSampleTimeChanged(int)), this, SLOT(onSampleTimeChanged(int)));
+    connect(deviceWnd,  SIGNAL(sigSamplingTimeChanged(QString)), this, SLOT(onSamplingTimeChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigAvrRatioChanged(int)), this, SLOT(onAvrRatioChanged(int)));
+    connect(deviceWnd,  SIGNAL(sigVOffsetChanged(QString)), this, SLOT(onVOffsetChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigCOffsetChanged(QString)), this, SLOT(onCOffsetChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigNewInterfaceSelected(QString)), this, SLOT(onInterfaceChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigStartAcquisition()), this, SLOT(onAcquisitionStart()));
+    connect(deviceWnd,  SIGNAL(sigStopAcquisition()), this, SLOT(onAcquisitionStop()));
+    connect(deviceWnd,  SIGNAL(sigPauseAcquisition()), this, SLOT(onAcquisitionPause()));
 
     log->printLogMessage("Device container successfully created", LOG_MESSAGE_TYPE_INFO);
     device->statusLinkCreate();
@@ -376,5 +379,41 @@ void DeviceContainer::onCOffsetChanged(QString off)
     else
     {
         log->printLogMessage("Current offset: " + off, LOG_MESSAGE_TYPE_INFO);
+    }
+}
+
+void DeviceContainer::onAcquisitionStart()
+{
+    if(!device->acquisitionStart())
+    {
+        log->printLogMessage("Unable to start acquistion", LOG_MESSAGE_TYPE_ERROR);
+    }
+    else
+    {
+        log->printLogMessage("Acquisition sucessfully started", LOG_MESSAGE_TYPE_INFO);
+    }
+}
+
+void DeviceContainer::onAcquisitionStop()
+{
+    if(!device->acquisitionStop())
+    {
+        log->printLogMessage("Unable to stop acquistion", LOG_MESSAGE_TYPE_ERROR);
+    }
+    else
+    {
+        log->printLogMessage("Acquisition sucessfully stoped", LOG_MESSAGE_TYPE_INFO);
+    }
+}
+
+void DeviceContainer::onAcquisitionPause()
+{
+    if(!device->acquisitionPause())
+    {
+        log->printLogMessage("Unable to pause acquistion", LOG_MESSAGE_TYPE_ERROR);
+    }
+    else
+    {
+        log->printLogMessage("Acquisition sucessfully paused", LOG_MESSAGE_TYPE_INFO);
     }
 }

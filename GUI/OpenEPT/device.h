@@ -63,6 +63,9 @@ public:
     explicit Device(QObject *parent = nullptr);
     ~Device();
 
+    bool        acquisitionStart();
+    bool        acquisitionStop();
+    bool        acquisitionPause();
     bool        setName(QString aNewDeviceName);
     bool        getName(QString* aDeviceName);
     void        controlLinkAssign(ControlLink* link);
@@ -110,13 +113,13 @@ private:
     device_adc_clock_div_t          adcClockingDiv;
     device_adc_averaging_t          adcAveraging;
 
-    ControlLink*                controlLink;
-    StatusLink*                 statusLink;
-    QString                     voltageOffset;
-    QString                     currentOffset;
-    QString                     adcInputClk;
+    ControlLink*                    controlLink;
+    StatusLink*                     statusLink;
+    QString                         voltageOffset;
+    QString                         currentOffset;
+    QString                         adcInputClk;
     /*This should be removed when stream link is defined*/
-    int                         streamID;
+    int                             streamID;
 
 };
 
