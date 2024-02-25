@@ -69,7 +69,7 @@ public:
     bool        setName(QString aNewDeviceName);
     bool        getName(QString* aDeviceName);
     void        controlLinkAssign(ControlLink* link);
-    bool        createStreamLink(QString ip, quint16 port);
+    bool        createStreamLink(QString ip, quint16 port, int* id);
     void        statusLinkCreate();
     void        controlLinkReconnect();
     void        sendControlMsg(QString msg);

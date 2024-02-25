@@ -160,14 +160,15 @@ void DeviceContainer::onSamplingTimeChanged(QString time)
 
 void DeviceContainer::onInterfaceChanged(QString interfaceIp)
 {
-    if(!device->createStreamLink(interfaceIp, 11223))
+    int streamID = -1;
+    if(!device->createStreamLink(interfaceIp, 11223, &streamID))
     {
         log->printLogMessage("Unable to create stream link: ", LOG_MESSAGE_TYPE_ERROR);
         deviceWnd->setDeviceInterfaceSelectionState(DEVICE_INTERFACE_SELECTION_STATE_UNDEFINED);
     }
     else
     {
-        log->printLogMessage("Stream link sucessfully created: ", LOG_MESSAGE_TYPE_INFO);
+        log->printLogMessage("Stream link ( sid="+ QString::number(streamID) + " ) sucessfully created: ", LOG_MESSAGE_TYPE_INFO);
         deviceWnd->setDeviceInterfaceSelectionState(DEVICE_INTERFACE_SELECTION_STATE_SELECTED);
         device->acquireDeviceConfiguration();
     }

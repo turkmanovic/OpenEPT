@@ -66,13 +66,14 @@ void Device::controlLinkAssign(ControlLink* link)
 
 }
 
-bool Device::createStreamLink(QString ip, quint16 port)
+bool Device::createStreamLink(QString ip, quint16 port, int* id)
 {
     QString response;
     QString command = "device stream create -ip=" + ip +  " -port=" + QString::number(port);
     if(controlLink == NULL) return false;
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     streamID = response.toInt();
+    *id = streamID;
     return true;
 }
 
