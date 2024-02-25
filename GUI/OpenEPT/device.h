@@ -77,12 +77,14 @@ public:
     bool        setChSampleTime(device_adc_ch_sampling_time_t sampleTime);
     bool        getChSampleTime(device_adc_ch_sampling_time_t* sampleTime=NULL);
     bool        setAvrRatio(device_adc_averaging_t averagingRatio);
+    bool        getAvrRatio(device_adc_averaging_t* averagingRatio=NULL);
     bool        setSamplingTime(QString time);
     bool        getSamplingTime(QString* time = NULL);
     bool        setVOffset(QString off);
     bool        getVOffset(QString* off=NULL);
     bool        setCOffset(QString off);
     bool        getCOffset(QString* off=NULL);
+    bool        getADCInputClk(QString* clk = NULL);
     bool        acquireDeviceConfiguration();
 
 signals:
@@ -112,6 +114,7 @@ private:
     StatusLink*                 statusLink;
     QString                     voltageOffset;
     QString                     currentOffset;
+    QString                     adcInputClk;
     /*This should be removed when stream link is defined*/
     int                         streamID;
 

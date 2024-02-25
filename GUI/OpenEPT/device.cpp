@@ -355,6 +355,57 @@ bool Device::setAvrRatio(device_adc_averaging_t averagingRatio)
     adcAveraging = averagingRatio;
     return true;
 }
+
+bool Device::getAvrRatio(device_adc_averaging_t *averagingRatio)
+{
+    QString response;
+    QString command = "device adc chavrratio get -sid=" + QString::number(streamID);
+    int tmpADCAvgRatio;
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    //Parse response
+    tmpADCAvgRatio = response.toInt();
+    switch(tmpADCAvgRatio)
+    {
+    case 1:
+        adcAveraging = DEVICE_ADC_AVERAGING_DISABLED;
+        break;
+    case 2:
+        adcAveraging = DEVICE_ADC_AVERAGING_2;
+        break;
+    case 4:
+        adcAveraging = DEVICE_ADC_AVERAGING_4;
+        break;
+    case 8:
+        adcAveraging = DEVICE_ADC_AVERAGING_8;
+        break;
+    case 16:
+        adcAveraging = DEVICE_ADC_AVERAGING_16;
+        break;
+    case 32:
+        adcAveraging = DEVICE_ADC_AVERAGING_32;
+        break;
+    case 64:
+        adcAveraging = DEVICE_ADC_AVERAGING_64;
+        break;
+    case 128:
+        adcAveraging = DEVICE_ADC_AVERAGING_128;
+        break;
+    case 256:
+        adcAveraging = DEVICE_ADC_AVERAGING_256;
+        break;
+    case 512:
+        adcAveraging = DEVICE_ADC_AVERAGING_512;
+        break;
+    case 1024:
+        adcAveraging = DEVICE_ADC_AVERAGING_1024;
+        break;
+    default:
+        adcAveraging = DEVICE_ADC_AVERAGING_UKNOWN;
+        break;
+    }
+    if(averagingRatio != NULL) *averagingRatio = adcAveraging;
+    return true;
+}
 bool Device::setSamplingTime(QString time)
 {
     QString response;
@@ -429,6 +480,17 @@ bool Device::getCOffset(QString *off)
     return true;
 }
 
+bool Device::getADCInputClk(QString *clk)
+{
+    QString response;
+    QString command = "device adc clk get -sid=" + QString::number(streamID);
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    //Parse response
+    adcInputClk = response;
+    if(clk != NULL) *clk = adcInputClk;
+    return true;
+}
+
 bool Device::acquireDeviceConfiguration()
 {
     getResolution();
@@ -436,6 +498,8 @@ bool Device::acquireDeviceConfiguration()
     getSamplingTime();
     getVOffset();
     getCOffset();
+    getAvrRatio();
+    getADCInputClk();
     return true;
 }
 
