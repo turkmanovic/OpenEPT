@@ -9,6 +9,7 @@ Device::Device(QObject *parent)
     adcAveraging            = DEVICE_ADC_AVERAGING_UKNOWN;
     adcClockingDiv          = DEVICE_ADC_CLOCK_DIV_UKNOWN;
     deviceName              = "";
+    samplingTime            = "";
     controlLink             = NULL;
 }
 
@@ -154,7 +155,11 @@ bool Device::getResolution(device_adc_resolution_t *resolution)
         adcResolution = DEVICE_ADC_RESOLUTION_UKNOWN;
         break;
     }
-    if(resolution != NULL) *resolution = adcResolution;
+    if(resolution != NULL)
+    {
+        *resolution = adcResolution;
+    }
+    emit sigResolutionObtained(response);
     return true;
 }
 

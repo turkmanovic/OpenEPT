@@ -97,6 +97,7 @@ signals:
     void        sigStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
     void        sigNewResponseReceived(QString response);
 
+    void        sigResolutionObtained(QString resolution);
 public slots:
     void        onControlLinkConnected();
     void        onControlLinkDisconnected();

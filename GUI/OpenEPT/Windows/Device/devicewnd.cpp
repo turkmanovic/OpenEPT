@@ -228,25 +228,25 @@ void DeviceWnd::onCOffsetChanged(QString off)
 void DeviceWnd::onAvrRatioChanged(int index)
 {
     advanceConfigurationWnd->SetAvrRatioFromDevWnd();
-    emit sigAvrRatioChanged(index);
+    //emit sigAvrRatioChanged(ui->);
 }
 
 void DeviceWnd::onResolutionChanged(int index)
 {
     advanceConfigurationWnd->SetResolutionFromDevWnd(index);
-    emit sigResolutionChanged(index);
+    emit sigResolutionChanged(ui->resolutionComb->currentText());
 }
 
 void DeviceWnd::onClockDivChanged(int index)
 {
     advanceConfigurationWnd->SetClockDivFromDevWnd(index);
-    emit sigClockDivChanged(index);
+    emit sigClockDivChanged(ui->clockDivComb->currentText());
 }
 
 void DeviceWnd::onSampleTimeChanged(int index)
 {
     advanceConfigurationWnd->SetSampleTimeFromDevWnd(index);
-    emit sigSampleTimeChanged(index);
+    emit sigSampleTimeChanged(ui->sampleTimeComb->currentText());
 }
 
 void DeviceWnd::onSamplingTimeChanged()
@@ -435,19 +435,23 @@ void DeviceWnd::setDeviceInterfaceSelectionState(device_interface_selection_stat
     interfaceState = selectionState;
 }
 
-bool DeviceWnd::setChannelsSamplingTime(QString stime)
+QStringList *DeviceWnd::getChSamplingTimeOptions()
 {
-    if(!sampleTimeOptions->contains(stime))
-    {
-        return false;
-    }
-    for(int i =0 ; i < sampleTimeOptions->length(); i++)
-    {
-        if(sampleTimeOptions->at(i) == stime)
-        {
-            ui->sampleTimeComb->setCurrentIndex(i);
-            break;
-        }
-    }
-    return true;
+    return sampleTimeOptions;
 }
+
+QStringList *DeviceWnd::getChAvgRationOptions()
+{
+    return sampleTimeOptions;
+}
+
+QStringList *DeviceWnd::getClockDivOptions()
+{
+    return clockDivOptions;
+}
+
+QStringList *DeviceWnd::getResolutionOptions()
+{
+    return resolutionOptions;
+}
+

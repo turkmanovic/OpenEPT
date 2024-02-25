@@ -24,12 +24,12 @@ public slots:
     void    onDeviceClosed();
     void    onConsoleWndMessageRcvd(QString msg);
     void    onConsoleWndHandleControlMsgResponse(QString msg);
-    void    onResolutionChanged(int index);
-    void    onClockDivChanged(int index);
-    void    onSampleTimeChanged(int index);
+    void    onResolutionChanged(QString resolution);
+    void    onClockDivChanged(QString clockDiv);
+    void    onSampleTimeChanged(QString stime);
     void    onSamplingTimeChanged(QString time);
     void    onInterfaceChanged(QString interfaceIp);
-    void    onAvrRatioChanged(int index);
+    void    onAvrRatioChanged(QString avgRatio);
     void    onVOffsetChanged(QString off);
     void    onCOffsetChanged(QString off);
     void    onAcquisitionStart();
@@ -40,6 +40,12 @@ private:
     DeviceWnd*  deviceWnd;
     Device*     device;
     Log*        log;
+
+
+    device_adc_resolution_t         getAdcResolutionFromString(QString resolution);
+    device_adc_clock_div_t          getAdcClockDivFromString(QString clkDiv);
+    device_adc_ch_sampling_time_t   getAdcChSamplingTimeFromString(QString chstime);
+    device_adc_averaging_t          getAdcAvgRatioFromString(QString avgRatio);
 
 };
 

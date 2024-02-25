@@ -37,15 +37,18 @@ public:
     void            setDeviceState(device_state_t aDeviceState);
     void            printConsoleMsg(QString msg);
     void            setDeviceInterfaceSelectionState(device_interface_selection_state_t selectionState=DEVICE_INTERFACE_SELECTION_STATE_UNDEFINED);
-    bool            setChannelsSamplingTime(QString stime);
+    QStringList*    getChSamplingTimeOptions();
+    QStringList*    getChAvgRationOptions();
+    QStringList*    getClockDivOptions();
+    QStringList*    getResolutionOptions();
 
 signals:
     void            sigWndClosed();
     void            sigSamplingTimeChanged(QString time);
-    void            sigResolutionChanged(int resolution);
-    void            sigClockDivChanged(int clockDiv);
-    void            sigSampleTimeChanged(int sampleTime);
-    void            sigAvrRatioChanged(int index);
+    void            sigResolutionChanged(QString resolution);
+    void            sigClockDivChanged(QString clockDiv);
+    void            sigSampleTimeChanged(QString sampleTime);
+    void            sigAvrRatioChanged(QString index);
     void            sigVOffsetChanged(QString off);
     void            sigCOffsetChanged(QString off);
     void            saveToFileEnabled(bool enableStatus);
