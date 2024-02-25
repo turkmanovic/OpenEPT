@@ -596,10 +596,10 @@ static void prvCONTROL_SetAveragingratio(const char* arguments, uint16_t argumen
 		return;
 	}
 
-	if(SSTREAM_SetChannelSamplingTime(connectionInfo, 1, valueNumber, 1000) != SSTREAM_STATUS_OK)
+	if(SSTREAM_SetChannelAvgRatio(connectionInfo, 1, valueNumber, 1000) != SSTREAM_STATUS_OK)
 	{
 		prvCONTROL_PrepareErrorResponse(response, responseSize);
-		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to set channel 0 sampling time %d\r\n", valueNumber);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to set channel 1 averaging ratio %d\r\n", valueNumber);
 		return;
 	}
 	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
@@ -615,8 +615,32 @@ static void prvCONTROL_SetAveragingratio(const char* arguments, uint16_t argumen
  */
 static void prvCONTROL_GetAveragingratio(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
-	prvCONTROL_PrepareOkResponse(response, responseSize, "128", 3);
-	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device averaging ratio successfully get\r\n");
+	cmparse_value_t				value;
+	sstream_adc_ch_avg_ratio_t	ch1AveragingRatio;
+	sstream_connection_info*  	connectionInfo;
+	char						ch1AveragingRatioString[10];
+	uint32_t					ch1AveragingRatioStringLength = 0;
+	uint32_t					streamID;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	memset(ch1AveragingRatioString, 0, 10);
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain connection info\r\n");
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+	ch1AveragingRatio = SSTREAM_GetChannelAvgRatio(connectionInfo, 1, 1000);
+	ch1AveragingRatioStringLength = sprintf(ch1AveragingRatioString, "%lu", ch1AveragingRatio);
+	prvCONTROL_PrepareOkResponse(response, responseSize, ch1AveragingRatioString, ch1AveragingRatioStringLength);
 }
 
 /**
@@ -793,6 +817,43 @@ static void prvCONTROL_GetCurrentoffset(const char* arguments, uint16_t argument
 	prvCONTROL_PrepareOkResponse(response, responseSize, voltageOffsetString, voltageOffsetStringLength);
 }
 
+/**
+ * @brief	Get ADC input clk
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_GetADCInputClk(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	cmparse_value_t				value;
+	uint32_t					adcClk;
+	sstream_connection_info*  	connectionInfo;
+	char						adcClkString[10];
+	uint32_t					adcClkStringLength = 0;
+	uint32_t					streamID;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	memset(adcClkString, 0, 10);
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain connection info\r\n");
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+	adcClk = SSTREAM_GetAdcInputClk(connectionInfo, 1000);
+	adcClkStringLength = sprintf(adcClkString, "%lu", adcClk);
+	prvCONTROL_PrepareOkResponse(response, responseSize, adcClkString, adcClkStringLength);
+}
 
 static void prvCONTROL_StreamCreate(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
@@ -1170,6 +1231,7 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	CMPARSE_AddCommand("device adc voffset get", 		prvCONTROL_GetVoltageoffset);
 	CMPARSE_AddCommand("device adc coffset set", 		prvCONTROL_SetCurrentoffset);
 	CMPARSE_AddCommand("device adc coffset get", 		prvCONTROL_GetCurrentoffset);
+	CMPARSE_AddCommand("device adc clk get", 			prvCONTROL_GetADCInputClk);
 
 	return CONTROL_STATUS_OK;
 }
