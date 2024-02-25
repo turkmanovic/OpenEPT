@@ -896,6 +896,85 @@ static void prvCONTROL_StreamCreate(const char* arguments, uint16_t argumentsLen
 	prvCONTROL_PrepareOkResponse(response, responseSize, streamIDString, streamIDStringLength);
 	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Stream successfully created\r\n");
 }
+
+/**
+ * @brief	Start samples streaming
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_StreamStart(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	cmparse_value_t				value;
+	uint32_t					streamID;
+	sstream_connection_info*  	connectionInfo;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream connection info\r\n");
+		return;
+	}
+
+	if(SSTREAM_Start(connectionInfo, 1000) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to start stream\r\n");
+		return;
+	}
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+}
+
+/**
+ * @brief	Stop samples streaming
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_StreamStop(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	cmparse_value_t				value;
+	uint32_t					streamID;
+	sstream_connection_info*  	connectionInfo;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream connection info\r\n");
+		return;
+	}
+
+	if(SSTREAM_Stop(connectionInfo, 1000) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to stop stream\r\n");
+		return;
+	}
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+}
+
 //TODO: This is just for testing purposes. It should never be used as it is now. Remove!
 control_status_link_instance_t statusLinkInstance;
 /**
@@ -1216,6 +1295,8 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	CMPARSE_AddCommand("device slink create", 			prvCONTROL_CreateStatusLink);
 	CMPARSE_AddCommand("device slink send", 			prvCONTROL_StatusLinkSendMessage);
 	CMPARSE_AddCommand("device stream create", 			prvCONTROL_StreamCreate);
+	CMPARSE_AddCommand("device stream start", 			prvCONTROL_StreamStart);
+	CMPARSE_AddCommand("device stream stop", 			prvCONTROL_StreamStop);
 
 	CMPARSE_AddCommand("device adc chresolution set", 	prvCONTROL_SetResolution);
 	CMPARSE_AddCommand("device adc chresolution get", 	prvCONTROL_GetResolution);
