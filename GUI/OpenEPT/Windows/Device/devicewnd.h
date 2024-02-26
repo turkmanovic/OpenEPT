@@ -47,6 +47,9 @@ public:
     bool            setResolution(QString resolution);
     bool            setSTime(QString stime);
     bool            setADCClk(QString adcClk);
+    bool            setInCkl(QString inClk);
+    bool            setCOffset(QString coffset);
+    bool            setVOffset(QString voffset);
 
 signals:
     void            sigWndClosed();
@@ -64,6 +67,7 @@ signals:
     void            sigStopAcquisition();
     void            sigRefreshAcquisition();
     void            sigNewControlMessageRcvd(const QString &response);
+    void            sigAdvConfigurationReqested();
 protected:
     void            closeEvent(QCloseEvent *event);
 
@@ -89,6 +93,7 @@ public slots:
     void            onInterfaceChanged(QString interfaceInfo);
     void            onAdvSamplingTimeChanged(QString time);
     void            onAdvConfigurationChanged(QVariant data);
+    void            onAdvConfigurationReqested(void);
 
 private:
     Ui::DeviceWnd               *ui;
@@ -104,13 +109,14 @@ private:
     QStringList*                resolutionOptions;
     QStringList*                clockDivOptions;
     QStringList*                networkInterfacesNames;
-    QStringList                 sampleAveraginOptions;
+    QStringList*                averaginOptions;
     QString                     samplingTime;
 
     /* File info */
     bool                        saveToFileFlag;
 
     bool                        samplingTextChanged = false;
+    bool                        voffsetTextChanged = false;
 
     /* */
     device_state_t                      deviceState;
@@ -119,7 +125,7 @@ private:
     /* */
     void                        setDeviceStateDisconnected();
     void                        setDeviceStateConnected();
-    void                        onAvrRatioChanged(int index);
+    void                        onAvrRatioChanged(QString ratio);
     void                        onVOffsetChanged(QString off);
     void                        onCOffsetChanged(QString off);
 };

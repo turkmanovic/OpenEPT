@@ -19,18 +19,22 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(deviceWnd,  SIGNAL(sigClockDivChanged(QString)), this, SLOT(onClockDivChanged(QString)));
     connect(deviceWnd,  SIGNAL(sigSampleTimeChanged(QString)), this, SLOT(onSampleTimeChanged(QString)));
     connect(deviceWnd,  SIGNAL(sigSamplingTimeChanged(QString)), this, SLOT(onSamplingTimeChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigAvrRatioChanged(int)), this, SLOT(onAvrRatioChanged(int)));
+    connect(deviceWnd,  SIGNAL(sigAvrRatioChanged(QString)), this, SLOT(onAvrRatioChanged(QString)));
     connect(deviceWnd,  SIGNAL(sigVOffsetChanged(QString)), this, SLOT(onVOffsetChanged(QString)));
     connect(deviceWnd,  SIGNAL(sigCOffsetChanged(QString)), this, SLOT(onCOffsetChanged(QString)));
     connect(deviceWnd,  SIGNAL(sigNewInterfaceSelected(QString)), this, SLOT(onInterfaceChanged(QString)));
     connect(deviceWnd,  SIGNAL(sigStartAcquisition()), this, SLOT(onAcquisitionStart()));
     connect(deviceWnd,  SIGNAL(sigStopAcquisition()), this, SLOT(onAcquisitionStop()));
     connect(deviceWnd,  SIGNAL(sigPauseAcquisition()), this, SLOT(onAcquisitionPause()));
+    connect(deviceWnd,  SIGNAL(sigAdvConfigurationReqested()), this, SLOT(onAdvConfGet()));
 
     connect(device,     SIGNAL(sigResolutionObtained(QString)), this, SLOT(onDeviceResolutionObtained(QString)));
     connect(device,     SIGNAL(sigChSampleTimeObtained(QString)), this, SLOT(onDeviceChSampleTimeObtained(QString)));
     connect(device,     SIGNAL(sigClockDivObtained(QString)), this, SLOT(onDeviceClkDivObtained(QString)));
     connect(device,     SIGNAL(sigSampleTimeObtained(QString)), this, SLOT(onDeviceSTimeObtained(QString)));
+    connect(device,     SIGNAL(sigAdcInputClkObtained(QString)), this, SLOT(onDeviceAdcInClkObtained(QString)));
+    connect(device,     SIGNAL(sigCOffsetObtained(QString)), this, SLOT(onDeviceCOffsetObtained(QString)));
+    connect(device,     SIGNAL(sigVOffsetObtained(QString)), this, SLOT(onDeviceVOffsetObtained(QString)));
 
     log->printLogMessage("Device container successfully created", LOG_MESSAGE_TYPE_INFO);
     device->statusLinkCreate();
@@ -248,11 +252,16 @@ void DeviceContainer::onAcquisitionPause()
     }
 }
 
+void DeviceContainer::onAdvConfGet()
+{
+    device->acquireDeviceConfiguration();
+}
+
 void DeviceContainer::onDeviceResolutionObtained(QString resolution)
 {
     if(!deviceWnd->setResolution(resolution))
     {
-        log->printLogMessage("Unable to show obtained resolution: " + resolution + "bit", LOG_MESSAGE_TYPE_ERROR);
+        log->printLogMessage("Unable to show obtained resolution: " + resolution, LOG_MESSAGE_TYPE_ERROR);
     }
     else
     {
@@ -293,6 +302,42 @@ void DeviceContainer::onDeviceSTimeObtained(QString stime)
     else
     {
         log->printLogMessage("Sampling time sucessfully obained and presented ", LOG_MESSAGE_TYPE_INFO);
+    }
+}
+
+void DeviceContainer::onDeviceAdcInClkObtained(QString inClk)
+{
+    if(!deviceWnd->setInCkl(inClk))
+    {
+        log->printLogMessage("Unable to show obtained adc input clock: " + inClk + "MHz", LOG_MESSAGE_TYPE_ERROR);
+    }
+    else
+    {
+        log->printLogMessage("Adc input clock sucessfully obained and presented ", LOG_MESSAGE_TYPE_INFO);
+    }
+}
+
+void DeviceContainer::onDeviceCOffsetObtained(QString coffset)
+{
+    if(!deviceWnd->setCOffset(coffset))
+    {
+        log->printLogMessage("Unable to show obtained current offset: " + coffset + "mA", LOG_MESSAGE_TYPE_ERROR);
+    }
+    else
+    {
+        log->printLogMessage("Current offset sucessfully obained and presented ", LOG_MESSAGE_TYPE_INFO);
+    }
+}
+
+void DeviceContainer::onDeviceVOffsetObtained(QString voffset)
+{
+    if(!deviceWnd->setVOffset(voffset))
+    {
+        log->printLogMessage("Unable to show obtained voltage offset: " + voffset + "mV", LOG_MESSAGE_TYPE_ERROR);
+    }
+    else
+    {
+        log->printLogMessage("Voltage offset sucessfully obained and presented ", LOG_MESSAGE_TYPE_INFO);
     }
 }
 
@@ -434,16 +479,16 @@ device_adc_averaging_t DeviceContainer::getAdcAvgRatioFromString(QString avgRati
     case 7:
         returnAvgRatio = DEVICE_ADC_AVERAGING_64;
         break;
-    case 9:
+    case 8:
         returnAvgRatio = DEVICE_ADC_AVERAGING_128;
         break;
-    case 10:
+    case 9:
         returnAvgRatio = DEVICE_ADC_AVERAGING_256;
         break;
-    case 11:
+    case 10:
         returnAvgRatio = DEVICE_ADC_AVERAGING_512;
         break;
-    case 12:
+    case 11:
         returnAvgRatio = DEVICE_ADC_AVERAGING_1024;
         break;
     default:

@@ -36,6 +36,9 @@ public:
     void     SetVOffsetFromDevWnd();
     void     SetCOffsetFromDevWnd();
     void     SetSamplingTimeFromDevWnd(QString time);
+    void     SetInClkFromDevWnd(QString inClk);
+    void     SetCoffsetFromDevWnd(QString coffset);
+    void     SetVoffsetFromDevWnd(QString voffset);
     void     assignResolutionList(const QStringList *items);
     void     assignClockDivList(const QStringList *items);
     void     assignSampleTimeList(const QStringList *items);
@@ -47,6 +50,7 @@ signals:
     void    sigAdvSampleTimeChanged(int sampleTime);
     void    sigAdvSamplingTimeChanged(QString time);
     void    sigAdvConfigurationChanged(QVariant data);
+    void    sigAdvConfigurationRequested();
 public slots:
     void    onLoadProfileChanged(int loadIndex);
     void    onAdvResolutionChanged(int index);
@@ -57,6 +61,7 @@ public slots:
     void    onAdvVOffsetChanged(QString off);
     void    onAdvCOffsetChanged(QString off);
     void    onAdvConfigurationPressed(void);
+    void    onAdvConfigurationRequsted(void);
 private:
     Ui::AdvanceConfigurationWnd *ui;
 
@@ -84,9 +89,13 @@ private:
 
     loadProfileType_t   activeLoadProfileType;
 
-    QStringList                 advSampleTimeOptions;
-    QStringList                 advResolutionOptions;
-    QStringList                 advClockDivOptions;
+    QStringList         advSampleTimeOptions;
+    QStringList         advResolutionOptions;
+    QStringList         advClockDivOptions;
+
+    QString             oldVOffset = "105";
+    QString             oldCOffset = "105";
+    QString             oldAvrratio = "2";
 };
 
 #endif // ADVANCECONFIGURATIONWND_H

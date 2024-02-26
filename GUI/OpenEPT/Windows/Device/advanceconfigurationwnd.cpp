@@ -193,7 +193,7 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
 
     ui->optionsLabe->setText("Plase update configuration");
 
-    SetTextRed(ui->averagingRatioComb, ui->voltageOffsetLine, ui->currentOffsetLine, ui->samplingTimeLine);
+    //SetTextRed(ui->averagingRatioComb, ui->voltageOffsetLine, ui->currentOffsetLine, ui->samplingTimeLine);
     connect(ui->adcResolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onAdvResolutionChanged(int)));
     connect(ui->adcClockDivComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onAdvClkDivChanged(int)));
     connect(ui->adcSampleTimeComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onAdvSampleTimeChanged(int)));
@@ -202,6 +202,7 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
     connect(ui->voltageOffsetLine, SIGNAL(textEdited(QString)), this, SLOT(onAdvVOffsetChanged(QString)));
     connect(ui->currentOffsetLine, SIGNAL(textEdited(QString)), this, SLOT(onAdvCOffsetChanged(QString)));
     connect(ui->configurePusb, SIGNAL(clicked(bool)), this, SLOT(onAdvConfigurationPressed(void)));
+    connect(ui->acquirePusb, SIGNAL(clicked(bool)), this, SLOT(onAdvConfigurationRequsted(void)));
 }
 
 
@@ -351,6 +352,28 @@ void    AdvanceConfigurationWnd::SetSamplingTimeFromDevWnd(QString time)
     ui->samplingTimeLine->setText(time);
     ui->samplingTimeLine->blockSignals(false);
 }
+
+void    AdvanceConfigurationWnd::SetInClkFromDevWnd(QString inClk)
+{
+    ui->adcInputClockLine->setText(inClk);
+}
+
+void AdvanceConfigurationWnd::SetCoffsetFromDevWnd(QString coffset)
+{
+    ui->currentOffsetLine->blockSignals(true);
+    ui->currentOffsetLine->setText(coffset);
+    ui->currentOffsetLine->blockSignals(false);
+    oldCOffset = coffset;
+}
+
+void AdvanceConfigurationWnd::SetVoffsetFromDevWnd(QString voffset)
+{
+    ui->voltageOffsetLine->blockSignals(true);
+    ui->voltageOffsetLine->setText(voffset);
+    ui->voltageOffsetLine->blockSignals(false);
+    oldVOffset = voffset;
+}
+
 void    AdvanceConfigurationWnd::onAdvResolutionChanged(int index)
 {
     QPalette palette = ui->adcResolutionComb->palette();
@@ -414,6 +437,7 @@ void    AdvanceConfigurationWnd::onAdvCOffsetChanged(QString off)
     LabelChangedNotUpdated();
     //QString time = ui->samplingTimeLine->text();
 }
+
 void    AdvanceConfigurationWnd::onAdvConfigurationPressed(void)
 {
     advConfigurationData cdata;
@@ -421,13 +445,35 @@ void    AdvanceConfigurationWnd::onAdvConfigurationPressed(void)
     cdata.resolution = ui->adcResolutionComb->currentText();
     cdata.sampleTime = ui->adcSampleTimeComb->currentText();
     cdata.clockDiv = ui->adcClockDivComb->currentText();
-    cdata.averaginRatioIndex = ui->averagingRatioComb->currentIndex();
-    cdata.voltageOffset = ui->voltageOffsetLine->text();
-    cdata.currentOffset = ui->currentOffsetLine->text();
+    /* Send data to device only if change happened */
+    if (oldAvrratio != ui->averagingRatioComb->currentText())
+    {
+        cdata.averaginRatio = ui->averagingRatioComb->currentText();
+        oldAvrratio = ui->averagingRatioComb->currentText();
+    }
+    else
+    {
+        cdata.averaginRatio = "69";
+    }
+    if (oldVOffset != ui->voltageOffsetLine->text())
+    {
+        cdata.voltageOffset = ui->voltageOffsetLine->text();
+        oldVOffset = ui->voltageOffsetLine->text();
+    }
+    if (oldCOffset != ui->currentOffsetLine->text())
+    {
+        cdata.currentOffset = ui->currentOffsetLine->text();
+        oldCOffset = ui->currentOffsetLine->text();
+    }
     cdata.samplingTime = ui->samplingTimeLine->text();
     data.setValue(cdata);
     LabelChangedUpdated();
     emit sigAdvConfigurationChanged(data);
+}
+
+void    AdvanceConfigurationWnd::onAdvConfigurationRequsted(void)
+{
+    emit sigAdvConfigurationRequested();
 }
 
 void     AdvanceConfigurationWnd::assignResolutionList(const QStringList *items)

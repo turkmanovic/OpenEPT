@@ -101,6 +101,9 @@ signals:
     void        sigChSampleTimeObtained(QString chstime);
     void        sigSampleTimeObtained(QString stime);
     void        sigClockDivObtained(QString clkDiv);
+    void        sigAdcInputClkObtained(QString inClk);
+    void        sigCOffsetObtained(QString coffset);
+    void        sigVOffsetObtained(QString voffset);
 public slots:
     void        onControlLinkConnected();
     void        onControlLinkDisconnected();

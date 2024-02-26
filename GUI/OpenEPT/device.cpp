@@ -514,6 +514,7 @@ bool Device::getVOffset(QString *off)
     //Parse response
     voltageOffset = response;
     if(off != NULL) *off = voltageOffset;
+    emit sigVOffsetObtained(response);
     return true;
 }
 
@@ -538,6 +539,7 @@ bool Device::getCOffset(QString *off)
     //Parse response
     currentOffset = response;
     if(off != NULL) *off = currentOffset;
+    emit sigCOffsetObtained(response);
     return true;
 }
 
@@ -549,6 +551,7 @@ bool Device::getADCInputClk(QString *clk)
     //Parse response
     adcInputClk = response;
     if(clk != NULL) *clk = adcInputClk;
+    emit sigAdcInputClkObtained(response);
     return true;
 }
 
