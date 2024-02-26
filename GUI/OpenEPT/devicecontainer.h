@@ -17,13 +17,7 @@ signals:
     void    sigDeviceClosed(Device* device);
 
 public slots:
-    void    onDeviceControlLinkDisconnected();
-    void    onDeviceControlLinkConnected();
-    void    onDeviceStatusLinkNewDeviceAdded(QString aDeviceIP);
-    void    onDeviceStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
-    void    onDeviceClosed();
     void    onConsoleWndMessageRcvd(QString msg);
-    void    onConsoleWndHandleControlMsgResponse(QString msg);
     void    onResolutionChanged(QString resolution);
     void    onClockDivChanged(QString clockDiv);
     void    onSampleTimeChanged(QString stime);
@@ -38,13 +32,22 @@ public slots:
     void    onAdvConfGet();
 
 
+    void    onDeviceClosed();
+    void    onDeviceControlLinkDisconnected();
+    void    onDeviceControlLinkConnected();
+    void    onDeviceStatusLinkNewDeviceAdded(QString aDeviceIP);
+    void    onDeviceStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
+    void    onDeviceHandleControlMsgResponse(QString msg);
     void    onDeviceResolutionObtained(QString resolution);
     void    onDeviceClkDivObtained(QString clkDiv);
     void    onDeviceChSampleTimeObtained(QString stime);
     void    onDeviceSTimeObtained(QString stime);
     void    onDeviceAdcInClkObtained(QString inClk);
+    void    onDeviceAvgRatioChanged(QString aAvgRatio);
     void    onDeviceCOffsetObtained(QString coffset);
     void    onDeviceVOffsetObtained(QString voffset);
+
+
 
 private:
     DeviceWnd*  deviceWnd;

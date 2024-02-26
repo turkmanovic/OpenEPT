@@ -26,29 +26,31 @@ class AdvanceConfigurationWnd : public QWidget
 
 public:
     explicit AdvanceConfigurationWnd(QWidget *parent = nullptr);
+
+    void     assignResolutionOptionsList(QStringList *aList);
+    void     assignClockDivOptionsList(QStringList *aList);
+    void     assignSampleTimeOptionsList(QStringList *aList);
+    void     assignAvgRatioOptionsList(QStringList *aList);
+
+
+    bool     setClockDiv(QString aClkDiv);
+    bool     setADCInClk(QString aInClk);
+    bool     setResolution(QString aResolution);
+    bool     setChSampleTime(QString aSTime);
+    bool     setAvgRatio(QString aAvgRatio);
+    bool     setVOffset(QString aAVoffset);
+    bool     setCOffset(QString aCOffset);
+    bool     setSamplingTime(QString sTime);
+
+
     void     SetProfileType(loadProfileType_t aProfileType);
     void     RemoveProfileType(loadProfileType_t aProfileType);
-    ~AdvanceConfigurationWnd();
-    void     SetResolutionFromDevWnd(int index);
-    void     SetClockDivFromDevWnd(int index);
-    void     SetSampleTimeFromDevWnd(int index);
-    void     SetAvrRatioFromDevWnd();
-    void     SetVOffsetFromDevWnd();
-    void     SetCOffsetFromDevWnd();
-    void     SetSamplingTimeFromDevWnd(QString time);
-    void     SetInClkFromDevWnd(QString inClk);
-    void     SetCoffsetFromDevWnd(QString coffset);
-    void     SetVoffsetFromDevWnd(QString voffset);
-    void     assignResolutionList(const QStringList *items);
-    void     assignClockDivList(const QStringList *items);
-    void     assignSampleTimeList(const QStringList *items);
+
+
     advConfigurationData cdata;
+    ~AdvanceConfigurationWnd();
 
 signals:
-    void    sigAdvResolutionChanged(int resolution);
-    void    sigAdvClockDivChanged(int clkDiv);
-    void    sigAdvSampleTimeChanged(int sampleTime);
-    void    sigAdvSamplingTimeChanged(QString time);
     void    sigAdvConfigurationChanged(QVariant data);
     void    sigAdvConfigurationRequested();
 public slots:
@@ -75,6 +77,13 @@ private:
     void    LabelChangedUpdated();
     void    SetTextRed(QComboBox* cb, QLineEdit* le1, QLineEdit* le2, QLineEdit* le3);
 
+
+    QStringList*         resolutionOptions;
+    QStringList*         sampleTimeOptions;
+    QStringList*         clockDivOptions;
+    QStringList*         avgRatioOptions;
+
+
     QHBoxLayout*        uknownProfileLayout;
     QWidget*            uknownProfileWidg;
 
@@ -89,9 +98,6 @@ private:
 
     loadProfileType_t   activeLoadProfileType;
 
-    QStringList         advSampleTimeOptions;
-    QStringList         advResolutionOptions;
-    QStringList         advClockDivOptions;
 
     QString             oldVOffset = "105";
     QString             oldCOffset = "105";

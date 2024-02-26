@@ -8,33 +8,37 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     log         = new Log();
     log->assignLogWidget(deviceWnd->getLogWidget());
 
-    connect(deviceWnd,  SIGNAL(sigWndClosed()), this, SLOT(onDeviceClosed()));
-    connect(deviceWnd,  SIGNAL(sigNewControlMessageRcvd(QString)), this, SLOT(onConsoleWndMessageRcvd(QString)));
-    connect(device,     SIGNAL(sigControlLinkConnected()), this, SLOT(onDeviceControlLinkConnected()));
-    connect(device,     SIGNAL(sigControlLinkDisconnected()), this, SLOT(onDeviceControlLinkDisconnected()));
-    connect(device,     SIGNAL(sigStatusLinkNewDeviceAdded(QString)), this, SLOT(onDeviceStatusLinkNewDeviceAdded(QString)));
-    connect(device,     SIGNAL(sigStatusLinkNewMessageReceived(QString,QString)), this, SLOT(onDeviceStatusLinkNewMessageReceived(QString,QString)));
-    connect(device,     SIGNAL(sigNewResponseReceived(QString)), this, SLOT(onConsoleWndHandleControlMsgResponse(QString)));
-    connect(deviceWnd,  SIGNAL(sigResolutionChanged(QString)), this, SLOT(onResolutionChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigClockDivChanged(QString)), this, SLOT(onClockDivChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigSampleTimeChanged(QString)), this, SLOT(onSampleTimeChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigSamplingTimeChanged(QString)), this, SLOT(onSamplingTimeChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigAvrRatioChanged(QString)), this, SLOT(onAvrRatioChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigVOffsetChanged(QString)), this, SLOT(onVOffsetChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigCOffsetChanged(QString)), this, SLOT(onCOffsetChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigNewInterfaceSelected(QString)), this, SLOT(onInterfaceChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigStartAcquisition()), this, SLOT(onAcquisitionStart()));
-    connect(deviceWnd,  SIGNAL(sigStopAcquisition()), this, SLOT(onAcquisitionStop()));
-    connect(deviceWnd,  SIGNAL(sigPauseAcquisition()), this, SLOT(onAcquisitionPause()));
-    connect(deviceWnd,  SIGNAL(sigAdvConfigurationReqested()), this, SLOT(onAdvConfGet()));
 
-    connect(device,     SIGNAL(sigResolutionObtained(QString)), this, SLOT(onDeviceResolutionObtained(QString)));
-    connect(device,     SIGNAL(sigChSampleTimeObtained(QString)), this, SLOT(onDeviceChSampleTimeObtained(QString)));
-    connect(device,     SIGNAL(sigClockDivObtained(QString)), this, SLOT(onDeviceClkDivObtained(QString)));
-    connect(device,     SIGNAL(sigSampleTimeObtained(QString)), this, SLOT(onDeviceSTimeObtained(QString)));
-    connect(device,     SIGNAL(sigAdcInputClkObtained(QString)), this, SLOT(onDeviceAdcInClkObtained(QString)));
-    connect(device,     SIGNAL(sigCOffsetObtained(QString)), this, SLOT(onDeviceCOffsetObtained(QString)));
-    connect(device,     SIGNAL(sigVOffsetObtained(QString)), this, SLOT(onDeviceVOffsetObtained(QString)));
+    /*Device window signals*/
+    connect(deviceWnd,  SIGNAL(sigWndClosed()),                                     this, SLOT(onDeviceClosed()));
+    connect(deviceWnd,  SIGNAL(sigNewControlMessageRcvd(QString)),                  this, SLOT(onConsoleWndMessageRcvd(QString)));
+    connect(deviceWnd,  SIGNAL(sigResolutionChanged(QString)),                      this, SLOT(onResolutionChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigClockDivChanged(QString)),                        this, SLOT(onClockDivChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigSampleTimeChanged(QString)),                      this, SLOT(onSampleTimeChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigSamplingTimeChanged(QString)),                    this, SLOT(onSamplingTimeChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigAvrRatioChanged(QString)),                        this, SLOT(onAvrRatioChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigVOffsetChanged(QString)),                         this, SLOT(onVOffsetChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigCOffsetChanged(QString)),                         this, SLOT(onCOffsetChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigNewInterfaceSelected(QString)),                   this, SLOT(onInterfaceChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigStartAcquisition()),                              this, SLOT(onAcquisitionStart()));
+    connect(deviceWnd,  SIGNAL(sigStopAcquisition()),                               this, SLOT(onAcquisitionStop()));
+    connect(deviceWnd,  SIGNAL(sigPauseAcquisition()),                              this, SLOT(onAcquisitionPause()));
+    connect(deviceWnd,  SIGNAL(sigAdvConfigurationReqested()),                      this, SLOT(onAdvConfGet()));
+
+    /*Device signals*/
+    connect(device,     SIGNAL(sigControlLinkConnected()),                          this, SLOT(onDeviceControlLinkConnected()));
+    connect(device,     SIGNAL(sigControlLinkDisconnected()),                       this, SLOT(onDeviceControlLinkDisconnected()));
+    connect(device,     SIGNAL(sigStatusLinkNewDeviceAdded(QString)),               this, SLOT(onDeviceStatusLinkNewDeviceAdded(QString)));
+    connect(device,     SIGNAL(sigStatusLinkNewMessageReceived(QString,QString)),   this, SLOT(onDeviceStatusLinkNewMessageReceived(QString,QString)));
+    connect(device,     SIGNAL(sigNewResponseReceived(QString)),                    this, SLOT(onDeviceHandleControlMsgResponse(QString)));
+    connect(device,     SIGNAL(sigResolutionObtained(QString)),                     this, SLOT(onDeviceResolutionObtained(QString)));
+    connect(device,     SIGNAL(sigChSampleTimeObtained(QString)),                   this, SLOT(onDeviceChSampleTimeObtained(QString)));
+    connect(device,     SIGNAL(sigClockDivObtained(QString)),                       this, SLOT(onDeviceClkDivObtained(QString)));
+    connect(device,     SIGNAL(sigSampleTimeObtained(QString)),                     this, SLOT(onDeviceSTimeObtained(QString)));
+    connect(device,     SIGNAL(sigAdcInputClkObtained(QString)),                    this, SLOT(onDeviceAdcInClkObtained(QString)));
+    connect(device,     SIGNAL(sigCOffsetObtained(QString)),                        this, SLOT(onDeviceCOffsetObtained(QString)));
+    connect(device,     SIGNAL(sigVOffsetObtained(QString)),                        this, SLOT(onDeviceVOffsetObtained(QString)));
+    connect(device,     SIGNAL(sigAvgRatio(QString)),                               this, SLOT(onDeviceAvgRatioChanged(QString)));
 
     log->printLogMessage("Device container successfully created", LOG_MESSAGE_TYPE_INFO);
     device->statusLinkCreate();
@@ -81,7 +85,7 @@ void DeviceContainer::onConsoleWndMessageRcvd(QString msg)
     device->sendControlMsg(msg);
 }
 
-void DeviceContainer::onConsoleWndHandleControlMsgResponse(QString msg)
+void DeviceContainer::onDeviceHandleControlMsgResponse(QString msg)
 {
     /* call deviceWnd function with recieved msg from FW <- */
     deviceWnd->printConsoleMsg(msg);
@@ -314,6 +318,18 @@ void DeviceContainer::onDeviceAdcInClkObtained(QString inClk)
     else
     {
         log->printLogMessage("Adc input clock sucessfully obained and presented ", LOG_MESSAGE_TYPE_INFO);
+    }
+}
+
+void DeviceContainer::onDeviceAvgRatioChanged(QString aAvgRatio)
+{
+    if(!deviceWnd->setChAvgRatio(aAvgRatio))
+    {
+        log->printLogMessage("Unable to show obtained avg ratio: " + aAvgRatio, LOG_MESSAGE_TYPE_ERROR);
+    }
+    else
+    {
+        log->printLogMessage("Average ratio scuessfully obtained", LOG_MESSAGE_TYPE_INFO);
     }
 }
 

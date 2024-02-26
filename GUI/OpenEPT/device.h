@@ -104,6 +104,7 @@ signals:
     void        sigAdcInputClkObtained(QString inClk);
     void        sigCOffsetObtained(QString coffset);
     void        sigVOffsetObtained(QString voffset);
+    void        sigAvgRatio(QString voffset);
 public slots:
     void        onControlLinkConnected();
     void        onControlLinkDisconnected();

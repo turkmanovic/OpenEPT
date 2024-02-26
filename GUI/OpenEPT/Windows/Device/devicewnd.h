@@ -37,10 +37,6 @@ public:
     void            setDeviceState(device_state_t aDeviceState);
     void            printConsoleMsg(QString msg);
     void            setDeviceInterfaceSelectionState(device_interface_selection_state_t selectionState=DEVICE_INTERFACE_SELECTION_STATE_UNDEFINED);
-    QStringList*    getChSamplingTimeOptions();
-    QStringList*    getChAvgRationOptions();
-    QStringList*    getClockDivOptions();
-    QStringList*    getResolutionOptions();
     bool            setChSamplingTime(QString sTime);
     bool            setChAvgRatio(QString avgRatio);
     bool            setClkDiv(QString clkDiv);
@@ -50,6 +46,12 @@ public:
     bool            setInCkl(QString inClk);
     bool            setCOffset(QString coffset);
     bool            setVOffset(QString voffset);
+
+
+    QStringList*    getChSamplingTimeOptions();
+    QStringList*    getChAvgRationOptions();
+    QStringList*    getClockDivOptions();
+    QStringList*    getResolutionOptions();
 
 signals:
     void            sigWndClosed();
@@ -72,28 +74,27 @@ protected:
     void            closeEvent(QCloseEvent *event);
 
 public slots:
-    void            onAdvanceConfigurationButtonPressed(bool pressed);
     void            onSaveToFileChanged(int value);
     void            onStartAcquisition();
     void            onPauseAcquisition();
     void            onStopAcquisiton();
     void            onRefreshAcquisiton();
     void            onConsolePressed();
-    void            onNewControlMsgRcvd(QString text);
     void            onPathInfo();
-
-    void            onResolutionChanged(int index);
-    void            onClockDivChanged(int index);
-    void            onSampleTimeChanged(int index);
+    void            onResolutionChanged(QString aResolution);
+    void            onClockDivChanged(QString aClockDiv);
+    void            onSampleTimeChanged(QString aSTime);
     void            onSamplingTimeChanged();
     void            onSamplingTimeTxtChanged(QString time);
-    void            onAdvResolutionChanged(int index);
-    void            onAdvClockDivChanged(int index);
-    void            onAdvSampleTimeChanged(int index);
     void            onInterfaceChanged(QString interfaceInfo);
-    void            onAdvSamplingTimeChanged(QString time);
-    void            onAdvConfigurationChanged(QVariant data);
+    void            onAdvConfigurationChanged(QVariant aConfig);
     void            onAdvConfigurationReqested(void);
+
+
+    void            onAdvanceConfigurationButtonPressed(bool pressed);
+
+
+    void            onNewControlMsgRcvd(QString text);
 
 private:
     Ui::DeviceWnd               *ui;
@@ -125,9 +126,6 @@ private:
     /* */
     void                        setDeviceStateDisconnected();
     void                        setDeviceStateConnected();
-    void                        onAvrRatioChanged(QString ratio);
-    void                        onVOffsetChanged(QString off);
-    void                        onCOffsetChanged(QString off);
 };
 
 #endif // DEVICEWND_H

@@ -421,6 +421,7 @@ bool Device::getAvrRatio(device_adc_averaging_t *averagingRatio)
     QString response;
     QString command = "device adc chavrratio get -sid=" + QString::number(streamID);
     int tmpADCAvgRatio;
+    QString signalResponse =  "";
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     //Parse response
     tmpADCAvgRatio = response.toInt();
@@ -428,42 +429,55 @@ bool Device::getAvrRatio(device_adc_averaging_t *averagingRatio)
     {
     case 1:
         adcAveraging = DEVICE_ADC_AVERAGING_DISABLED;
+        signalResponse = "1";
         break;
     case 2:
         adcAveraging = DEVICE_ADC_AVERAGING_2;
+        signalResponse = "2";
         break;
     case 4:
         adcAveraging = DEVICE_ADC_AVERAGING_4;
+        signalResponse = "4";
         break;
     case 8:
         adcAveraging = DEVICE_ADC_AVERAGING_8;
+        signalResponse = "8";
         break;
     case 16:
         adcAveraging = DEVICE_ADC_AVERAGING_16;
+        signalResponse = "16";
         break;
     case 32:
         adcAveraging = DEVICE_ADC_AVERAGING_32;
+        signalResponse = "32";
         break;
     case 64:
         adcAveraging = DEVICE_ADC_AVERAGING_64;
+        signalResponse = "64";
         break;
     case 128:
         adcAveraging = DEVICE_ADC_AVERAGING_128;
+        signalResponse = "128";
         break;
     case 256:
         adcAveraging = DEVICE_ADC_AVERAGING_256;
+        signalResponse = "256";
         break;
     case 512:
         adcAveraging = DEVICE_ADC_AVERAGING_512;
+        signalResponse = "512";
         break;
     case 1024:
         adcAveraging = DEVICE_ADC_AVERAGING_1024;
+        signalResponse = "1024";
         break;
     default:
         adcAveraging = DEVICE_ADC_AVERAGING_UKNOWN;
+        signalResponse = "0";
         break;
     }
     if(averagingRatio != NULL) *averagingRatio = adcAveraging;
+    emit sigAvgRatio(signalResponse);
     return true;
 }
 bool Device::setSamplingTime(QString time)
