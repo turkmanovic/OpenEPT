@@ -70,6 +70,7 @@ signals:
     void            sigRefreshAcquisition();
     void            sigNewControlMessageRcvd(const QString &response);
     void            sigAdvConfigurationReqested();
+    void            sigAdvConfigurationChanged(QVariant newConfig);
 protected:
     void            closeEvent(QCloseEvent *event);
 
@@ -85,7 +86,6 @@ public slots:
     void            onClockDivChanged(QString aClockDiv);
     void            onSampleTimeChanged(QString aSTime);
     void            onSamplingTimeChanged();
-    void            onSamplingTimeTxtChanged(QString time);
     void            onInterfaceChanged(QString interfaceInfo);
     void            onAdvConfigurationChanged(QVariant aConfig);
     void            onAdvConfigurationReqested(void);

@@ -289,7 +289,10 @@ bool    AdvanceConfigurationWnd::setClockDiv(QString aClkDiv)
     // Check if entry exists
     int index = clockDivOptions->indexOf(aClkDiv);
     if( index < 0) return false;
+
+    ui->adcClockDivComb->blockSignals(true);
     ui->adcClockDivComb->setCurrentIndex(index);
+    ui->adcClockDivComb->blockSignals(false);
 
     // Set text color to black
     QPalette palette = ui->adcResolutionComb->palette();
@@ -305,7 +308,9 @@ bool    AdvanceConfigurationWnd::setResolution(QString aResolution)
     // Check if entry exists
     int index = resolutionOptions->indexOf(aResolution);
     if( index < 0) return false;
+    ui->adcResolutionComb->blockSignals(true);
     ui->adcResolutionComb->setCurrentIndex(index);
+    ui->adcResolutionComb->blockSignals(false);
 
     // Set text color to black
     QPalette palette = ui->adcResolutionComb->palette();
@@ -321,7 +326,9 @@ bool    AdvanceConfigurationWnd::setChSampleTime(QString aSTime)
     // Check if entry exists
     int index = sampleTimeOptions->indexOf(aSTime);
     if( index < 0) return false;
+    ui->adcSampleTimeComb->blockSignals(true);
     ui->adcSampleTimeComb->setCurrentIndex(index);
+    ui->adcSampleTimeComb->blockSignals(false);
 
     // Set text color to black
     QPalette palette = ui->adcSampleTimeComb->palette();
@@ -338,7 +345,9 @@ bool    AdvanceConfigurationWnd::setAvgRatio(QString aAvgRatio)
     // Check if entry exists
     int index = avgRatioOptions->indexOf(aAvgRatio);
     if( index < 0) return false;
-    ui->adcSampleTimeComb->setCurrentIndex(index);
+    ui->averagingRatioComb->blockSignals(true);
+    ui->averagingRatioComb->setCurrentIndex(index);
+    ui->averagingRatioComb->blockSignals(false);
 
     // Set text color to black
     QPalette palette = ui->averagingRatioComb->palette();
@@ -443,30 +452,66 @@ void    AdvanceConfigurationWnd::onAdvConfigurationPressed(void)
 {
     advConfigurationData cdata;
     QVariant data;
-    cdata.resolution = ui->adcResolutionComb->currentText();
-    cdata.sampleTime = ui->adcSampleTimeComb->currentText();
-    cdata.clockDiv = ui->adcClockDivComb->currentText();
+    QPalette palette;
+    cdata.chSTime = ui->adcSampleTimeComb->currentText();
+
     /* Send data to device only if change happened */
-    if (oldAvrratio != ui->averagingRatioComb->currentText())
+    if(ui->adcResolutionComb->palette().color(QPalette::Text) == Qt::red)
     {
-        cdata.averaginRatio = ui->averagingRatioComb->currentText();
-        oldAvrratio = ui->averagingRatioComb->currentText();
+        cdata.resolution = ui->adcResolutionComb->currentText();
     }
     else
     {
-        cdata.averaginRatio = "69";
+        cdata.resolution = "";
     }
-    if (oldVOffset != ui->voltageOffsetLine->text())
+    if(ui->adcClockDivComb->palette().color(QPalette::Text) == Qt::red)
     {
-        cdata.voltageOffset = ui->voltageOffsetLine->text();
-        oldVOffset = ui->voltageOffsetLine->text();
+        cdata.clockDiv = ui->adcClockDivComb->currentText();
     }
-    if (oldCOffset != ui->currentOffsetLine->text())
+    else
+    {
+        cdata.clockDiv = "";
+    }
+    if(ui->adcSampleTimeComb->palette().color(QPalette::Text) == Qt::red)
+    {
+        cdata.chSTime = ui->adcSampleTimeComb->currentText();
+    }
+    else
+    {
+        cdata.chSTime = "";
+    }
+    if(ui->averagingRatioComb->palette().color(QPalette::Text) == Qt::red)
+    {
+        cdata.averaginRatio = ui->averagingRatioComb->currentText();
+    }
+    else
+    {
+        cdata.averaginRatio = "";
+    }
+    if(ui->samplingTimeLine->palette().color(QPalette::Text) == Qt::red)
+    {
+        cdata.samplingTime = ui->samplingTimeLine->text();
+    }
+    else
+    {
+        cdata.samplingTime = "";
+    }
+    if(ui->currentOffsetLine->palette().color(QPalette::Text) == Qt::red)
     {
         cdata.currentOffset = ui->currentOffsetLine->text();
-        oldCOffset = ui->currentOffsetLine->text();
     }
-    cdata.samplingTime = ui->samplingTimeLine->text();
+    else
+    {
+        cdata.currentOffset = "";
+    }
+    if(ui->voltageOffsetLine->palette().color(QPalette::Text) == Qt::red)
+    {
+        cdata.voltageOffset = ui->voltageOffsetLine->text();
+    }
+    else
+    {
+        cdata.voltageOffset = "";
+    }
     data.setValue(cdata);
     LabelChangedUpdated();
     emit sigAdvConfigurationChanged(data);

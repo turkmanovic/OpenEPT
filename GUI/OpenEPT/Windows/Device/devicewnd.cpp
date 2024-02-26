@@ -144,7 +144,6 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     connect(ui->sampleTimeComb,         SIGNAL(currentTextChanged(QString)),    this, SLOT(onSampleTimeChanged(QString)));
     connect(ui->resolutionComb,         SIGNAL(currentIndexChanged(QString)),   this, SLOT(onResolutionChanged(QString)));
     connect(ui->samplingTimeLine,       SIGNAL(returnPressed()),                this, SLOT(onSamplingTimeChanged()));
-    connect(ui->samplingTimeLine,       SIGNAL(textChanged(QString)),           this, SLOT(onSamplingTimeTxtChanged(QString)));
     connect(ui->streamServerInterfComb, SIGNAL(currentTextChanged(QString)),    this, SLOT(onInterfaceChanged(QString)));
 
 
@@ -178,18 +177,7 @@ void DeviceWnd::onInterfaceChanged(QString interfaceInfo)
 
 void DeviceWnd::onAdvConfigurationChanged(QVariant aConfig)
 {
-    advConfigurationData config = aConfig.value<advConfigurationData>();
-
-    ui->resolutionComb  ->  setCurrentText(config.resolution);
-    ui->sampleTimeComb  ->  setCurrentText(config.sampleTime);
-    ui->clockDivComb    ->  setCurrentText(config.clockDiv);
-    samplingTextChanged = true;
-    ui->samplingTimeLine->  setText(config.samplingTime);
-//    if(config.averaginRatio != "69"){
-//        DeviceWnd::onAvrRatioChanged(config.averaginRatio);
-//    }
-//    DeviceWnd::onVOffsetChanged(config.voltageOffset);
-//    DeviceWnd::onCOffsetChanged(config.currentOffset);
+    emit sigAdvConfigurationChanged(aConfig);
 }
 
 void DeviceWnd::onAdvConfigurationReqested(void)
@@ -222,20 +210,6 @@ void DeviceWnd::onSamplingTimeChanged()
     emit sigSamplingTimeChanged(time);
 }
 
-void DeviceWnd::onSamplingTimeTxtChanged(QString time)
-{
-    if (samplingTextChanged != true)
-    {
-        samplingTextChanged = false;
-        return;
-    }
-    else
-    {
-        advanceConfigurationWnd->setSamplingTime(time);
-        samplingTextChanged = false;
-        emit sigSamplingTimeChanged(time);
-    }
-}
 
 void    DeviceWnd::onAdvanceConfigurationButtonPressed(bool pressed)
 {
@@ -403,7 +377,10 @@ bool DeviceWnd::setChSamplingTime(QString sTime)
 {
     if(!sampleTimeOptions->contains(sTime)) return false;
     if(!advanceConfigurationWnd->setChSampleTime(sTime)) return false;
+
+    ui->sampleTimeComb->blockSignals(true);
     ui->sampleTimeComb->setCurrentIndex(sampleTimeOptions->indexOf(sTime));
+    ui->sampleTimeComb->blockSignals(false);
     return true;
 }
 
@@ -418,7 +395,11 @@ bool DeviceWnd::setClkDiv(QString clkDiv)
 {
     if(!clockDivOptions->contains(clkDiv)) return false;
     if(!advanceConfigurationWnd->setClockDiv(clkDiv)) return false;
+
+    ui->clockDivComb->blockSignals(true);
     ui->clockDivComb->setCurrentIndex(clockDivOptions->indexOf(clkDiv));
+    ui->clockDivComb->blockSignals(false);
+
     return true;
 }
 
@@ -426,12 +407,16 @@ bool DeviceWnd::setResolution(QString resolution)
 {
     if(!resolutionOptions->contains(resolution)) return false;
     if(!advanceConfigurationWnd->setResolution(resolution)) return false;
+
+    ui->resolutionComb->blockSignals(true);
     ui->resolutionComb->setCurrentIndex(resolutionOptions->indexOf(resolution));
+    ui->resolutionComb->blockSignals(false);
     return true;
 }
 
 bool DeviceWnd::setSTime(QString stime)
 {
+    if(!advanceConfigurationWnd->setSamplingTime(stime)) return false;
     ui->samplingTimeLine->setText(stime);
     return true;
 }

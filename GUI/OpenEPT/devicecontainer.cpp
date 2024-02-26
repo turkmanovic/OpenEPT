@@ -24,6 +24,7 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(deviceWnd,  SIGNAL(sigStopAcquisition()),                               this, SLOT(onAcquisitionStop()));
     connect(deviceWnd,  SIGNAL(sigPauseAcquisition()),                              this, SLOT(onAcquisitionPause()));
     connect(deviceWnd,  SIGNAL(sigAdvConfigurationReqested()),                      this, SLOT(onAdvConfGet()));
+    connect(deviceWnd,  SIGNAL(sigAdvConfigurationChanged(QVariant)),               this, SLOT(onDeviceWndNewConfiguration(QVariant)));
 
     /*Device signals*/
     connect(device,     SIGNAL(sigControlLinkConnected()),                          this, SLOT(onDeviceControlLinkConnected()));
@@ -259,6 +260,129 @@ void DeviceContainer::onAcquisitionPause()
 void DeviceContainer::onAdvConfGet()
 {
     device->acquireDeviceConfiguration();
+}
+
+void DeviceContainer::onDeviceWndNewConfiguration(QVariant newConfig)
+{
+    advConfigurationData config = newConfig.value<advConfigurationData>();
+
+    if(config.resolution != "")
+    {
+        device_adc_resolution_t adcRes = getAdcResolutionFromString(config.resolution);
+        if(adcRes == DEVICE_ADC_RESOLUTION_UKNOWN)
+        {
+            log->printLogMessage("Unable to  obtain resolution", LOG_MESSAGE_TYPE_ERROR);
+            return;
+        }
+        if(!device->setResolution(adcRes))
+        {
+            log->printLogMessage("Unable to set resolution: " + config.resolution, LOG_MESSAGE_TYPE_ERROR);
+        }
+        else
+        {
+            log->printLogMessage("Resolution: " + config.resolution + "bit  - sucessfully set", LOG_MESSAGE_TYPE_INFO);
+            deviceWnd->setResolution(config.resolution);
+        }
+    }
+
+    if(config.clockDiv != "")
+    {
+        device_adc_clock_div_t clkDiv = getAdcClockDivFromString(config.clockDiv);
+        if(clkDiv == DEVICE_ADC_CLOCK_DIV_UKNOWN)
+        {
+            log->printLogMessage("Unable to obtain clock div", LOG_MESSAGE_TYPE_ERROR);
+            return;
+        }
+        if(!device->setClockDiv(clkDiv))
+        {
+            log->printLogMessage("Unable to set clock div: " + config.clockDiv, LOG_MESSAGE_TYPE_ERROR);
+        }
+        else
+        {
+            log->printLogMessage("Clock div: " + config.clockDiv + " - sucessfully set", LOG_MESSAGE_TYPE_INFO);
+            deviceWnd->setClkDiv(config.clockDiv);
+
+        }
+    }
+
+    if(config.averaginRatio != "")
+    {
+        device_adc_averaging_t avgRatio = getAdcAvgRatioFromString(config.averaginRatio);
+        if(avgRatio == DEVICE_ADC_AVERAGING_UKNOWN)
+        {
+            log->printLogMessage("Unable to obtain averaging ratio", LOG_MESSAGE_TYPE_ERROR);
+            return;
+        }
+        if(!device->setAvrRatio(avgRatio))
+        {
+            log->printLogMessage("Unable to set averaging ratio: " + config.averaginRatio, LOG_MESSAGE_TYPE_ERROR);
+        }
+        else
+        {
+            log->printLogMessage("Averaging ratio: " + config.averaginRatio + " - sucessfully set", LOG_MESSAGE_TYPE_INFO);
+            deviceWnd->setChAvgRatio(config.averaginRatio);
+
+        }
+    }
+
+    if(config.chSTime != "")
+    {
+        device_adc_ch_sampling_time_t chSTime = getAdcChSamplingTimeFromString(config.chSTime);
+        if(chSTime == DEVICE_ADC_SAMPLING_TIME_UKNOWN)
+        {
+            log->printLogMessage("Unable to obatin channel sampling time", LOG_MESSAGE_TYPE_ERROR);
+            return;
+        }
+        if(!device->setChSampleTime(chSTime))
+        {
+            log->printLogMessage("Unable to set channels sampling time: " + config.chSTime, LOG_MESSAGE_TYPE_ERROR);
+        }
+        else
+        {
+            log->printLogMessage("Channels sampling time: " + config.chSTime + " - sucessfully set", LOG_MESSAGE_TYPE_INFO);
+            deviceWnd->setChSamplingTime(config.chSTime);
+        }
+    }
+
+    if(config.currentOffset != "")
+    {
+        if(!device->setCOffset(config.currentOffset))
+        {
+            log->printLogMessage("Unable to set current offset: " + config.currentOffset, LOG_MESSAGE_TYPE_ERROR);
+        }
+        else
+        {
+            log->printLogMessage("Current offset: " + config.currentOffset + "[mV] - sucessfully set", LOG_MESSAGE_TYPE_INFO);
+            deviceWnd->setCOffset(config.currentOffset);
+        }
+    }
+
+    if(config.voltageOffset != "")
+    {
+        if(!device->setVOffset(config.voltageOffset))
+        {
+            log->printLogMessage("Unable to set voltage offset: " + config.voltageOffset, LOG_MESSAGE_TYPE_ERROR);
+        }
+        else
+        {
+            log->printLogMessage("Voltage offset: " + config.voltageOffset + "[mV] - sucessfully set", LOG_MESSAGE_TYPE_INFO);
+            deviceWnd->setVOffset(config.voltageOffset);
+        }
+    }
+
+    if(config.samplingTime != "")
+    {
+        if(!device->setSamplingTime(config.samplingTime))
+        {
+            log->printLogMessage("Unable to set sampling time: " + config.samplingTime, LOG_MESSAGE_TYPE_ERROR);
+        }
+        else
+        {
+            log->printLogMessage("Sampling time: " + config.samplingTime + "[ms] - sucessfully set", LOG_MESSAGE_TYPE_INFO);
+            deviceWnd->setSTime(config.samplingTime);
+        }
+    }
+
 }
 
 void DeviceContainer::onDeviceResolutionObtained(QString resolution)

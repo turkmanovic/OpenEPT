@@ -45,8 +45,8 @@ void ConsoleWnd::keyPressEvent(QKeyEvent *event)
         if(entries.length() != 0){
             lastIndex = lastIndex - 1;
             lastIndex = lastIndex < 0 ?  0: lastIndex;
+            ui->controlSendLine->setText(entries.at(lastIndex));
         }
-        ui->controlSendLine->setText(entries.at(lastIndex));
 
     }
     if(event->key() == Qt::Key_Down)
@@ -54,7 +54,7 @@ void ConsoleWnd::keyPressEvent(QKeyEvent *event)
         if(entries.length() != 0){
             lastIndex = lastIndex + 1;
             lastIndex = lastIndex >= entries.length() ?  entries.length() - 1 : lastIndex;
+            ui->controlSendLine->setText(entries.at(lastIndex));
         }
-        ui->controlSendLine->setText(entries.at(lastIndex));
     }
 }

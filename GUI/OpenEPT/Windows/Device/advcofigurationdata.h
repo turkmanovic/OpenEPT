@@ -7,7 +7,7 @@
 typedef struct{
     QString resolution;
     QString clockDiv;
-    QString sampleTime;
+    QString chSTime;
     QString samplingTime;
     QString averaginRatio;
     QString voltageOffset;

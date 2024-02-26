@@ -30,6 +30,7 @@ public slots:
     void    onAcquisitionStop();
     void    onAcquisitionPause();
     void    onAdvConfGet();
+    void    onDeviceWndNewConfiguration(QVariant newConfig);
 
 
     void    onDeviceClosed();
