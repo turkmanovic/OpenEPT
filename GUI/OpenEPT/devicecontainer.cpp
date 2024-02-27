@@ -10,20 +10,21 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
 
 
     /*Device window signals*/
-    connect(deviceWnd,  SIGNAL(sigWndClosed()),                                     this, SLOT(onDeviceClosed()));
+    connect(deviceWnd,  SIGNAL(sigWndClosed()),                                     this, SLOT(onDeviceWndClosed()));
     connect(deviceWnd,  SIGNAL(sigNewControlMessageRcvd(QString)),                  this, SLOT(onConsoleWndMessageRcvd(QString)));
-    connect(deviceWnd,  SIGNAL(sigResolutionChanged(QString)),                      this, SLOT(onResolutionChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigClockDivChanged(QString)),                        this, SLOT(onClockDivChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigSampleTimeChanged(QString)),                      this, SLOT(onSampleTimeChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigSamplingTimeChanged(QString)),                    this, SLOT(onSamplingTimeChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigAvrRatioChanged(QString)),                        this, SLOT(onAvrRatioChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigVOffsetChanged(QString)),                         this, SLOT(onVOffsetChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigCOffsetChanged(QString)),                         this, SLOT(onCOffsetChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigNewInterfaceSelected(QString)),                   this, SLOT(onInterfaceChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigStartAcquisition()),                              this, SLOT(onAcquisitionStart()));
-    connect(deviceWnd,  SIGNAL(sigStopAcquisition()),                               this, SLOT(onAcquisitionStop()));
-    connect(deviceWnd,  SIGNAL(sigPauseAcquisition()),                              this, SLOT(onAcquisitionPause()));
-    connect(deviceWnd,  SIGNAL(sigAdvConfigurationReqested()),                      this, SLOT(onAdvConfGet()));
+    connect(deviceWnd,  SIGNAL(sigResolutionChanged(QString)),                      this, SLOT(onDeviceWndResolutionChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigClockDivChanged(QString)),                        this, SLOT(onDeviceWndClockDivChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigSampleTimeChanged(QString)),                      this, SLOT(onDeviceWndSampleTimeChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigSamplingTimeChanged(QString)),                    this, SLOT(onDeviceWndSamplingTimeChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigAvrRatioChanged(QString)),                        this, SLOT(onDeviceWndAvrRatioChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigVOffsetChanged(QString)),                         this, SLOT(onDeviceWndVOffsetChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigCOffsetChanged(QString)),                         this, SLOT(onDeviceWndCOffsetChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigNewInterfaceSelected(QString)),                   this, SLOT(onDeviceWndInterfaceChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigStartAcquisition()),                              this, SLOT(onDeviceWndAcquisitionStart()));
+    connect(deviceWnd,  SIGNAL(sigStopAcquisition()),                               this, SLOT(onDeviceWndAcquisitionStop()));
+    connect(deviceWnd,  SIGNAL(sigPauseAcquisition()),                              this, SLOT(onDeviceWndAcquisitionPause()));
+    connect(deviceWnd,  SIGNAL(sigRefreshAcquisition()),                            this, SLOT(onDeviceWndAcquisitionRefresh()));
+    connect(deviceWnd,  SIGNAL(sigAdvConfigurationReqested()),                      this, SLOT(onDeviceWndAdvConfGet()));
     connect(deviceWnd,  SIGNAL(sigAdvConfigurationChanged(QVariant)),               this, SLOT(onDeviceWndNewConfiguration(QVariant)));
 
     /*Device signals*/
@@ -75,7 +76,7 @@ void DeviceContainer::onDeviceStatusLinkNewMessageReceived(QString aDeviceIP, QS
     log->printLogMessage("New message received from device (IP: " + aDeviceIP + ") :\" " + aMessage + "\"", LOG_MESSAGE_TYPE_INFO, LOG_MESSAGE_DEVICE_TYPE_DEVICE);
 }
 
-void DeviceContainer::onDeviceClosed()
+void DeviceContainer::onDeviceWndClosed()
 {
     emit sigDeviceClosed(device);
 }
@@ -92,7 +93,7 @@ void DeviceContainer::onDeviceHandleControlMsgResponse(QString msg)
     deviceWnd->printConsoleMsg(msg);
 }
 
-void DeviceContainer::onResolutionChanged(QString resolution)
+void DeviceContainer::onDeviceWndResolutionChanged(QString resolution)
 {
     /* call deviceWnd function with recieved msg from FW <- */
     device_adc_resolution_t tmpResolution = getAdcResolutionFromString(resolution);
@@ -106,7 +107,7 @@ void DeviceContainer::onResolutionChanged(QString resolution)
     }
 }
 
-void DeviceContainer::onClockDivChanged(QString clockDiv)
+void DeviceContainer::onDeviceWndClockDivChanged(QString clockDiv)
 {
     /* call deviceWnd function with recieved msg from FW <- */
     device_adc_clock_div_t tmpClockDiv = getAdcClockDivFromString(clockDiv);
@@ -120,7 +121,7 @@ void DeviceContainer::onClockDivChanged(QString clockDiv)
     }
 }
 
-void DeviceContainer::onSampleTimeChanged(QString stime)
+void DeviceContainer::onDeviceWndSampleTimeChanged(QString stime)
 {
     /* call deviceWnd function with recieved msg from FW <- */
     device_adc_ch_sampling_time_t tmpSampleTime = getAdcChSamplingTimeFromString(stime);
@@ -134,7 +135,7 @@ void DeviceContainer::onSampleTimeChanged(QString stime)
     }
 }
 
-void DeviceContainer::onAvrRatioChanged(QString avgRatio)
+void DeviceContainer::onDeviceWndAvrRatioChanged(QString avgRatio)
 {
     /* call deviceWnd function with recieved msg from FW <- */
     device_adc_averaging_t tmpAveragingRatio = getAdcAvgRatioFromString(avgRatio);
@@ -148,7 +149,7 @@ void DeviceContainer::onAvrRatioChanged(QString avgRatio)
     }
 }
 
-void DeviceContainer::onSamplingTimeChanged(QString time)
+void DeviceContainer::onDeviceWndSamplingTimeChanged(QString time)
 {
     bool conversionOk;
     int  numericValue = time.toInt(&conversionOk);
@@ -167,7 +168,7 @@ void DeviceContainer::onSamplingTimeChanged(QString time)
     }
 }
 
-void DeviceContainer::onInterfaceChanged(QString interfaceIp)
+void DeviceContainer::onDeviceWndInterfaceChanged(QString interfaceIp)
 {
     int streamID = -1;
     if(!device->createStreamLink(interfaceIp, 11223, &streamID))
@@ -183,7 +184,7 @@ void DeviceContainer::onInterfaceChanged(QString interfaceIp)
     }
 }
 
-void DeviceContainer::onVOffsetChanged(QString off)
+void DeviceContainer::onDeviceWndVOffsetChanged(QString off)
 {
     bool conversionOk;
     int  numericValue = off.toInt(&conversionOk);
@@ -202,7 +203,7 @@ void DeviceContainer::onVOffsetChanged(QString off)
     }
 }
 
-void DeviceContainer::onCOffsetChanged(QString off)
+void DeviceContainer::onDeviceWndCOffsetChanged(QString off)
 {
     bool conversionOk;
     int  numericValue = off.toInt(&conversionOk);
@@ -221,7 +222,7 @@ void DeviceContainer::onCOffsetChanged(QString off)
     }
 }
 
-void DeviceContainer::onAcquisitionStart()
+void DeviceContainer::onDeviceWndAcquisitionStart()
 {
     if(!device->acquisitionStart())
     {
@@ -233,7 +234,7 @@ void DeviceContainer::onAcquisitionStart()
     }
 }
 
-void DeviceContainer::onAcquisitionStop()
+void DeviceContainer::onDeviceWndAcquisitionStop()
 {
     if(!device->acquisitionStop())
     {
@@ -245,7 +246,7 @@ void DeviceContainer::onAcquisitionStop()
     }
 }
 
-void DeviceContainer::onAcquisitionPause()
+void DeviceContainer::onDeviceWndAcquisitionPause()
 {
     if(!device->acquisitionPause())
     {
@@ -257,7 +258,12 @@ void DeviceContainer::onAcquisitionPause()
     }
 }
 
-void DeviceContainer::onAdvConfGet()
+void DeviceContainer::onDeviceWndAcquisitionRefresh()
+{
+    device->acquireDeviceConfiguration();
+}
+
+void DeviceContainer::onDeviceWndAdvConfGet()
 {
     device->acquireDeviceConfiguration();
 }
@@ -539,8 +545,11 @@ device_adc_clock_div_t DeviceContainer::getAdcClockDivFromString(QString clkDiv)
     case 7:
         returnClkDiv = DEVICE_ADC_CLOCK_DIV_64;
         break;
-    case 9:
+    case 8:
         returnClkDiv = DEVICE_ADC_CLOCK_DIV_128;
+        break;
+    case 9:
+        returnClkDiv = DEVICE_ADC_CLOCK_DIV_256;
         break;
     default:
         returnClkDiv = DEVICE_ADC_CLOCK_DIV_UKNOWN;

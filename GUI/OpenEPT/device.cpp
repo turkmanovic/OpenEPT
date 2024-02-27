@@ -188,17 +188,8 @@ bool Device::setClockDiv(device_adc_clock_div_t clockDiv)
     case DEVICE_ADC_CLOCK_DIV_4:
         command += "4";
         break;
-    case DEVICE_ADC_CLOCK_DIV_6:
-        command += "6";
-        break;
     case DEVICE_ADC_CLOCK_DIV_8:
         command += "8";
-        break;
-    case DEVICE_ADC_CLOCK_DIV_10:
-        command += "10";
-        break;
-    case DEVICE_ADC_CLOCK_DIV_12:
-        command += "12";
         break;
     case DEVICE_ADC_CLOCK_DIV_16:
         command += "16";
@@ -211,6 +202,9 @@ bool Device::setClockDiv(device_adc_clock_div_t clockDiv)
         break;
     case DEVICE_ADC_CLOCK_DIV_128:
         command += "128";
+        break;
+    case DEVICE_ADC_CLOCK_DIV_256:
+        command += "256";
         break;
     }
     if(!controlLink->executeCommand(command, &response, 1000)) return false;

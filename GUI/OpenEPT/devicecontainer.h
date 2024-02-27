@@ -18,22 +18,23 @@ signals:
 
 public slots:
     void    onConsoleWndMessageRcvd(QString msg);
-    void    onResolutionChanged(QString resolution);
-    void    onClockDivChanged(QString clockDiv);
-    void    onSampleTimeChanged(QString stime);
-    void    onSamplingTimeChanged(QString time);
-    void    onInterfaceChanged(QString interfaceIp);
-    void    onAvrRatioChanged(QString avgRatio);
-    void    onVOffsetChanged(QString off);
-    void    onCOffsetChanged(QString off);
-    void    onAcquisitionStart();
-    void    onAcquisitionStop();
-    void    onAcquisitionPause();
-    void    onAdvConfGet();
+    void    onDeviceWndResolutionChanged(QString resolution);
+    void    onDeviceWndClockDivChanged(QString clockDiv);
+    void    onDeviceWndSampleTimeChanged(QString stime);
+    void    onDeviceWndSamplingTimeChanged(QString time);
+    void    onDeviceWndInterfaceChanged(QString interfaceIp);
+    void    onDeviceWndAvrRatioChanged(QString avgRatio);
+    void    onDeviceWndVOffsetChanged(QString off);
+    void    onDeviceWndCOffsetChanged(QString off);
+    void    onDeviceWndAcquisitionStart();
+    void    onDeviceWndAcquisitionStop();
+    void    onDeviceWndAcquisitionPause();
+    void    onDeviceWndAdvConfGet();
+    void    onDeviceWndAcquisitionRefresh();
     void    onDeviceWndNewConfiguration(QVariant newConfig);
 
 
-    void    onDeviceClosed();
+    void    onDeviceWndClosed();
     void    onDeviceControlLinkDisconnected();
     void    onDeviceControlLinkConnected();
     void    onDeviceStatusLinkNewDeviceAdded(QString aDeviceIP);

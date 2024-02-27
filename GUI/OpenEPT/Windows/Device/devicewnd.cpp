@@ -30,14 +30,12 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
         <<"1"
         <<"2"
         <<"4"
-        <<"6"
         <<"8"
-        <<"10"
-        <<"12"
         <<"16"
         <<"32"
         <<"64"
         <<"128"
+        <<"256"
         ;
     ui->clockDivComb->addItems(*clockDivOptions);
 
@@ -142,7 +140,7 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
 
     connect(ui->clockDivComb,           SIGNAL(currentTextChanged(QString)),    this, SLOT(onClockDivChanged(QString)));
     connect(ui->sampleTimeComb,         SIGNAL(currentTextChanged(QString)),    this, SLOT(onSampleTimeChanged(QString)));
-    connect(ui->resolutionComb,         SIGNAL(currentIndexChanged(QString)),   this, SLOT(onResolutionChanged(QString)));
+    connect(ui->resolutionComb,         SIGNAL(currentTextChanged(QString)),   this, SLOT(onResolutionChanged(QString)));
     connect(ui->samplingTimeLine,       SIGNAL(returnPressed()),                this, SLOT(onSamplingTimeChanged()));
     connect(ui->streamServerInterfComb, SIGNAL(currentTextChanged(QString)),    this, SLOT(onInterfaceChanged(QString)));
 

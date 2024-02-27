@@ -38,7 +38,8 @@ typedef enum{
     DEVICE_ADC_CLOCK_DIV_16            = 16,
     DEVICE_ADC_CLOCK_DIV_32            = 32,
     DEVICE_ADC_CLOCK_DIV_64            = 64,
-    DEVICE_ADC_CLOCK_DIV_128           = 128
+    DEVICE_ADC_CLOCK_DIV_128           = 128,
+    DEVICE_ADC_CLOCK_DIV_256           = 256
 }device_adc_clock_div_t;
 
 typedef enum{
