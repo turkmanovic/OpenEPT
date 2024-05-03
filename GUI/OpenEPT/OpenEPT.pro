@@ -14,6 +14,7 @@ SOURCES += \
     Chart/qcustomplot.cpp \
     Links/controllink.cpp \
     Links/statuslink.cpp \
+    Links/streamlink.cpp \
     Utility/log.cpp \
     Windows/AddDevice/adddevicewnd.cpp \
     Windows/Console/consolewnd.cpp \
@@ -29,6 +30,7 @@ HEADERS += \
     Chart/qcustomplot.h \
     Links/controllink.h \
     Links/statuslink.h \
+    Links/streamlink.h \
     Utility/log.h \
     Windows/AddDevice/adddevicewnd.h \
     Windows/Console/consolewnd.h \

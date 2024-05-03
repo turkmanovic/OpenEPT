@@ -5,6 +5,7 @@
 #include <QString>
 #include "Links/controllink.h"
 #include "Links/statuslink.h"
+#include "Links/streamlink.h"
 
 typedef enum{
     DEVICE_ADC_RESOLUTION_UKNOWN       = 0,
@@ -124,6 +125,7 @@ private:
 
     ControlLink*                    controlLink;
     StatusLink*                     statusLink;
+    StreamLink*                     streamLink;
     QString                         voltageOffset;
     QString                         currentOffset;
     QString                         adcInputClk;

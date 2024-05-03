@@ -16,12 +16,17 @@
 static ADC_HandleTypeDef 				prvDRV_AIN_DEVICE_ADC_HANDLER;
 static DMA_HandleTypeDef 				prvDRV_AIN_DEVICE_DMA_HANDLER;
 static TIM_HandleTypeDef 				prvDRV_AIN_DEVICE_TIMER_HANDLER;
-static uint16_t							prvDRV_AIN_ADC_DATA_SAMPLES[CONF_AIN_MAX_BUFFER_NO][DRV_AIN_ADC_BUFFER_MAX_SIZE]
-																							__attribute__((section(".ADCSamplesBuffer")));
 static drv_ain_adc_acquisition_status_t	prvDRV_AIN_ACQUISITION_STATUS;
 static ADC_ChannelConfTypeDef 			prvDRV_AIN_ADC_CHANNEL_1_CONFIG;
 static ADC_ChannelConfTypeDef 			prvDRV_AIN_ADC_CHANNEL_2_CONFIG;
 static drv_ain_adc_config_t				prvDRV_AIN_ADC_CONFIG;
+static drv_ain_adc_stream_callback		prvDRV_AIN_ADC_CALLBACK;
+
+static uint16_t							prvDRV_AIN_ADC_DATA_SAMPLES[CONF_AIN_MAX_BUFFER_NO][DRV_AIN_ADC_BUFFER_MAX_SIZE]
+																							__attribute__((section(".ADCSamplesBuffer")));
+static uint8_t							prvDRV_AIN_ADC_DATA_SAMPLES_ACTIVE[CONF_AIN_MAX_BUFFER_NO];
+
+static uint8_t							prvDRV_AIN_ADC_ACTIVE_BUFFER;
 
 
 /**
@@ -186,13 +191,27 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
 }
 static void							prvDRV_AIN_DMAHalfComplitedCallback(ADC_HandleTypeDef *adc)
 {
+	if(prvDRV_AIN_ADC_DATA_SAMPLES_ACTIVE[prvDRV_AIN_ADC_ACTIVE_BUFFER] == 1)
+	{
+		//If we ends here, previous buffer not processed (submitted)
+		return;
+	}
+	if(prvDRV_AIN_ADC_CALLBACK != 0)
+	{
+		prvDRV_AIN_ADC_CALLBACK((uint32_t)&prvDRV_AIN_ADC_DATA_SAMPLES[prvDRV_AIN_ADC_ACTIVE_BUFFER][0], prvDRV_AIN_ADC_ACTIVE_BUFFER);
+	}
+	/*Buffer is under processing*/
+	prvDRV_AIN_ADC_DATA_SAMPLES_ACTIVE[prvDRV_AIN_ADC_ACTIVE_BUFFER] = 1;
 
+	/*Increase to point to the next buffer*/
+	prvDRV_AIN_ADC_ACTIVE_BUFFER += 1;
+	prvDRV_AIN_ADC_ACTIVE_BUFFER = prvDRV_AIN_ADC_ACTIVE_BUFFER == CONF_AIN_MAX_BUFFER_NO ? 0 : prvDRV_AIN_ADC_ACTIVE_BUFFER;
 }
 
 static drv_ain_status				prvDRV_AIN_InitDeviceTimer()
 {
 
-	TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+	TIM_ClockConfigTypeDef  sClockSourceConfig = {0};
 	TIM_MasterConfigTypeDef sMasterConfig = {0};
 
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Instance = TIM1;
@@ -294,7 +313,9 @@ drv_ain_status 						DRV_AIN_Init(drv_ain_adc_t adc, drv_ain_adc_config_t* confi
 	prvDRV_AIN_InitDeviceTimer();
 
 	/* Set initial acquisition status*/
-	prvDRV_AIN_ACQUISITION_STATUS = DRV_AIN_ADC_ACQUISITION_STATUS_UKNOWN;
+	prvDRV_AIN_ACQUISITION_STATUS 	= DRV_AIN_ADC_ACQUISITION_STATUS_UKNOWN;
+	prvDRV_AIN_ADC_CALLBACK		  	= 0;
+	prvDRV_AIN_ADC_ACTIVE_BUFFER	= 0;
 
 //	/* Start ADC */
 //	DRV_AIN_Start(DRV_AIN_ADC_3);
@@ -463,6 +484,7 @@ drv_ain_status 						DRV_AIN_SetChannelsSamplingTime(drv_ain_adc_t adc, drv_ain_
 drv_ain_status 						DRV_AIN_SetChannelOffset(drv_ain_adc_t adc, uint32_t channel, uint32_t offset)
 {
 
+	if(prvDRV_AIN_ACQUISITION_STATUS == DRV_AIN_ADC_ACQUISITION_STATUS_ACTIVE) return DRV_AIN_STATUS_ERROR;
 	return DRV_AIN_STATUS_OK;
 }
 
@@ -500,12 +522,14 @@ drv_ain_status 						DRV_AIN_GetADCClk(drv_ain_adc_t adc, uint32_t *clk)
 }
 drv_ain_status 						DRV_AIN_Stream_RegisterCallback(drv_ain_adc_t adc, drv_ain_adc_stream_callback cbfunction)
 {
-
+	prvDRV_AIN_ADC_CALLBACK = cbfunction;
 	return DRV_AIN_STATUS_OK;
 }
-drv_ain_status 						DRV_AIN_Stream_SubmitAddr(drv_ain_adc_t adc, uint32_t addr)
+drv_ain_status 						DRV_AIN_Stream_SubmitAddr(drv_ain_adc_t adc, uint32_t addr, uint8_t bufferID)
 {
-
+	if(bufferID >= DRV_AIN_ADC_BUFFER_NO) return DRV_AIN_STATUS_ERROR;
+	//TODO: Mutual exclusion, protect it by disabling ADC Interrupt;
+	prvDRV_AIN_ADC_DATA_SAMPLES_ACTIVE[bufferID] = 0;
 	return DRV_AIN_STATUS_OK;
 }
 

@@ -11,6 +11,7 @@ Device::Device(QObject *parent)
     deviceName              = "";
     samplingTime            = "";
     controlLink             = NULL;
+    streamLink              = NULL;
 }
 
 Device::~Device()
@@ -73,6 +74,8 @@ bool Device::createStreamLink(QString ip, quint16 port, int* id)
     if(controlLink == NULL) return false;
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     streamID = response.toInt();
+    streamLink = new StreamLink();
+    streamLink->setID(streamID);
     *id = streamID;
     return true;
 }
