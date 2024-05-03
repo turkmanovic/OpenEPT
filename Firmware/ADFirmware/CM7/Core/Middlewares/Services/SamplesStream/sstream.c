@@ -44,18 +44,29 @@
 
 typedef struct
 {
-	TaskHandle_t				taskHandle;
+	TaskHandle_t				controlTaskHandle;
+	SemaphoreHandle_t			initSig;
+	SemaphoreHandle_t			guard;
+	sstream_state_t				state;
+	sstream_acquisition_state_t	acquisitionState;
+	drv_ain_adc_config_t		ainConfig;
+	uint32_t					id;
+}sstream_control_data_t;
+
+typedef struct
+{
+	TaskHandle_t				streamTaskHandle;
 	SemaphoreHandle_t			initSig;
 	SemaphoreHandle_t			guard;
 	sstream_state_t				state;
 	sstream_connection_info		connectionInfo;
-	sstream_acquisition_state_t	acquisitionState;
-	drv_ain_adc_config_t		ainConfig;
-}channel_data_t;
+	uint32_t					id;
+}sstream_stream_data_t;
 
 typedef struct
 {
-	channel_data_t				connections[CONF_SSTREAM_CONNECTIONS_MAX_NO];
+	sstream_control_data_t		controlInfo[CONF_SSTREAM_CONNECTIONS_MAX_NO];
+	sstream_stream_data_t		streamInfo[CONF_SSTREAM_CONNECTIONS_MAX_NO];
 	uint32_t					activeConnectionsNo;
 }sstream_data_t;
 
@@ -64,20 +75,88 @@ static sstream_data_t								prvSSTREAM_DATA;
 
 static uint16_t					prvSSTREAM_TEST_DATA[CONF_AIN_MAX_BUFFER_SIZE];
 
-static void prvSSTREAM_TaskFunc(void* pvParam)
+static void prvSSTREAM_StreamTaskFunc(void* pvParam)
 {
 	uint32_t				notifyValue = 0;
 	TickType_t				blockingTime = portMAX_DELAY;
-	channel_data_t			*connectionData;
-	connectionData 			= (channel_data_t*)pvParam;
+	sstream_stream_data_t   *connectionData;
+	connectionData 			= (sstream_stream_data_t*)pvParam;
 
-	struct udp_pcb	*pcb;
-	struct ip4_addr dest;
-	struct pbuf		*p;
 
-	err_t			error;
+	struct udp_pcb			*pcb;
+	struct ip4_addr 		dest;
+	struct pbuf				*p;
+	err_t					error;
 
-	LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Samples stream service created\r\n");
+	LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Samples stream task created\r\n");
+	for(;;)
+	{
+		switch(connectionData->state)
+		{
+		case SSTREAM_STATE_INIT:
+			pcb = udp_new();
+			IP4_ADDR(&dest, connectionData->connectionInfo.serverIp[0],
+					connectionData->connectionInfo.serverIp[1],
+					connectionData->connectionInfo.serverIp[2],
+					connectionData->connectionInfo.serverIp[3]);
+			if(udp_connect(pcb, &dest, connectionData->connectionInfo.serverport) != ERR_OK)
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to establish connection with stream server\r\n");
+			}
+			else
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Connection with stream server successfully established\r\n");
+			}
+			memset(prvSSTREAM_TEST_DATA, 0xA5, 2*CONF_AIN_MAX_BUFFER_SIZE);
+
+			if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem with init semaphore\r\n");
+				connectionData->state = SSTREAM_STATE_ERROR;
+				break;
+			}
+			connectionData->state = SSTREAM_STATE_SERVICE;
+			break;
+		case SSTREAM_STATE_SERVICE:
+			notifyValue = ulTaskNotifyTake(pdTRUE, blockingTime);
+			p = pbuf_alloc(PBUF_TRANSPORT, 2*CONF_AIN_MAX_BUFFER_SIZE, PBUF_RAM);
+
+			if(p == NULL)
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release create pbuf\r\n");
+			}
+			p->payload = prvSSTREAM_TEST_DATA;
+
+			error = udp_send(pcb, p);
+
+			if(error != ERR_OK)
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to send pbuf\r\n");
+			}
+
+			pbuf_free(p);
+			break;
+		case SSTREAM_STATE_ERROR:
+			LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Samples stream task is in error state\r\n");
+			SYSTEM_ReportError(SYSTEM_ERROR_LEVEL_LOW);
+			vTaskDelay(portMAX_DELAY);
+			break;
+		}
+	}
+}
+
+
+static void prvSSTREAM_ControlTaskFunc(void* pvParam)
+{
+	uint32_t				notifyValue = 0;
+	TickType_t				blockingTime = portMAX_DELAY;
+
+	sstream_control_data_t			*connectionData;
+	connectionData 			= (sstream_control_data_t*)pvParam;
+
+
+
+	LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Samples stream control task created\r\n");
 	for(;;)
 	{
 		switch(connectionData->state)
@@ -152,8 +231,9 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 			}
 			else
 			{
-				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Unable to obtain ADC clock\r\n");
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "Unable to obtain ADC clock\r\n");
 			}
+
 
 			if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
 			{
@@ -161,24 +241,6 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 				connectionData->state = SSTREAM_STATE_ERROR;
 				break;
 			}
-			connectionData->state = SSTREAM_STATE_OPEN_STREAM_SERVER;
-			break;
-
-		case SSTREAM_STATE_OPEN_STREAM_SERVER:
-			pcb = udp_new();
-			IP4_ADDR(&dest, connectionData->connectionInfo.serverIp[0],
-					connectionData->connectionInfo.serverIp[1],
-					connectionData->connectionInfo.serverIp[2],
-					connectionData->connectionInfo.serverIp[3]);
-			if(udp_connect(pcb, &dest, connectionData->connectionInfo.serverport) != ERR_OK)
-			{
-				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to establish connection with stream server\r\n");
-			}
-			else
-			{
-				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Connection with stream server successfully established\r\n");
-			}
-			memset(prvSSTREAM_TEST_DATA, 0xA5, 2*CONF_AIN_MAX_BUFFER_SIZE);
 			connectionData->state = SSTREAM_STATE_SERVICE;
 			break;
 		case SSTREAM_STATE_SERVICE:
@@ -186,6 +248,7 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 			if(notifyValue & SSTREAM_TASK_START_BIT)
 			{
 				connectionData->acquisitionState = SSTREAM_ACQUISITION_STATE_START;
+
 				if(DRV_AIN_Start(DRV_AIN_ADC_3) == DRV_AIN_STATUS_OK)
 				{
 					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Stream started \r\n");
@@ -194,7 +257,9 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 				{
 					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Unable to start stream\r\n");
 				}
+
 				notifyValue |= SSTREAM_TASK_STREAM_BIT;
+
 				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
 				{
 					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release init semaphore\r\n");
@@ -204,30 +269,18 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 			}
 			if(notifyValue & SSTREAM_TASK_STREAM_BIT)
 			{
-				while(1){
-					p = pbuf_alloc(PBUF_TRANSPORT, 2*CONF_AIN_MAX_BUFFER_SIZE, PBUF_RAM);
-					if(p == NULL)
-					{
-						LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release create pbuf\r\n");
-					}
-					p->payload = prvSSTREAM_TEST_DATA;
 
-					error = udp_send(pcb, p);
 
-					if(error != ERR_OK)
-					{
-						LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to send pbuf\r\n");
-					}
-
-					pbuf_free(p);
-					vTaskDelay(pdMS_TO_TICKS(1000));
-				}
-
-				connectionData->acquisitionState = SSTREAM_ACQUISITION_STATE_STREAM;
+//				vTaskDelay(pdMS_TO_TICKS(1000));
+//
+//				TaskToNotifyHandle = xTaskGetCurrentTaskHandle();
+//
+//				xTaskNotify(TaskToNotifyHandle, SSTREAM_TASK_STREAM_BIT, eSetBits);
 			}
 			if(notifyValue & SSTREAM_TASK_STOP_BIT)
 			{
 				connectionData->acquisitionState = SSTREAM_ACQUISITION_STATE_STOP;
+
 				if(DRV_AIN_Stop(DRV_AIN_ADC_3) == DRV_AIN_STATUS_OK)
 				{
 					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Stream stoped \r\n");
@@ -236,6 +289,7 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 				{
 					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Unable to stop stream\r\n");
 				}
+
 				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
 				{
 					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release init semaphore\r\n");
@@ -407,6 +461,7 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 				}
 			}
 			break;
+
 		case SSTREAM_STATE_ERROR:
 			SYSTEM_ReportError(SYSTEM_ERROR_LEVEL_LOW);
 			vTaskDelay(portMAX_DELAY);
@@ -423,26 +478,49 @@ sstream_status_t			SSTREAM_Init(void)
 sstream_status_t			SSTREAM_CreateChannel(sstream_connection_info* connectionHandler, uint32_t timeout)
 {
 	if(prvSSTREAM_DATA.activeConnectionsNo > SSTREAM_CONNECTIONS_MAX_NO) return SSTREAM_STATUS_ERROR;
+
 	uint32_t currentId = prvSSTREAM_DATA.activeConnectionsNo;
-	memcpy(&prvSSTREAM_DATA.connections[currentId].connectionInfo, connectionHandler,  sizeof(sstream_connection_info));
+	prvSSTREAM_DATA.controlInfo[currentId].id = currentId;
+	prvSSTREAM_DATA.streamInfo[currentId].id = currentId;
+	memcpy(&prvSSTREAM_DATA.streamInfo[currentId].connectionInfo, connectionHandler,  sizeof(sstream_connection_info));
+
 	if(xTaskCreate(
-			prvSSTREAM_TaskFunc,
-			SSTREAM_TASK_NAME,
-			SSTREAM_TASK_STACK_SIZE,
-			&prvSSTREAM_DATA.connections[currentId],
-			SSTREAM_TASK_PRIO,
-			&prvSSTREAM_DATA.connections[currentId].taskHandle) != pdPASS) return SSTREAM_STATUS_ERROR;
+			prvSSTREAM_ControlTaskFunc,
+			SSTREAM_CONTROL_TASK_NAME,
+			SSTREAM_CONTROL_TASK_STACK_SIZE,
+			&prvSSTREAM_DATA.controlInfo[currentId],
+			SSTREAM_CONTROL_TASK_PRIO,
+			&prvSSTREAM_DATA.controlInfo[currentId].controlTaskHandle) != pdPASS) return SSTREAM_STATUS_ERROR;
 
-	prvSSTREAM_DATA.connections[currentId].initSig = xSemaphoreCreateBinary();
-	if(prvSSTREAM_DATA.connections[currentId].initSig == NULL) return SSTREAM_STATUS_ERROR;
+	/* Create stream task */
+	if(xTaskCreate(
+			prvSSTREAM_StreamTaskFunc,
+			SSTREAM_STREAM_TASK_NAME,
+			SSTREAM_STREAM_TASK_STACK_SIZE,
+			&prvSSTREAM_DATA.streamInfo[currentId],
+			SSTREAM_STREAM_TASK_PRIO,
+			&prvSSTREAM_DATA.streamInfo[currentId].streamTaskHandle) != pdPASS) return SSTREAM_STATUS_ERROR;
 
-	prvSSTREAM_DATA.connections[currentId].guard = xSemaphoreCreateMutex();
-	if(prvSSTREAM_DATA.connections[currentId].guard == NULL) return SSTREAM_STATUS_ERROR;
+	prvSSTREAM_DATA.controlInfo[currentId].initSig = xSemaphoreCreateBinary();
+	if(prvSSTREAM_DATA.controlInfo[currentId].initSig == NULL) return SSTREAM_STATUS_ERROR;
 
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[currentId].initSig,
+	prvSSTREAM_DATA.streamInfo[currentId].initSig = xSemaphoreCreateBinary();
+	if(prvSSTREAM_DATA.streamInfo[currentId].initSig == NULL) return SSTREAM_STATUS_ERROR;
+
+	prvSSTREAM_DATA.controlInfo[currentId].guard = xSemaphoreCreateMutex();
+	if(prvSSTREAM_DATA.controlInfo[currentId].guard == NULL) return SSTREAM_STATUS_ERROR;
+
+	prvSSTREAM_DATA.streamInfo[currentId].guard = xSemaphoreCreateMutex();
+	if(prvSSTREAM_DATA.streamInfo[currentId].guard == NULL) return SSTREAM_STATUS_ERROR;
+
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[currentId].initSig,
 			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
-	prvSSTREAM_DATA.connections[currentId].connectionInfo.id = currentId;
+	if(xSemaphoreTake(prvSSTREAM_DATA.streamInfo[currentId].initSig,
+			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
+
+	prvSSTREAM_DATA.streamInfo[currentId].connectionInfo.id = currentId;
 	prvSSTREAM_DATA.activeConnectionsNo += 1;
 	return SSTREAM_STATUS_OK;
 }
@@ -453,12 +531,12 @@ sstream_status_t				SSTREAM_GetConnectionByIP(sstream_connection_info* connectio
 	while(connectionIterator < prvSSTREAM_DATA.activeConnectionsNo)
 	{
 		for(ipIterator = 0; ipIterator < 4; ipIterator++){
-			if(prvSSTREAM_DATA.connections[connectionIterator].connectionInfo.serverIp[ipIterator] == ip[ipIterator]) continue;
+			if(prvSSTREAM_DATA.streamInfo[connectionIterator].connectionInfo.serverIp[ipIterator] == ip[ipIterator]) continue;
 			break;
 		}
-		if(ipIterator == 4 && prvSSTREAM_DATA.connections[connectionIterator].connectionInfo.serverport == port)
+		if(ipIterator == 4 && prvSSTREAM_DATA.streamInfo[connectionIterator].connectionInfo.serverport == port)
 		{
-			connectionHandler = &prvSSTREAM_DATA.connections[connectionIterator].connectionInfo;
+			connectionHandler = &prvSSTREAM_DATA.streamInfo[connectionIterator].connectionInfo;
 			return SSTREAM_STATUS_OK;
 		}
 		connectionIterator += 1;
@@ -471,9 +549,9 @@ sstream_status_t				SSTREAM_GetConnectionByID(sstream_connection_info** connecti
 	uint32_t 	connectionIterator = 0;
 	while(connectionIterator < prvSSTREAM_DATA.activeConnectionsNo)
 	{
-		if(prvSSTREAM_DATA.connections[connectionIterator].connectionInfo.id == id)
+		if(prvSSTREAM_DATA.streamInfo[connectionIterator].connectionInfo.id == id)
 		{
-			*connectionHandler = &prvSSTREAM_DATA.connections[connectionIterator].connectionInfo;
+			*connectionHandler = &prvSSTREAM_DATA.streamInfo[connectionIterator].connectionInfo;
 			return SSTREAM_STATUS_OK;
 		}
 		connectionIterator += 1;
@@ -483,150 +561,150 @@ sstream_status_t				SSTREAM_GetConnectionByID(sstream_connection_info** connecti
 }
 sstream_status_t				SSTREAM_Start(sstream_connection_info* connectionHandler, uint32_t timeout)
 {
-	if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+	if(xTaskNotify(prvSSTREAM_DATA.controlInfo[connectionHandler->id].controlTaskHandle,
 			SSTREAM_TASK_START_BIT,
 			eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
 
 	/* Wait until configuration is applied*/
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].initSig,
 			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	return SSTREAM_STATUS_OK;
 }
 sstream_status_t				SSTREAM_StartStream(sstream_connection_info* connectionHandler, uint32_t timeout)
 {
-	if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+	if(xTaskNotify(prvSSTREAM_DATA.controlInfo[connectionHandler->id].controlTaskHandle,
 			SSTREAM_TASK_STREAM_BIT,
 			eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
 
 	/* Wait until configuration is applied*/
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].initSig,
 			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	return SSTREAM_STATUS_OK;
 }
 sstream_status_t				SSTREAM_Stop(sstream_connection_info* connectionHandler, uint32_t timeout)
 {
-	if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+	if(xTaskNotify(prvSSTREAM_DATA.controlInfo[connectionHandler->id].controlTaskHandle,
 			SSTREAM_TASK_STOP_BIT,
 			eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
 
 	/* Wait until configuration is applied*/
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].initSig,
 			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 	return SSTREAM_STATUS_OK;
 }
 sstream_status_t				SSTREAM_SetResolution(sstream_connection_info* connectionHandler, sstream_adc_resolution_t resolution, uint32_t timeout)
 {
 
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
-	prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.resolution = resolution;
-	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.resolution = resolution;
+	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	/* Send request to configure AIN*/
-	if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+	if(xTaskNotify(prvSSTREAM_DATA.controlInfo[connectionHandler->id].controlTaskHandle,
 			SSTREAM_TASK_SET_ADC_RESOLUTION_BIT,
 			eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
 
 	/* Wait until configuration is applied*/
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].initSig,
 			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 	return SSTREAM_STATUS_OK;
 }
 sstream_status_t				SSTREAM_SetSamplingTime(sstream_connection_info* connectionHandler, uint32_t stime, uint32_t timeout)
 {
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
-	prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.samplingTime = stime;
-	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.samplingTime = stime;
+	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	/* Send request to configure AIN*/
-	if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+	if(xTaskNotify(prvSSTREAM_DATA.controlInfo[connectionHandler->id].controlTaskHandle,
 			SSTREAM_TASK_SET_ADC_STIME_BIT,
 			eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
 
 	/* Wait until configuration is applied*/
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].initSig,
 			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 	return SSTREAM_STATUS_OK;
 }
 sstream_status_t				SSTREAM_SetClkDiv(sstream_connection_info* connectionHandler, sstream_adc_clk_div_t adcClkDiv, uint32_t timeout)
 {
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
-	prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.clockDiv = adcClkDiv;
-	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.clockDiv = adcClkDiv;
+	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	/* Send request to configure AIN*/
-	if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+	if(xTaskNotify(prvSSTREAM_DATA.controlInfo[connectionHandler->id].controlTaskHandle,
 			SSTREAM_TASK_SET_ADC_CLOCK_DIV_BIT,
 			eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
 
 	/* Wait until configuration is applied*/
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].initSig,
 			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 	return SSTREAM_STATUS_OK;
 }
 sstream_status_t				SSTREAM_SetChannelSamplingTime(sstream_connection_info* connectionHandler, uint32_t channel, sstream_adc_sampling_time_t stime, uint32_t timeout)
 {
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 	if(channel == 1)
 	{
-		prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch1.sampleTime = stime;
+		prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.ch1.sampleTime = stime;
 	}
 	if(channel == 2)
 	{
-		prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch2.sampleTime = stime;
+		prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.ch2.sampleTime = stime;
 	}
-	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	/* Send request to configure AIN*/
 	if(channel == 1)
 	{
-		if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+		if(xTaskNotify(prvSSTREAM_DATA.controlInfo[connectionHandler->id].controlTaskHandle,
 				SSTREAM_TASK_SET_ADC_CH1_STIME_BIT,
 				eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
 	}
 	if(channel == 2)
 	{
-		if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+		if(xTaskNotify(prvSSTREAM_DATA.controlInfo[connectionHandler->id].controlTaskHandle,
 				SSTREAM_TASK_SET_ADC_CH2_STIME_BIT,
 				eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
 	}
 
 	/* Wait until configuration is applied*/
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].initSig,
 			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	return SSTREAM_STATUS_OK;
 }
 sstream_status_t				SSTREAM_SetChannelOffset(sstream_connection_info* connectionHandler, uint32_t channel, uint32_t offset, uint32_t timeout)
 {
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 	if(channel == 1)
 	{
-		prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch1.offset = offset;
+		prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.ch1.offset = offset;
 	}
 	if(channel == 2)
 	{
-		prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch2.offset = offset;
+		prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.ch2.offset = offset;
 	}
-	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	/* Send request to configure AIN*/
 	if(channel == 1)
 	{
-		if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+		if(xTaskNotify(prvSSTREAM_DATA.controlInfo[connectionHandler->id].controlTaskHandle,
 				SSTREAM_TASK_SET_ADC_CH1_OFFSET_BIT,
 				eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
 	}
 	if(channel == 2)
 	{
-		if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+		if(xTaskNotify(prvSSTREAM_DATA.controlInfo[connectionHandler->id].controlTaskHandle,
 				SSTREAM_TASK_SET_ADC_CH2_OFFSET_BIT,
 				eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
 	}
 
 	/* Wait until configuration is applied*/
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].initSig,
 			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	return SSTREAM_STATUS_OK;
@@ -634,33 +712,33 @@ sstream_status_t				SSTREAM_SetChannelOffset(sstream_connection_info* connection
 
 sstream_status_t				SSTREAM_SetChannelAvgRatio(sstream_connection_info* connectionHandler, uint32_t channel, sstream_adc_ch_avg_ratio_t avgRatio, uint32_t timeout)
 {
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 	if(channel == 1)
 	{
-		prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch1.avgRatio = avgRatio;
+		prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.ch1.avgRatio = avgRatio;
 	}
 	if(channel == 2)
 	{
-		prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch2.avgRatio = avgRatio;
+		prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.ch2.avgRatio = avgRatio;
 	}
-	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	/* Send request to configure AIN*/
 	if(channel == 1)
 	{
-		if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+		if(xTaskNotify(prvSSTREAM_DATA.controlInfo[connectionHandler->id].controlTaskHandle,
 				SSTREAM_TASK_SET_ADC_CH1_AVERAGING_RATIO,
 				eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
 	}
 	if(channel == 2)
 	{
-		if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+		if(xTaskNotify(prvSSTREAM_DATA.controlInfo[connectionHandler->id].controlTaskHandle,
 				SSTREAM_TASK_SET_ADC_CH2_AVERAGING_RATIO,
 				eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
 	}
 
 	/* Wait until configuration is applied*/
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].initSig,
 			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	return SSTREAM_STATUS_OK;
@@ -669,9 +747,9 @@ sstream_adc_resolution_t		SSTREAM_GetResolution(sstream_connection_info* connect
 {
 	sstream_adc_resolution_t resolution;
 
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
-	resolution = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.resolution;
-	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	resolution = prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.resolution;
+	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	return resolution;
 }
@@ -679,9 +757,9 @@ sstream_adc_clk_div_t			SSTREAM_GetClkDiv(sstream_connection_info* connectionHan
 {
 	sstream_adc_clk_div_t adcClockDiv;
 
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
-	adcClockDiv = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.clockDiv;
-	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	adcClockDiv = prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.clockDiv;
+	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	return adcClockDiv;
 }
@@ -689,9 +767,9 @@ uint32_t						SSTREAM_GetSamplingTime(sstream_connection_info* connectionHandler
 {
 	uint32_t stime;
 
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
-	stime = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.samplingTime;
-	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	stime = prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.samplingTime;
+	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	return stime;
 }
@@ -699,16 +777,16 @@ sstream_adc_sampling_time_t		SSTREAM_GetChannelSamplingTime(sstream_connection_i
 {
 	sstream_adc_sampling_time_t chstime;
 
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 	if(channel == 1)
 	{
-		chstime = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch1.sampleTime;
+		chstime = prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.ch1.sampleTime;
 	}
 	if(channel == 2)
 	{
-		chstime = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch2.sampleTime;
+		chstime = prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.ch2.sampleTime;
 	}
-	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	return chstime;
 }
@@ -716,16 +794,16 @@ uint32_t						SSTREAM_GetChannelOffset(sstream_connection_info* connectionHandle
 {
 	uint32_t choffset;
 
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 	if(channel == 1)
 	{
-		choffset = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch1.offset;
+		choffset = prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.ch1.offset;
 	}
 	if(channel == 2)
 	{
-		choffset = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch2.offset;
+		choffset = prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.ch2.offset;
 	}
-	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	return choffset;
 }
@@ -734,16 +812,16 @@ sstream_adc_ch_avg_ratio_t		SSTREAM_GetChannelAvgRatio(sstream_connection_info* 
 {
 	sstream_adc_ch_avg_ratio_t avgRatio;
 
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 	if(channel == 1)
 	{
-		avgRatio = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch1.avgRatio;
+		avgRatio = prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.ch1.avgRatio;
 	}
 	if(channel == 2)
 	{
-		avgRatio = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.ch2.avgRatio;
+		avgRatio = prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.ch2.avgRatio;
 	}
-	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	return avgRatio;
 }
@@ -752,9 +830,9 @@ uint32_t						SSTREAM_GetAdcInputClk(sstream_connection_info* connectionHandler,
 {
 	uint32_t inputClk;
 
-	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
-	inputClk = prvSSTREAM_DATA.connections[connectionHandler->id].ainConfig.inputClk;
-	if(xSemaphoreGive(prvSSTREAM_DATA.connections[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+	inputClk = prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.inputClk;
+	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	return inputClk;
 }
