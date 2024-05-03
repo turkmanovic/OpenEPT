@@ -22,7 +22,7 @@ static ADC_ChannelConfTypeDef 			prvDRV_AIN_ADC_CHANNEL_2_CONFIG;
 static drv_ain_adc_config_t				prvDRV_AIN_ADC_CONFIG;
 static drv_ain_adc_stream_callback		prvDRV_AIN_ADC_CALLBACK;
 
-static uint16_t							prvDRV_AIN_ADC_DATA_SAMPLES[CONF_AIN_MAX_BUFFER_NO][DRV_AIN_ADC_BUFFER_MAX_SIZE]
+static uint16_t							prvDRV_AIN_ADC_DATA_SAMPLES[CONF_AIN_MAX_BUFFER_NO][DRV_AIN_ADC_BUFFER_MAX_SIZE+1]
 																							__attribute__((section(".ADCSamplesBuffer")));
 static uint8_t							prvDRV_AIN_ADC_DATA_SAMPLES_ACTIVE[CONF_AIN_MAX_BUFFER_NO];
 
@@ -75,11 +75,10 @@ void BDMA_Channel0_IRQHandler(void)
 */
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
 {
-  if(htim_base->Instance==TIM1)
-  {
-    __HAL_RCC_TIM1_CLK_ENABLE();
-  }
-
+	if(htim_base->Instance==TIM1)
+	{
+	__HAL_RCC_TIM1_CLK_ENABLE();
+	}
 }
 
 /**
@@ -90,12 +89,12 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
 */
 void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
 {
-  if(htim_base->Instance==TIM1)
-  {
-    __HAL_RCC_TIM1_CLK_DISABLE();
-  }
-
+	if(htim_base->Instance==TIM1)
+	{
+	__HAL_RCC_TIM1_CLK_DISABLE();
+	}
 }
+
 /**
 * @brief ADC MSP Initialization
 * This function configures the hardware resources used in this example
@@ -164,13 +163,13 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
 static void prvDRV_AIN_InitDMA(void)
 {
 
-  /* DMA controller clock enable */
-  __HAL_RCC_BDMA_CLK_ENABLE();
+	/* DMA controller clock enable */
+	__HAL_RCC_BDMA_CLK_ENABLE();
 
-  /* DMA interrupt init */
-  /* BDMA_Channel0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(BDMA_Channel0_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(BDMA_Channel0_IRQn);
+	/* DMA interrupt init */
+	/* BDMA_Channel0_IRQn interrupt configuration */
+	HAL_NVIC_SetPriority(BDMA_Channel0_IRQn, 5, 0);
+	HAL_NVIC_EnableIRQ(BDMA_Channel0_IRQn);
 
 }
 /**
@@ -215,9 +214,10 @@ static drv_ain_status				prvDRV_AIN_InitDeviceTimer()
 	TIM_MasterConfigTypeDef sMasterConfig = {0};
 
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Instance = TIM1;
-	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Prescaler = 1;
+	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Prescaler = 20000;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.CounterMode = TIM_COUNTERMODE_UP;
-	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Period = 1;
+	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Period = 10000;
+	prvDRV_AIN_ADC_CONFIG.samplingTime = 10000;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.RepetitionCounter = 0;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -326,7 +326,7 @@ drv_ain_status 						DRV_AIN_Start(drv_ain_adc_t adc)
 	memset((void*)prvDRV_AIN_ADC_DATA_SAMPLES, 0, 2*CONF_AIN_MAX_BUFFER_NO*DRV_AIN_ADC_BUFFER_MAX_SIZE);
 	if(prvDRV_AIN_ACQUISITION_STATUS == DRV_AIN_ADC_ACQUISITION_STATUS_ACTIVE) return DRV_AIN_STATUS_ERROR;
 	if(HAL_TIM_Base_Start(&prvDRV_AIN_DEVICE_TIMER_HANDLER) != HAL_OK) return DRV_AIN_STATUS_ERROR;
-	if(HAL_ADC_Start_DMA(&prvDRV_AIN_DEVICE_ADC_HANDLER, (uint32_t*)prvDRV_AIN_ADC_DATA_SAMPLES, CONF_AIN_MAX_BUFFER_NO*DRV_AIN_ADC_BUFFER_MAX_SIZE)) return DRV_AIN_STATUS_ERROR;
+	if(HAL_ADC_Start_DMA(&prvDRV_AIN_DEVICE_ADC_HANDLER, (uint32_t*)(&prvDRV_AIN_ADC_DATA_SAMPLES[0][1]), (uint32_t*)(&prvDRV_AIN_ADC_DATA_SAMPLES[DRV_AIN_ADC_BUFFER_NO-1][1]), DRV_AIN_ADC_BUFFER_MAX_SIZE)) return DRV_AIN_STATUS_ERROR;
 	prvDRV_AIN_ACQUISITION_STATUS = DRV_AIN_ADC_ACQUISITION_STATUS_ACTIVE;
 	return DRV_AIN_STATUS_OK;
 }
