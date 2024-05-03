@@ -72,9 +72,15 @@ bool Device::createStreamLink(QString ip, quint16 port, int* id)
     QString response;
     QString command = "device stream create -ip=" + ip +  " -port=" + QString::number(port);
     if(controlLink == NULL) return false;
+
+    /* Prepare stream server */
+    streamLink = new StreamLink();
+    streamLink->setPort(port);
+    streamLink->enable();
+
+    /*  */
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     streamID = response.toInt();
-    streamLink = new StreamLink();
     streamLink->setID(streamID);
     *id = streamID;
     return true;

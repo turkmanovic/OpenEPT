@@ -15,6 +15,10 @@
 #include "semphr.h"
 #include "queue.h"
 
+#include "lwip.h"
+#include "lwip/pbuf.h"
+#include "lwip/udp.h"
+
 #include "logging.h"
 #include "system.h"
 
@@ -58,12 +62,21 @@ typedef struct
 
 static sstream_data_t								prvSSTREAM_DATA;
 
+static uint16_t					prvSSTREAM_TEST_DATA[CONF_AIN_MAX_BUFFER_SIZE];
+
 static void prvSSTREAM_TaskFunc(void* pvParam)
 {
 	uint32_t				notifyValue = 0;
 	TickType_t				blockingTime = portMAX_DELAY;
 	channel_data_t			*connectionData;
 	connectionData 			= (channel_data_t*)pvParam;
+
+	struct udp_pcb	*pcb;
+	struct ip4_addr dest;
+	struct pbuf		*p;
+
+	err_t			error;
+
 	LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Samples stream service created\r\n");
 	for(;;)
 	{
@@ -148,6 +161,24 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 				connectionData->state = SSTREAM_STATE_ERROR;
 				break;
 			}
+			connectionData->state = SSTREAM_STATE_OPEN_STREAM_SERVER;
+			break;
+
+		case SSTREAM_STATE_OPEN_STREAM_SERVER:
+			pcb = udp_new();
+			IP4_ADDR(&dest, connectionData->connectionInfo.serverIp[0],
+					connectionData->connectionInfo.serverIp[1],
+					connectionData->connectionInfo.serverIp[2],
+					connectionData->connectionInfo.serverIp[3]);
+			if(udp_connect(pcb, &dest, connectionData->connectionInfo.serverport) != ERR_OK)
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to establish connection with stream server\r\n");
+			}
+			else
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Connection with stream server successfully established\r\n");
+			}
+			memset(prvSSTREAM_TEST_DATA, 0xA5, 2*CONF_AIN_MAX_BUFFER_SIZE);
 			connectionData->state = SSTREAM_STATE_SERVICE;
 			break;
 		case SSTREAM_STATE_SERVICE:
@@ -163,6 +194,7 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 				{
 					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Unable to start stream\r\n");
 				}
+				notifyValue |= SSTREAM_TASK_STREAM_BIT;
 				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
 				{
 					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release init semaphore\r\n");
@@ -172,6 +204,25 @@ static void prvSSTREAM_TaskFunc(void* pvParam)
 			}
 			if(notifyValue & SSTREAM_TASK_STREAM_BIT)
 			{
+				while(1){
+					p = pbuf_alloc(PBUF_TRANSPORT, 2*CONF_AIN_MAX_BUFFER_SIZE, PBUF_RAM);
+					if(p == NULL)
+					{
+						LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release create pbuf\r\n");
+					}
+					p->payload = prvSSTREAM_TEST_DATA;
+
+					error = udp_send(pcb, p);
+
+					if(error != ERR_OK)
+					{
+						LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to send pbuf\r\n");
+					}
+
+					pbuf_free(p);
+					vTaskDelay(pdMS_TO_TICKS(1000));
+				}
+
 				connectionData->acquisitionState = SSTREAM_ACQUISITION_STATE_STREAM;
 			}
 			if(notifyValue & SSTREAM_TASK_STOP_BIT)
@@ -384,10 +435,13 @@ sstream_status_t			SSTREAM_CreateChannel(sstream_connection_info* connectionHand
 
 	prvSSTREAM_DATA.connections[currentId].initSig = xSemaphoreCreateBinary();
 	if(prvSSTREAM_DATA.connections[currentId].initSig == NULL) return SSTREAM_STATUS_ERROR;
+
 	prvSSTREAM_DATA.connections[currentId].guard = xSemaphoreCreateMutex();
 	if(prvSSTREAM_DATA.connections[currentId].guard == NULL) return SSTREAM_STATUS_ERROR;
+
 	if(xSemaphoreTake(prvSSTREAM_DATA.connections[currentId].initSig,
 			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
 	prvSSTREAM_DATA.connections[currentId].connectionInfo.id = currentId;
 	prvSSTREAM_DATA.activeConnectionsNo += 1;
 	return SSTREAM_STATUS_OK;
@@ -436,6 +490,19 @@ sstream_status_t				SSTREAM_Start(sstream_connection_info* connectionHandler, ui
 	/* Wait until configuration is applied*/
 	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
 			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
+	return SSTREAM_STATUS_OK;
+}
+sstream_status_t				SSTREAM_StartStream(sstream_connection_info* connectionHandler, uint32_t timeout)
+{
+	if(xTaskNotify(prvSSTREAM_DATA.connections[connectionHandler->id].taskHandle,
+			SSTREAM_TASK_STREAM_BIT,
+			eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
+
+	/* Wait until configuration is applied*/
+	if(xSemaphoreTake(prvSSTREAM_DATA.connections[connectionHandler->id].initSig,
+			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
 	return SSTREAM_STATUS_OK;
 }
 sstream_status_t				SSTREAM_Stop(sstream_connection_info* connectionHandler, uint32_t timeout)

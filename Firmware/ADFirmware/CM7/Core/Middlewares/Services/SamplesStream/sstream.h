@@ -32,9 +32,10 @@
  */
 typedef enum
 {
-	SSTREAM_STATE_INIT,			/*!< Samples stream service initialization state */
-	SSTREAM_STATE_SERVICE,		/*!< Samples stream service is in service state */
-	SSTREAM_STATE_ERROR			/*!< Samples stream service is in error state */
+	SSTREAM_STATE_INIT,						/*!< Samples stream service initialization state */
+	SSTREAM_STATE_OPEN_STREAM_SERVER,		/*!< Samples stream service open UDP connection to stream server */
+	SSTREAM_STATE_SERVICE,					/*!< Samples stream service is in service state */
+	SSTREAM_STATE_ERROR						/*!< Samples stream service is in error state */
 }sstream_state_t;
 
 typedef enum{
@@ -108,6 +109,7 @@ sstream_status_t				SSTREAM_CreateChannel(sstream_connection_info* connectionHan
 sstream_status_t				SSTREAM_GetConnectionByID(sstream_connection_info** connectionHandler, uint32_t id);
 sstream_status_t				SSTREAM_GetConnectionByIP(sstream_connection_info* connectionHandler, uint8_t ip[4], uint16_t port);
 sstream_status_t				SSTREAM_Start(sstream_connection_info* connectionHandler, uint32_t timeout);
+sstream_status_t				SSTREAM_StartStream(sstream_connection_info* connectionHandler, uint32_t timeout);
 sstream_status_t				SSTREAM_Stop(sstream_connection_info* connectionHandler, uint32_t timeout);
 sstream_status_t				SSTREAM_SetResolution(sstream_connection_info* connectionHandler, sstream_adc_resolution_t resolution, uint32_t timeout);
 sstream_status_t				SSTREAM_SetSamplingTime(sstream_connection_info* connectionHandler, uint32_t stime, uint32_t timeout);
