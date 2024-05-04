@@ -70,15 +70,37 @@ typedef struct
 	uint32_t					activeConnectionsNo;
 }sstream_data_t;
 
+typedef struct
+{
+	uint32_t 	address;
+	uint8_t		id;
+}sstream_packet_t;
 
-static sstream_data_t								prvSSTREAM_DATA;
+
+static sstream_data_t			prvSSTREAM_DATA;
 
 static uint16_t					prvSSTREAM_TEST_DATA[CONF_AIN_MAX_BUFFER_SIZE];
+QueueHandle_t					prvSSTREAM_PACKET_QUEUE;
+
+
+static void prvSSTREAM_NewPacketSampled(uint32_t packetAddress, uint8_t packetID)
+{
+	ITM_SendChar('a');
+	BaseType_t pxHigherPriorityTaskWoken = pdFALSE;
+	sstream_packet_t		packetData;
+	packetData.address = packetAddress;
+	packetData.id = packetID;
+
+	xQueueSendFromISR(prvSSTREAM_PACKET_QUEUE, &packetData, &pxHigherPriorityTaskWoken);
+
+    portYIELD_FROM_ISR( pxHigherPriorityTaskWoken );
+
+}
+
 
 static void prvSSTREAM_StreamTaskFunc(void* pvParam)
 {
-	uint32_t				notifyValue = 0;
-	TickType_t				blockingTime = portMAX_DELAY;
+	sstream_packet_t		packetData;
 	sstream_stream_data_t   *connectionData;
 	connectionData 			= (sstream_stream_data_t*)pvParam;
 
@@ -115,17 +137,27 @@ static void prvSSTREAM_StreamTaskFunc(void* pvParam)
 				connectionData->state = SSTREAM_STATE_ERROR;
 				break;
 			}
+			prvSSTREAM_PACKET_QUEUE = xQueueCreate(CONF_AIN_MAX_BUFFER_NO, sizeof(sstream_packet_t));
+			if(prvSSTREAM_PACKET_QUEUE == NULL)
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to create ADC packet queue\r\n");
+				connectionData->state = SSTREAM_STATE_ERROR;
+				break;
+			}
 			connectionData->state = SSTREAM_STATE_SERVICE;
 			break;
 		case SSTREAM_STATE_SERVICE:
-			notifyValue = ulTaskNotifyTake(pdTRUE, blockingTime);
-			p = pbuf_alloc(PBUF_TRANSPORT, 2*CONF_AIN_MAX_BUFFER_SIZE, PBUF_RAM);
+			xQueueReceive(prvSSTREAM_PACKET_QUEUE, &packetData, portMAX_DELAY);
+			ITM_SendChar('b');
+
+			p = pbuf_alloc(PBUF_TRANSPORT, 2*CONF_AIN_MAX_BUFFER_SIZE + 4, PBUF_RAM);
 
 			if(p == NULL)
 			{
 				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release create pbuf\r\n");
 			}
-			p->payload = prvSSTREAM_TEST_DATA;
+
+			memcpy(p->payload, (void*)packetData.address, 2*CONF_AIN_MAX_BUFFER_SIZE + 4);
 
 			error = udp_send(pcb, p);
 
@@ -133,8 +165,13 @@ static void prvSSTREAM_StreamTaskFunc(void* pvParam)
 			{
 				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to send pbuf\r\n");
 			}
+			if(DRV_AIN_Stream_SubmitAddr(DRV_AIN_ADC_3, packetData.address, packetData.id) != DRV_AIN_STATUS_OK)
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "Unable to submit buffer\r\n");
+			}
 
 			pbuf_free(p);
+			ITM_SendChar('c');
 			break;
 		case SSTREAM_STATE_ERROR:
 			LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Samples stream task is in error state\r\n");
@@ -233,6 +270,8 @@ static void prvSSTREAM_ControlTaskFunc(void* pvParam)
 			{
 				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "Unable to obtain ADC clock\r\n");
 			}
+
+			DRV_AIN_Stream_RegisterCallback(DRV_AIN_ADC_3, prvSSTREAM_NewPacketSampled);
 
 
 			if(xSemaphoreGive(connectionData->initSig) != pdTRUE)

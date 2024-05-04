@@ -22,7 +22,7 @@ static ADC_ChannelConfTypeDef 			prvDRV_AIN_ADC_CHANNEL_2_CONFIG;
 static drv_ain_adc_config_t				prvDRV_AIN_ADC_CONFIG;
 static drv_ain_adc_stream_callback		prvDRV_AIN_ADC_CALLBACK;
 
-static uint16_t							prvDRV_AIN_ADC_DATA_SAMPLES[CONF_AIN_MAX_BUFFER_NO][DRV_AIN_ADC_BUFFER_MAX_SIZE+1]
+static uint16_t							prvDRV_AIN_ADC_DATA_SAMPLES[CONF_AIN_MAX_BUFFER_NO][DRV_AIN_ADC_BUFFER_MAX_SIZE+2]
 																							__attribute__((section(".ADCSamplesBuffer")));
 static uint8_t							prvDRV_AIN_ADC_DATA_SAMPLES_ACTIVE[CONF_AIN_MAX_BUFFER_NO];
 
@@ -193,8 +193,10 @@ static void							prvDRV_AIN_DMAHalfComplitedCallback(ADC_HandleTypeDef *adc)
 	if(prvDRV_AIN_ADC_DATA_SAMPLES_ACTIVE[prvDRV_AIN_ADC_ACTIVE_BUFFER] == 1)
 	{
 		//If we ends here, previous buffer not processed (submitted)
+		DRV_AIN_Stop(DRV_AIN_ADC_3);
 		return;
 	}
+	prvDRV_AIN_ADC_DATA_SAMPLES[prvDRV_AIN_ADC_ACTIVE_BUFFER][0] = prvDRV_AIN_ADC_ACTIVE_BUFFER;
 	if(prvDRV_AIN_ADC_CALLBACK != 0)
 	{
 		prvDRV_AIN_ADC_CALLBACK((uint32_t)&prvDRV_AIN_ADC_DATA_SAMPLES[prvDRV_AIN_ADC_ACTIVE_BUFFER][0], prvDRV_AIN_ADC_ACTIVE_BUFFER);
@@ -214,10 +216,9 @@ static drv_ain_status				prvDRV_AIN_InitDeviceTimer()
 	TIM_MasterConfigTypeDef sMasterConfig = {0};
 
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Instance = TIM1;
-	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Prescaler = 20000;
+	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Prescaler = 1;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.CounterMode = TIM_COUNTERMODE_UP;
-	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Period = 10000;
-	prvDRV_AIN_ADC_CONFIG.samplingTime = 10000;
+	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Period = prvDRV_AIN_ADC_CONFIG.samplingTime * 1000 / prvDRV_AIN_ADC_CONFIG.timPeriod ; // 1us * 1000 = 1000ns / timPeriod [ns]
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.RepetitionCounter = 0;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -301,6 +302,8 @@ drv_ain_status 						DRV_AIN_Init(drv_ain_adc_t adc, drv_ain_adc_config_t* confi
     prvDRV_AIN_ADC_CONFIG.ch1.sampleTime= DRV_AIN_ADC_SAMPLE_TIME_UKNOWN;
     prvDRV_AIN_ADC_CONFIG.ch1.channel	= 2;
     prvDRV_AIN_ADC_CONFIG.ch1.sampleTime= DRV_AIN_ADC_SAMPLE_TIME_UKNOWN;
+    prvDRV_AIN_ADC_CONFIG.samplingTime  = 1;
+    prvDRV_AIN_ADC_CONFIG.timPeriod		= 1000/DRV_AIN_ADC_TIM_INPUT_CLK;
 
 
     /* Initialize DMA */
@@ -326,7 +329,7 @@ drv_ain_status 						DRV_AIN_Start(drv_ain_adc_t adc)
 	memset((void*)prvDRV_AIN_ADC_DATA_SAMPLES, 0, 2*CONF_AIN_MAX_BUFFER_NO*DRV_AIN_ADC_BUFFER_MAX_SIZE);
 	if(prvDRV_AIN_ACQUISITION_STATUS == DRV_AIN_ADC_ACQUISITION_STATUS_ACTIVE) return DRV_AIN_STATUS_ERROR;
 	if(HAL_TIM_Base_Start(&prvDRV_AIN_DEVICE_TIMER_HANDLER) != HAL_OK) return DRV_AIN_STATUS_ERROR;
-	if(HAL_ADC_Start_DMA(&prvDRV_AIN_DEVICE_ADC_HANDLER, (uint32_t*)(&prvDRV_AIN_ADC_DATA_SAMPLES[0][1]), (uint32_t*)(&prvDRV_AIN_ADC_DATA_SAMPLES[DRV_AIN_ADC_BUFFER_NO-1][1]), DRV_AIN_ADC_BUFFER_MAX_SIZE)) return DRV_AIN_STATUS_ERROR;
+	if(HAL_ADC_Start_DMA(&prvDRV_AIN_DEVICE_ADC_HANDLER, (uint32_t*)(&prvDRV_AIN_ADC_DATA_SAMPLES[0][2]), (uint32_t*)(&prvDRV_AIN_ADC_DATA_SAMPLES[DRV_AIN_ADC_BUFFER_NO-1][2]), DRV_AIN_ADC_BUFFER_MAX_SIZE)) return DRV_AIN_STATUS_ERROR;
 	prvDRV_AIN_ACQUISITION_STATUS = DRV_AIN_ADC_ACQUISITION_STATUS_ACTIVE;
 	return DRV_AIN_STATUS_OK;
 }
@@ -496,7 +499,27 @@ drv_ain_status 						DRV_AIN_SetChannelAvgRatio(drv_ain_adc_t adc, uint32_t chan
 }
 drv_ain_status 						DRV_AIN_SetSamplingResolutionTime(drv_ain_adc_t adc, uint32_t time)
 {
+	if(prvDRV_AIN_ACQUISITION_STATUS == DRV_AIN_ADC_ACQUISITION_STATUS_ACTIVE) return DRV_AIN_STATUS_ERROR;
+	prvDRV_AIN_ADC_CONFIG.samplingTime = time;
 
+
+//
+//
+//	prvDRV_AIN_DEVICE_TIMER_HANDLER.Instance = TIM1;
+//	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Prescaler = 20000;
+//	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.CounterMode = TIM_COUNTERMODE_UP;
+//	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Period = 1000;
+//	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+//	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.RepetitionCounter = 0;
+//	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+//	if (HAL_TIM_Base_Init(&prvDRV_AIN_DEVICE_TIMER_HANDLER) != HAL_OK) return DRV_AIN_STATUS_ERROR;
+//	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+//	if (HAL_TIM_ConfigClockSource(&prvDRV_AIN_DEVICE_TIMER_HANDLER, &sClockSourceConfig) != HAL_OK) return DRV_AIN_STATUS_ERROR;
+//	if (HAL_TIM_OC_Init(&prvDRV_AIN_DEVICE_TIMER_HANDLER) != HAL_OK) return DRV_AIN_STATUS_ERROR;
+//	sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+//	sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_UPDATE;
+//	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+//	if (HAL_TIMEx_MasterConfigSynchronization(&prvDRV_AIN_DEVICE_TIMER_HANDLER, &sMasterConfig) != HAL_OK) return DRV_AIN_STATUS_ERROR;
 	return DRV_AIN_STATUS_OK;
 }
 drv_ain_adc_resolution_t 			DRV_AIN_GetResolution(drv_ain_adc_t adc)

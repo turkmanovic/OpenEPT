@@ -17,6 +17,7 @@
 
 #define DRV_AIN_ADC_BUFFER_MAX_SIZE	CONF_AIN_MAX_BUFFER_SIZE
 #define DRV_AIN_ADC_BUFFER_NO		CONF_AIN_MAX_BUFFER_NO
+#define DRV_AIN_ADC_TIM_INPUT_CLK	CONF_DRV_AIN_ADC_TIM_INPUT_CLK //MHZ
 
 typedef enum
 {
@@ -113,8 +114,9 @@ typedef struct
 	drv_ain_adc_resolution_t 		resolution;
 	drv_ain_adc_channel_config_t 	ch1;
 	drv_ain_adc_channel_config_t 	ch2;
-	uint32_t						samplingTime;
+	uint32_t						samplingTime; // us
 	uint32_t						inputClk;
+	uint32_t						timPeriod; //nS
 }drv_ain_adc_config_t;
 
 
@@ -127,6 +129,7 @@ drv_ain_status 						DRV_AIN_SetClockDiv(drv_ain_adc_t adc, drv_ain_adc_clock_di
 drv_ain_status 						DRV_AIN_SetChannelsSamplingTime(drv_ain_adc_t adc, drv_ain_adc_sample_time_t stime);
 drv_ain_status 						DRV_AIN_SetChannelOffset(drv_ain_adc_t adc, uint32_t channel,  uint32_t offset);
 drv_ain_status 						DRV_AIN_SetChannelAvgRatio(drv_ain_adc_t adc, uint32_t channel,  drv_adc_ch_avg_ratio_t avgRatio);
+//Time in uS
 drv_ain_status 						DRV_AIN_SetSamplingResolutionTime(drv_ain_adc_t adc, uint32_t time);
 drv_ain_adc_resolution_t 			DRV_AIN_GetResolution(drv_ain_adc_t adc);
 drv_ain_adc_sample_time_t 			DRV_AIN_GetSamplingTime(drv_ain_adc_t adc, drv_ain_adc_channel_t channel);

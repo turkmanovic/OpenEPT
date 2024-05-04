@@ -13,6 +13,7 @@
 /* AnalogIN configuration*/
 #define CONF_AIN_MAX_BUFFER_SIZE			500
 #define CONF_AIN_MAX_BUFFER_NO				2
+#define CONF_DRV_AIN_ADC_TIM_INPUT_CLK		200 //MHZ
 
 
 /* GPIO configuration*/
