@@ -150,14 +150,14 @@ static void prvSSTREAM_StreamTaskFunc(void* pvParam)
 			xQueueReceive(prvSSTREAM_PACKET_QUEUE, &packetData, portMAX_DELAY);
 			ITM_SendChar('b');
 
-			p = pbuf_alloc(PBUF_TRANSPORT, 2*CONF_AIN_MAX_BUFFER_SIZE + 4, PBUF_RAM);
+			p = pbuf_alloc(PBUF_TRANSPORT, 2*(CONF_AIN_MAX_BUFFER_SIZE + DRV_AIN_ADC_BUFFER_OFFSET), PBUF_RAM);
 
 			if(p == NULL)
 			{
 				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release create pbuf\r\n");
 			}
 
-			memcpy(p->payload, (void*)packetData.address, 2*CONF_AIN_MAX_BUFFER_SIZE + 4);
+			memcpy(p->payload, (void*)packetData.address, 2*(CONF_AIN_MAX_BUFFER_SIZE + DRV_AIN_ADC_BUFFER_OFFSET));
 
 			error = udp_send(pcb, p);
 

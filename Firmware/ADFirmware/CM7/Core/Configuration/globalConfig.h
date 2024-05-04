@@ -12,6 +12,8 @@
 /*Driver layer connfiguration*/
 /* AnalogIN configuration*/
 #define CONF_AIN_MAX_BUFFER_SIZE			500
+#define CONF_AIN_ADC_BUFFER_OFFSET			4
+#define CONF_AIN_ADC_BUFFER_MARKER			0xA5A5A5A5
 #define CONF_AIN_MAX_BUFFER_NO				2
 #define CONF_DRV_AIN_ADC_TIM_INPUT_CLK		200 //MHZ
 
