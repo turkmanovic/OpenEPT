@@ -8,6 +8,14 @@
 #include "Links/streamlink.h"
 #include "Processing/dataprocessing.h"
 
+/* Resolution sample time offset based on STM32H755ZI offset */
+#define     DEVICE_ADC_RESOLUTION_16BIT_STIME_OFFSET    8.5
+#define     DEVICE_ADC_RESOLUTION_14BIT_STIME_OFFSET    7.5
+#define     DEVICE_ADC_RESOLUTION_12BIT_STIME_OFFSET    6.5
+#define     DEVICE_ADC_RESOLUTION_10BIT_STIME_OFFSET    5.5
+#define     DEVICE_ADC_TIMER_INPUT_CLK                  200000000 //Hz
+#define     DEVICE_ADC_DEFAULT_SAMPLING_PERIOD          0.000001 //s
+
 typedef enum{
     DEVICE_ADC_RESOLUTION_UKNOWN       = 0,
     DEVICE_ADC_RESOLUTION_16BIT        = 16,
@@ -84,13 +92,14 @@ public:
     bool        getChSampleTime(device_adc_ch_sampling_time_t* sampleTime=NULL);
     bool        setAvrRatio(device_adc_averaging_t averagingRatio);
     bool        getAvrRatio(device_adc_averaging_t* averagingRatio=NULL);
-    bool        setSamplingTime(QString time);
-    bool        getSamplingTime(QString* time = NULL);
+    bool        setSamplingPeriod(QString time);
+    bool        getSamplingPeriod(QString* time = NULL);
     bool        setVOffset(QString off);
     bool        getVOffset(QString* off=NULL);
     bool        setCOffset(QString off);
     bool        getCOffset(QString* off=NULL);
     bool        getADCInputClk(QString* clk = NULL);
+    double      obtainSamplingTime();    //This function determine time interval from start of until the acquisition end. Dont mix it with acquisiton (sampling) period
     bool        acquireDeviceConfiguration();
     bool        setDataProcessingMaxNumberOfBuffers(unsigned int maxNumber);
 
@@ -109,6 +118,7 @@ signals:
     void        sigCOffsetObtained(QString coffset);
     void        sigVOffsetObtained(QString voffset);
     void        sigAvgRatio(QString voffset);
+    void        sigSamplingTimeChanged(double value);
     void        sigVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys);
     void        sigNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
 public slots:
@@ -123,11 +133,16 @@ private slots:
 
 private:
     QString                         deviceName;
-    QString                         samplingTime;
+    double                          samplingPeriod;
     device_adc_resolution_t         adcResolution;
     device_adc_ch_sampling_time_t   adcChSamplingTime;
     device_adc_clock_div_t          adcClockingDiv;
     device_adc_averaging_t          adcAveraging;
+    double                          adcInputClkValue;
+
+    double                          adcResolutionSampleTimeOffset;
+    double                          adcSampleTimeOffset;
+    double                          adcSampleTime;
 
     ControlLink*                    controlLink;
     StatusLink*                     statusLink;

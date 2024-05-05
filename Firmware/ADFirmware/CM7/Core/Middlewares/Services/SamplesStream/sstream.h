@@ -115,7 +115,7 @@ sstream_status_t				SSTREAM_Start(sstream_connection_info* connectionHandler, ui
 sstream_status_t				SSTREAM_StartStream(sstream_connection_info* connectionHandler, uint32_t timeout);
 sstream_status_t				SSTREAM_Stop(sstream_connection_info* connectionHandler, uint32_t timeout);
 sstream_status_t				SSTREAM_SetResolution(sstream_connection_info* connectionHandler, sstream_adc_resolution_t resolution, uint32_t timeout);
-sstream_status_t				SSTREAM_SetSamplingTime(sstream_connection_info* connectionHandler, uint32_t stime, uint32_t timeout);
+sstream_status_t				SSTREAM_SetSamplingTime(sstream_connection_info* connectionHandler, uint32_t prescaller, uint32_t period, uint32_t timeout);
 sstream_status_t				SSTREAM_SetClkDiv(sstream_connection_info* connectionHandler, sstream_adc_clk_div_t adcClkDiv, uint32_t timeout);
 sstream_status_t				SSTREAM_SetChannelSamplingTime(sstream_connection_info* connectionHandler, uint32_t channel, sstream_adc_sampling_time_t stime, uint32_t timeout);
 sstream_status_t				SSTREAM_SetChannelOffset(sstream_connection_info* connectionHandler, uint32_t channel, uint32_t offset, uint32_t timeout);

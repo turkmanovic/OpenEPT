@@ -14,8 +14,8 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(deviceWnd,  SIGNAL(sigNewControlMessageRcvd(QString)),                  this, SLOT(onConsoleWndMessageRcvd(QString)));
     connect(deviceWnd,  SIGNAL(sigResolutionChanged(QString)),                      this, SLOT(onDeviceWndResolutionChanged(QString)));
     connect(deviceWnd,  SIGNAL(sigClockDivChanged(QString)),                        this, SLOT(onDeviceWndClockDivChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigSampleTimeChanged(QString)),                      this, SLOT(onDeviceWndSampleTimeChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigSamplingTimeChanged(QString)),                    this, SLOT(onDeviceWndSamplingTimeChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigSampleTimeChanged(QString)),                      this, SLOT(onDeviceWndChannelSamplingTimeChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigSamplingPeriodChanged(QString)),                  this, SLOT(onDeviceWndSamplingPeriodChanged(QString)));
     connect(deviceWnd,  SIGNAL(sigAvrRatioChanged(QString)),                        this, SLOT(onDeviceWndAvrRatioChanged(QString)));
     connect(deviceWnd,  SIGNAL(sigVOffsetChanged(QString)),                         this, SLOT(onDeviceWndVOffsetChanged(QString)));
     connect(deviceWnd,  SIGNAL(sigCOffsetChanged(QString)),                         this, SLOT(onDeviceWndCOffsetChanged(QString)));
@@ -42,6 +42,7 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(device,     SIGNAL(sigCOffsetObtained(QString)),                        this, SLOT(onDeviceCOffsetObtained(QString)));
     connect(device,     SIGNAL(sigVOffsetObtained(QString)),                        this, SLOT(onDeviceVOffsetObtained(QString)));
     connect(device,     SIGNAL(sigAvgRatio(QString)),                               this, SLOT(onDeviceAvgRatioChanged(QString)));
+    connect(device,     SIGNAL(sigSamplingTimeChanged(double)),                     this, SLOT(onDeviceSamplingTimeChanged(double)));
     connect(device,     SIGNAL(sigVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>)), this, SLOT(onDeviceNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>)));
     connect(device,     SIGNAL(sigNewSamplesBuffersProcessingStatistics(double,uint,uint)), this, SLOT(onDeviceNewSamplesBuffersProcessingStatistics(double,uint,uint)));
 
@@ -136,7 +137,7 @@ void DeviceContainer::onDeviceWndClockDivChanged(QString clockDiv)
     }
 }
 
-void DeviceContainer::onDeviceWndSampleTimeChanged(QString stime)
+void DeviceContainer::onDeviceWndChannelSamplingTimeChanged(QString stime)
 {
     /* call deviceWnd function with recieved msg from FW <- */
     device_adc_ch_sampling_time_t tmpSampleTime = getAdcChSamplingTimeFromString(stime);
@@ -164,16 +165,12 @@ void DeviceContainer::onDeviceWndAvrRatioChanged(QString avgRatio)
     }
 }
 
-void DeviceContainer::onDeviceWndSamplingTimeChanged(QString time)
+void DeviceContainer::onDeviceWndSamplingPeriodChanged(QString time)
 {
     bool conversionOk;
-    int  numericValue = time.toInt(&conversionOk);
-    if(!(conversionOk && numericValue >0))
-    {
-        return;
-    }
+    double  numericValue = time.toDouble(&conversionOk);
 
-    if(!device->setSamplingTime(time))
+    if(!device->setSamplingPeriod(time))
     {
         log->printLogMessage("Unable to set sampling time: " + time, LOG_MESSAGE_TYPE_ERROR);
     }
@@ -393,7 +390,7 @@ void DeviceContainer::onDeviceWndNewConfiguration(QVariant newConfig)
 
     if(config.samplingTime != "")
     {
-        if(!device->setSamplingTime(config.samplingTime))
+        if(!device->setSamplingPeriod(config.samplingTime))
         {
             log->printLogMessage("Unable to set sampling time: " + config.samplingTime, LOG_MESSAGE_TYPE_ERROR);
         }
@@ -500,6 +497,11 @@ void DeviceContainer::onDeviceVOffsetObtained(QString voffset)
     {
         log->printLogMessage("Voltage offset sucessfully obained and presented ", LOG_MESSAGE_TYPE_INFO);
     }
+}
+
+void DeviceContainer::onDeviceSamplingTimeChanged(double value)
+{
+    deviceWnd->setStatisticsSamplingTime(value);
 }
 
 void DeviceContainer::onDeviceNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys)

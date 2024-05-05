@@ -20,8 +20,8 @@ public slots:
     void    onConsoleWndMessageRcvd(QString msg);
     void    onDeviceWndResolutionChanged(QString resolution);
     void    onDeviceWndClockDivChanged(QString clockDiv);
-    void    onDeviceWndSampleTimeChanged(QString stime);
-    void    onDeviceWndSamplingTimeChanged(QString time);
+    void    onDeviceWndChannelSamplingTimeChanged(QString stime);
+    void    onDeviceWndSamplingPeriodChanged(QString time);
     void    onDeviceWndInterfaceChanged(QString interfaceIp);
     void    onDeviceWndAvrRatioChanged(QString avgRatio);
     void    onDeviceWndVOffsetChanged(QString off);
@@ -48,6 +48,7 @@ public slots:
     void    onDeviceAvgRatioChanged(QString aAvgRatio);
     void    onDeviceCOffsetObtained(QString coffset);
     void    onDeviceVOffsetObtained(QString voffset);
+    void    onDeviceSamplingTimeChanged(double value);
     void    onDeviceNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys);
     void    onDeviceNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
 

@@ -388,6 +388,8 @@ static void prvCONTROL_GetClkdiv(const char* arguments, uint16_t argumentsLength
 static void prvCONTROL_SetSamplingtime(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
 	cmparse_value_t				value;
+	uint32_t					prescaler;
+	uint32_t					period;
 	uint32_t					valueNumber;
 	uint32_t					streamID;
 	sstream_connection_info*  	connectionInfo;
@@ -402,13 +404,20 @@ static void prvCONTROL_SetSamplingtime(const char* arguments, uint16_t arguments
 	sscanf(value.value, "%lu", &streamID);
 
 	memset(&value, 0, sizeof(cmparse_value_t));
-	if(CMPARSE_GetArgValue(arguments, argumentsLength, "value", &value) != CMPARSE_STATUS_OK)
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "period", &value) != CMPARSE_STATUS_OK)
 	{
 		prvCONTROL_PrepareErrorResponse(response, responseSize);
-		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain sampling time from control message\r\n", valueNumber);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain period from control message\r\n");
 		return;
 	}
-	sscanf(value.value, "%lu", &valueNumber);
+	sscanf(value.value, "%lu", &period);
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "prescaler", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain prescaler from control message\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &prescaler);
 
 	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
 	{
@@ -417,7 +426,7 @@ static void prvCONTROL_SetSamplingtime(const char* arguments, uint16_t arguments
 		return;
 	}
 
-	if(SSTREAM_SetSamplingTime(connectionInfo, valueNumber, 1000) != SSTREAM_STATUS_OK)
+	if(SSTREAM_SetSamplingTime(connectionInfo, prescaler, period, 1000) != SSTREAM_STATUS_OK)
 	{
 		prvCONTROL_PrepareErrorResponse(response, responseSize);
 		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to set sampling time %d\r\n", valueNumber);
@@ -1306,8 +1315,8 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	CMPARSE_AddCommand("device adc chstime get", 		prvCONTROL_GetChSamplingtime);
 	CMPARSE_AddCommand("device adc chavrratio set", 	prvCONTROL_SetAveragingratio);
 	CMPARSE_AddCommand("device adc chavrratio get", 	prvCONTROL_GetAveragingratio);
-	CMPARSE_AddCommand("device adc stime set", 			prvCONTROL_SetSamplingtime);
-	CMPARSE_AddCommand("device adc stime get", 			prvCONTROL_GetSamplingtime);
+	CMPARSE_AddCommand("device adc speriod set", 		prvCONTROL_SetSamplingtime);
+	CMPARSE_AddCommand("device adc speriod get", 		prvCONTROL_GetSamplingtime);
 	CMPARSE_AddCommand("device adc voffset set", 		prvCONTROL_SetVoltageoffset);
 	CMPARSE_AddCommand("device adc voffset get", 		prvCONTROL_GetVoltageoffset);
 	CMPARSE_AddCommand("device adc coffset set", 		prvCONTROL_SetCurrentoffset);

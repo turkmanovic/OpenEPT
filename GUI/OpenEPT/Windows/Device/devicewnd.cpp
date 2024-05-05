@@ -145,7 +145,7 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     connect(ui->clockDivComb,           SIGNAL(currentTextChanged(QString)),    this, SLOT(onClockDivChanged(QString)));
     connect(ui->sampleTimeComb,         SIGNAL(currentTextChanged(QString)),    this, SLOT(onSampleTimeChanged(QString)));
     connect(ui->resolutionComb,         SIGNAL(currentTextChanged(QString)),    this, SLOT(onResolutionChanged(QString)));
-    connect(ui->samplingTimeLine,       SIGNAL(returnPressed()),                this, SLOT(onSamplingTimeChanged()));
+    connect(ui->samplingPeriodLine,     SIGNAL(returnPressed()),                this, SLOT(onSamplingPeriodChanged()));
     connect(ui->streamServerInterfComb, SIGNAL(currentTextChanged(QString)),    this, SLOT(onInterfaceChanged(QString)));
     connect(ui->maxNumOfPacketsLine,    SIGNAL(editingFinished()),              this, SLOT(onMaxNumberOfBuffersChanged()));
 
@@ -213,11 +213,11 @@ void DeviceWnd::onSampleTimeChanged(QString aSTime)
     emit sigSampleTimeChanged(ui->sampleTimeComb->currentText());
 }
 
-void DeviceWnd::onSamplingTimeChanged()
+void DeviceWnd::onSamplingPeriodChanged()
 {
-    QString time = ui->samplingTimeLine->text();
+    QString time = ui->samplingPeriodLine->text();
     advanceConfigurationWnd->setSamplingTime(time);
-    emit sigSamplingTimeChanged(time);
+    emit sigSamplingPeriodChanged(time);
 }
 
 
@@ -334,7 +334,7 @@ void DeviceWnd::setDeviceInterfaceSelectionState(device_interface_selection_stat
     switch(selectionState)
     {
     case DEVICE_INTERFACE_SELECTION_STATE_UNDEFINED:
-        ui->samplingTimeLine->setEnabled(false);
+        ui->samplingPeriodLine->setEnabled(false);
         ui->resolutionComb->setEnabled(false);
         ui->clockDivComb->setEnabled(false);
         ui->sampleTimeComb->setEnabled(false);
@@ -347,7 +347,7 @@ void DeviceWnd::setDeviceInterfaceSelectionState(device_interface_selection_stat
         ui->streamServerInterfComb->setEnabled(true);
         break;
     case DEVICE_INTERFACE_SELECTION_STATE_SELECTED:
-        ui->samplingTimeLine->setEnabled(true);
+        ui->samplingPeriodLine->setEnabled(true);
         ui->resolutionComb->setEnabled(true);
         ui->clockDivComb->setEnabled(true);
         ui->sampleTimeComb->setEnabled(true);
@@ -427,7 +427,7 @@ bool DeviceWnd::setResolution(QString resolution)
 bool DeviceWnd::setSTime(QString stime)
 {
     if(!advanceConfigurationWnd->setSamplingTime(stime)) return false;
-    ui->samplingTimeLine->setText(stime);
+    ui->samplingPeriodLine->setText(stime);
     return true;
 }
 
@@ -453,6 +453,11 @@ void DeviceWnd::setStatisticsData(double dropRate, unsigned int fullReceivedBuff
 {
     ui->statisticsPacketCounterLabe2->setText(QString::number(fullReceivedBuffersNo));
     ui->statisticsDropRateProb->setValue(dropRate);
+}
+
+void DeviceWnd::setStatisticsSamplingTime(double stime)
+{
+    ui->statisticsSamplingTimeLabe2->setText(QString::number(stime*1000, 'f', 10));
 }
 
 bool DeviceWnd::plotUpdateVoltageValues(QVector<double> values, QVector<double> keys)

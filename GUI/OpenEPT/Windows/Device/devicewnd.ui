@@ -97,9 +97,9 @@
               </widget>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="deviceVerlSamplingTimeHorl">
+              <layout class="QHBoxLayout" name="deviceVerlSamplingPeriodHorl">
                <item>
-                <widget class="QLabel" name="samplingTimeLabe">
+                <widget class="QLabel" name="samplingPeriodLabe">
                  <property name="minimumSize">
                   <size>
                    <width>120</width>
@@ -113,12 +113,12 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>Sampling Time</string>
+                  <string>Sampling Period</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="samplingTimeLine">
+                <widget class="QLineEdit" name="samplingPeriodLine">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>0</horstretch>

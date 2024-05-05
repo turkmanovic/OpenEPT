@@ -45,6 +45,7 @@ void ADC3_IRQHandler(void)
 void TIM1_UP_IRQHandler(void)
 {
 	HAL_TIM_IRQHandler(&prvDRV_AIN_DEVICE_TIMER_HANDLER);
+	//HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_15);
 }
 
 /**
@@ -58,11 +59,10 @@ void TIM1_CC_IRQHandler(void)
 /**
   * @brief This function handles BDMA channel0 global interrupt.
   */
-void BDMA_Channel0_IRQHandler(void)
+void DMA1_Stream0_IRQHandler(void)
 {
 	HAL_DMA_IRQHandler(&prvDRV_AIN_DEVICE_DMA_HANDLER);
 	//DRV_GPIO_Pin_ToogleFromISR(DRV_GPIO_PORT_E, 15);
-	HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_15);
 
 	/*Enable for debugging purposes*/
 	//ITM_SendChar('a');
@@ -79,6 +79,10 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
 	if(htim_base->Instance==TIM1)
 	{
 	__HAL_RCC_TIM1_CLK_ENABLE();
+//    HAL_NVIC_SetPriority(TIM1_UP_IRQn, 5, 0);
+//    HAL_NVIC_EnableIRQ(TIM1_UP_IRQn);
+//    HAL_NVIC_SetPriority(TIM1_CC_IRQn, 5, 0);
+//    HAL_NVIC_EnableIRQ(TIM1_CC_IRQn);
 	}
 }
 
@@ -140,21 +144,21 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
 //	    HAL_NVIC_EnableIRQ(ADC3_IRQn);
 		/* ADC3 DMA Init */
 		/* ADC3 Init */
-		prvDRV_AIN_DEVICE_DMA_HANDLER.Instance = BDMA_Channel0;
-		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.Request = BDMA_REQUEST_ADC3;
+		prvDRV_AIN_DEVICE_DMA_HANDLER.Instance = DMA1_Stream0;
+		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.Request = DMA_REQUEST_ADC3;
 		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.Direction = DMA_PERIPH_TO_MEMORY;
 		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.PeriphInc = DMA_PINC_DISABLE;
 		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.MemInc = DMA_MINC_ENABLE;
 		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
 		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
-		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.Mode = DMA_CIRCULAR;
+		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.Mode = DMA_DOUBLE_BUFFER_M0;
 		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.Priority = DMA_PRIORITY_HIGH;
 		if (HAL_DMA_Init(&prvDRV_AIN_DEVICE_DMA_HANDLER) != HAL_OK)
 		{
 		  Error_Handler();
 		}
 
-		__HAL_LINKDMA(hadc,DMA_Handle,prvDRV_AIN_DEVICE_DMA_HANDLER);
+		__HAL_LINKDMA(hadc, DMA_Handle, prvDRV_AIN_DEVICE_DMA_HANDLER);
 	}
 
 }
@@ -169,8 +173,8 @@ static void prvDRV_AIN_InitDMA(void)
 
 	/* DMA interrupt init */
 	/* BDMA_Channel0_IRQn interrupt configuration */
-	HAL_NVIC_SetPriority(BDMA_Channel0_IRQn, 5, 0);
-	HAL_NVIC_EnableIRQ(BDMA_Channel0_IRQn);
+	HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 5, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
 
 }
 /**
@@ -189,8 +193,9 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
 	}
 
 }
-static void							prvDRV_AIN_DMAHalfComplitedCallback(ADC_HandleTypeDef *adc)
+static void							prvDRV_AIN_DMAHalfComplitedCallback(DMA_HandleTypeDef *_hdma)
 {
+	HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_15);
 	if(prvDRV_AIN_ADC_DATA_SAMPLES_ACTIVE[prvDRV_AIN_ADC_ACTIVE_BUFFER] == 1)
 	{
 		//If we ends here, previous buffer not processed (submitted)
@@ -226,9 +231,9 @@ static drv_ain_status				prvDRV_AIN_InitDeviceTimer()
 	TIM_MasterConfigTypeDef sMasterConfig = {0};
 
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Instance = TIM1;
-	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Prescaler = 1;
+	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Prescaler = 49999;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.CounterMode = TIM_COUNTERMODE_UP;
-	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Period = prvDRV_AIN_ADC_CONFIG.samplingTime * 1000 / prvDRV_AIN_ADC_CONFIG.timPeriod / 4; // 1us * 1000 = 1000ns / timPeriod [ns]
+	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Period = 3999; // 1us * 1000 = 1000ns / timPeriod [ns]
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.RepetitionCounter = 0;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -253,15 +258,15 @@ static drv_ain_status				prvDRV_AIN_InitDeviceADC()
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ClockPrescaler 			= ADC_CLOCK_ASYNC_DIV1;
 	prvDRV_AIN_ADC_CONFIG.clockDiv								= DRV_AIN_ADC_CLOCK_DIV_1;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ScanConvMode 			= ADC_SCAN_ENABLE;
-	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.EOCSelection 			= ADC_EOC_SINGLE_CONV;
+	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.EOCSelection 			= ADC_EOC_SEQ_CONV;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.LowPowerAutoWait 		= DISABLE;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ContinuousConvMode 		= DISABLE;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.NbrOfConversion 			= 2;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.DiscontinuousConvMode 	= DISABLE;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ExternalTrigConv 		= ADC_EXTERNALTRIG_T1_TRGO;
-	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ExternalTrigConvEdge 	= ADC_EXTERNALTRIGCONVEDGE_RISING;
+	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ExternalTrigConvEdge 	= ADC_EXTERNALTRIGCONVEDGE_RISINGFALLING;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DMA_CIRCULAR;
-	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Overrun 					= ADC_OVR_DATA_OVERWRITTEN;
+	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Overrun 					= ADC_OVR_DATA_PRESERVED;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.LeftBitShift 			= ADC_LEFTBITSHIFT_NONE;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.OversamplingMode 		= DISABLE;
 	if (HAL_ADC_Init(&prvDRV_AIN_DEVICE_ADC_HANDLER) != HAL_OK) return DRV_AIN_STATUS_ERROR;
@@ -288,9 +293,10 @@ static drv_ain_status				prvDRV_AIN_InitDeviceADC()
 	prvDRV_AIN_ADC_CONFIG.ch2.sampleTime						= DRV_AIN_ADC_SAMPLE_TIME_1C5;
 	if (HAL_ADC_ConfigChannel(&prvDRV_AIN_DEVICE_ADC_HANDLER, &prvDRV_AIN_ADC_CHANNEL_2_CONFIG) != HAL_OK) return DRV_AIN_STATUS_ERROR;
 
-	if (HAL_ADC_RegisterCallback(&prvDRV_AIN_DEVICE_ADC_HANDLER, HAL_ADC_CONVERSION_HALF_CB_ID, prvDRV_AIN_DMAHalfComplitedCallback)!= HAL_OK)return DRV_AIN_STATUS_ERROR;
 	if (HAL_ADC_RegisterCallback(&prvDRV_AIN_DEVICE_ADC_HANDLER, HAL_ADC_CONVERSION_COMPLETE_CB_ID, prvDRV_AIN_DMAHalfComplitedCallback)!= HAL_OK)return DRV_AIN_STATUS_ERROR;
-
+	//if (HAL_ADC_RegisterCallback(&prvDRV_AIN_DEVICE_ADC_HANDLER, HAL_ADC_CONVERSION_HALF_CB_ID, prvDRV_AIN_DMAHalfComplitedCallback)!= HAL_OK)return DRV_AIN_STATUS_ERROR;
+	//if(HAL_DMA_RegisterCallback(&prvDRV_AIN_DEVICE_DMA_HANDLER, HAL_DMA_XFER_CPLT_CB_ID, prvDRV_AIN_DMAHalfComplitedCallback))return DRV_AIN_STATUS_ERROR;
+	if(HAL_DMA_RegisterCallback(&prvDRV_AIN_DEVICE_DMA_HANDLER, HAL_DMA_XFER_M1CPLT_CB_ID, prvDRV_AIN_DMAHalfComplitedCallback))return DRV_AIN_STATUS_ERROR;
 	return DRV_AIN_STATUS_OK;
 }
 
@@ -312,15 +318,14 @@ drv_ain_status 						DRV_AIN_Init(drv_ain_adc_t adc, drv_ain_adc_config_t* confi
     prvDRV_AIN_ADC_CONFIG.ch1.sampleTime= DRV_AIN_ADC_SAMPLE_TIME_UKNOWN;
     prvDRV_AIN_ADC_CONFIG.ch1.channel	= 2;
     prvDRV_AIN_ADC_CONFIG.ch1.sampleTime= DRV_AIN_ADC_SAMPLE_TIME_UKNOWN;
-    prvDRV_AIN_ADC_CONFIG.samplingTime  = 1;
-    prvDRV_AIN_ADC_CONFIG.timPeriod		= 1000/DRV_AIN_ADC_TIM_INPUT_CLK;
+    prvDRV_AIN_ADC_CONFIG.samplingTime  = 1000;
 
 
     /* Initialize DMA */
 	prvDRV_AIN_InitDMA();
 
     /* Initialize ADC */
-	prvDRV_AIN_InitDeviceADC();
+    prvDRV_AIN_InitDeviceADC();
 
     /* Initialize Time */
 	prvDRV_AIN_InitDeviceTimer();
@@ -343,6 +348,7 @@ drv_ain_status 						DRV_AIN_Start(drv_ain_adc_t adc)
 	prvDRV_AIN_ADC_ACTIVE_BUFFER	= 0;
 	prvDRV_AIN_ADC_BUFFER_COUNTER	= 0;
 
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_RESET);
 	while(HAL_ADCEx_Calibration_Start(&prvDRV_AIN_DEVICE_ADC_HANDLER, ADC_CALIB_OFFSET_LINEARITY, ADC_SINGLE_ENDED) != HAL_OK);
 	if(HAL_TIM_Base_Start(&prvDRV_AIN_DEVICE_TIMER_HANDLER) != HAL_OK) return DRV_AIN_STATUS_ERROR;
 	if(HAL_ADC_Start_DMA(&prvDRV_AIN_DEVICE_ADC_HANDLER,
@@ -607,29 +613,14 @@ drv_ain_status 						DRV_AIN_SetChannelAvgRatio(drv_ain_adc_t adc, drv_adc_ch_av
 	if (HAL_ADC_Init(&prvDRV_AIN_DEVICE_ADC_HANDLER) != HAL_OK) return DRV_AIN_STATUS_ERROR;
 	return DRV_AIN_STATUS_OK;
 }
-drv_ain_status 						DRV_AIN_SetSamplingResolutionTime(drv_ain_adc_t adc, uint32_t time)
+drv_ain_status 						DRV_AIN_SetSamplingResolutionTime(drv_ain_adc_t adc, uint32_t period, uint32_t prescaller)
 {
 	if(prvDRV_AIN_ACQUISITION_STATUS == DRV_AIN_ADC_ACQUISITION_STATUS_ACTIVE) return DRV_AIN_STATUS_ERROR;
-	prvDRV_AIN_ADC_CONFIG.samplingTime = time;
+	prvDRV_AIN_ADC_CONFIG.samplingTime = prescaller/DRV_AIN_ADC_TIM_INPUT_CLK*period;
 
-
-//
-//
-//	prvDRV_AIN_DEVICE_TIMER_HANDLER.Instance = TIM1;
-//	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Prescaler = 20000;
-//	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.CounterMode = TIM_COUNTERMODE_UP;
-//	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Period = 1000;
-//	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-//	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.RepetitionCounter = 0;
-//	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-//	if (HAL_TIM_Base_Init(&prvDRV_AIN_DEVICE_TIMER_HANDLER) != HAL_OK) return DRV_AIN_STATUS_ERROR;
-//	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-//	if (HAL_TIM_ConfigClockSource(&prvDRV_AIN_DEVICE_TIMER_HANDLER, &sClockSourceConfig) != HAL_OK) return DRV_AIN_STATUS_ERROR;
-//	if (HAL_TIM_OC_Init(&prvDRV_AIN_DEVICE_TIMER_HANDLER) != HAL_OK) return DRV_AIN_STATUS_ERROR;
-//	sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
-//	sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_UPDATE;
-//	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-//	if (HAL_TIMEx_MasterConfigSynchronization(&prvDRV_AIN_DEVICE_TIMER_HANDLER, &sMasterConfig) != HAL_OK) return DRV_AIN_STATUS_ERROR;
+	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Prescaler = prescaller;
+	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Period = period;
+	if (HAL_TIM_Base_Init(&prvDRV_AIN_DEVICE_TIMER_HANDLER) != HAL_OK) return DRV_AIN_STATUS_ERROR;
 	return DRV_AIN_STATUS_OK;
 }
 drv_ain_adc_resolution_t 			DRV_AIN_GetResolution(drv_ain_adc_t adc)

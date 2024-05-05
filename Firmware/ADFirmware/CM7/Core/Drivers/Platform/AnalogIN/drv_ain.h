@@ -116,9 +116,10 @@ typedef struct
 	drv_ain_adc_resolution_t 		resolution;
 	drv_ain_adc_channel_config_t 	ch1;
 	drv_ain_adc_channel_config_t 	ch2;
-	uint32_t						samplingTime; // us
 	uint32_t						inputClk;
-	uint32_t						timPeriod; //nS
+	uint32_t						samplingTime; // us
+	uint32_t						prescaler;
+	uint32_t						period; //nS
 }drv_ain_adc_config_t;
 
 
@@ -132,7 +133,7 @@ drv_ain_status 						DRV_AIN_SetChannelsSamplingTime(drv_ain_adc_t adc, drv_ain_
 drv_ain_status 						DRV_AIN_SetChannelOffset(drv_ain_adc_t adc, uint32_t channel,  uint32_t offset);
 drv_ain_status 						DRV_AIN_SetChannelAvgRatio(drv_ain_adc_t adc, drv_adc_ch_avg_ratio_t avgRatio);
 //Time in uS
-drv_ain_status 						DRV_AIN_SetSamplingResolutionTime(drv_ain_adc_t adc, uint32_t time);
+drv_ain_status 						DRV_AIN_SetSamplingResolutionTime(drv_ain_adc_t adc, uint32_t period, uint32_t prescaller);
 drv_ain_adc_resolution_t 			DRV_AIN_GetResolution(drv_ain_adc_t adc);
 drv_ain_adc_sample_time_t 			DRV_AIN_GetSamplingTime(drv_ain_adc_t adc, drv_ain_adc_channel_t channel);
 drv_ain_status 						DRV_AIN_GetADCClk(drv_ain_adc_t adc, uint32_t *clk);

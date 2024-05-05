@@ -18,6 +18,7 @@ DataProcessing::DataProcessing(QObject *parent)
 bool DataProcessing::setNumberOfBuffersToCollect(unsigned int numberOfBaffers)
 {
     if(acquisitionStatus == DATAPROCESSING_ACQUISITION_STATUS_ACTIVE) return false;
+
     maxNumberOfBuffers = numberOfBaffers;
 
     initBuffers();

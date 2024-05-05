@@ -160,9 +160,9 @@ static void prvSSTREAM_StreamTaskFunc(void* pvParam)
 
 			memcpy(p->payload, (void*)packetData.address, 2*(CONF_AIN_MAX_BUFFER_SIZE + DRV_AIN_ADC_BUFFER_OFFSET));
 
-			if(testPacketcounter & 0x05){
-				error = udp_send(pcb, p);
-			}
+			//if(testPacketcounter & 0x05){
+			error = udp_send(pcb, p);
+			//}
 			testPacketcounter += 1;
 
 			if(error != ERR_OK)
@@ -368,7 +368,7 @@ static void prvSSTREAM_ControlTaskFunc(void* pvParam)
 			if(notifyValue & SSTREAM_TASK_SET_ADC_STIME_BIT)
 			{
 				/* Try to configure ADC clock div */
-				if(DRV_AIN_SetSamplingResolutionTime(DRV_AIN_ADC_3, connectionData->ainConfig.samplingTime) == DRV_AIN_STATUS_OK)
+				if(DRV_AIN_SetSamplingResolutionTime(DRV_AIN_ADC_3, connectionData->ainConfig.prescaler, connectionData->ainConfig.period) == DRV_AIN_STATUS_OK)
 				{
 					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Sampling time %d set\r\n", connectionData->ainConfig.samplingTime);
 				}
@@ -624,10 +624,11 @@ sstream_status_t				SSTREAM_SetResolution(sstream_connection_info* connectionHan
 			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 	return SSTREAM_STATUS_OK;
 }
-sstream_status_t				SSTREAM_SetSamplingTime(sstream_connection_info* connectionHandler, uint32_t stime, uint32_t timeout)
+sstream_status_t				SSTREAM_SetSamplingTime(sstream_connection_info* connectionHandler, uint32_t prescaller, uint32_t period, uint32_t timeout)
 {
 	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
-	prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.samplingTime = stime;
+	prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.prescaler = prescaller;
+	prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.period = period;
 	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	/* Send request to configure AIN*/

@@ -49,6 +49,7 @@ public:
     bool            setCOffset(QString coffset);
     bool            setVOffset(QString voffset);
     void            setStatisticsData(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
+    void            setStatisticsSamplingTime(double stime);
 
     bool            plotUpdateVoltageValues(QVector<double> values, QVector<double> keys);
     bool            plotUpdateCurrentValues(QVector<double> values, QVector<double> keys);
@@ -61,7 +62,7 @@ public:
 
 signals:
     void            sigWndClosed();
-    void            sigSamplingTimeChanged(QString time);
+    void            sigSamplingPeriodChanged(QString time);
     void            sigResolutionChanged(QString resolution);
     void            sigClockDivChanged(QString clockDiv);
     void            sigSampleTimeChanged(QString sampleTime);
@@ -92,7 +93,7 @@ public slots:
     void            onResolutionChanged(QString aResolution);
     void            onClockDivChanged(QString aClockDiv);
     void            onSampleTimeChanged(QString aSTime);
-    void            onSamplingTimeChanged();
+    void            onSamplingPeriodChanged();
     void            onInterfaceChanged(QString interfaceInfo);
     void            onAdvConfigurationChanged(QVariant aConfig);
     void            onAdvConfigurationReqested(void);

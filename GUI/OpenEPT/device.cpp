@@ -1,3 +1,4 @@
+#include <math.h>
 #include "stdio.h"
 #include "device.h"
 
@@ -9,7 +10,7 @@ Device::Device(QObject *parent)
     adcAveraging            = DEVICE_ADC_AVERAGING_UKNOWN;
     adcClockingDiv          = DEVICE_ADC_CLOCK_DIV_UKNOWN;
     deviceName              = "";
-    samplingTime            = "";
+    samplingPeriod          = (double)DEVICE_ADC_DEFAULT_SAMPLING_PERIOD;
     controlLink             = NULL;
     streamLink              = NULL;
     dataProcessing          = new DataProcessing();
@@ -127,15 +128,19 @@ bool Device::setResolution(device_adc_resolution_t resolution)
         break;
     case DEVICE_ADC_RESOLUTION_16BIT:
         command += "16";
+        adcResolutionSampleTimeOffset = DEVICE_ADC_RESOLUTION_16BIT_STIME_OFFSET;
         break;
     case DEVICE_ADC_RESOLUTION_14BIT:
         command += "14";
+        adcResolutionSampleTimeOffset = DEVICE_ADC_RESOLUTION_14BIT_STIME_OFFSET;
         break;
     case DEVICE_ADC_RESOLUTION_12BIT:
         command += "12";
+        adcResolutionSampleTimeOffset = DEVICE_ADC_RESOLUTION_12BIT_STIME_OFFSET;
         break;
     case DEVICE_ADC_RESOLUTION_10BIT:
         command += "10";
+        adcResolutionSampleTimeOffset = DEVICE_ADC_RESOLUTION_10BIT_STIME_OFFSET;
         break;
     }
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
@@ -144,6 +149,7 @@ bool Device::setResolution(device_adc_resolution_t resolution)
         return false;
     }
     adcResolution = resolution;
+    obtainSamplingTime();
     return true;
 }
 
@@ -161,22 +167,27 @@ bool Device::getResolution(device_adc_resolution_t *resolution)
     case 16:
         adcResolution = DEVICE_ADC_RESOLUTION_16BIT;
         signalResponse += "16";
+        adcResolutionSampleTimeOffset = DEVICE_ADC_RESOLUTION_16BIT_STIME_OFFSET;
         break;
     case 14:
         adcResolution = DEVICE_ADC_RESOLUTION_14BIT;
         signalResponse += "14";
+        adcResolutionSampleTimeOffset = DEVICE_ADC_RESOLUTION_14BIT_STIME_OFFSET;
         break;
     case 12:
         adcResolution = DEVICE_ADC_RESOLUTION_12BIT;
         signalResponse += "12";
+        adcResolutionSampleTimeOffset = DEVICE_ADC_RESOLUTION_12BIT_STIME_OFFSET;
         break;
     case 10:
         adcResolution = DEVICE_ADC_RESOLUTION_10BIT;
         signalResponse += "10";
+        adcResolutionSampleTimeOffset = DEVICE_ADC_RESOLUTION_10BIT_STIME_OFFSET;
         break;
     default:
         adcResolution = DEVICE_ADC_RESOLUTION_UKNOWN;
         signalResponse += "0";
+        adcResolutionSampleTimeOffset = 0;
         break;
     }
     if(resolution != NULL)
@@ -184,6 +195,7 @@ bool Device::getResolution(device_adc_resolution_t *resolution)
         *resolution = adcResolution;
     }
     emit sigResolutionObtained(signalResponse);
+    obtainSamplingTime();
     return true;
 }
 
@@ -229,6 +241,7 @@ bool Device::setClockDiv(device_adc_clock_div_t clockDiv)
         return false;
     }
     adcClockingDiv = clockDiv;
+    obtainSamplingTime();
     return true;
 }
 
@@ -282,6 +295,7 @@ bool Device::getClockDiv(device_adc_clock_div_t *clockDiv)
     }
     if(clockDiv != NULL) *clockDiv = adcClockingDiv;
     emit sigClockDivObtained(signalResponse);
+    obtainSamplingTime();
     return true;
 }
 
@@ -296,27 +310,35 @@ bool Device::setChSampleTime(device_adc_ch_sampling_time_t sampleTime)
         break;
     case DEVICE_ADC_SAMPLING_TIME_1C5:
         command += "1";
+        adcSampleTimeOffset = 1.5;
         break;
     case DEVICE_ADC_SAMPLING_TIME_2C5:
         command += "2";
+        adcSampleTimeOffset = 2.5;
         break;
     case DEVICE_ADC_SAMPLING_TIME_8C5:
         command += "8";
+        adcSampleTimeOffset = 8.5;
         break;
     case DEVICE_ADC_SAMPLING_TIME_16C5:
         command += "16";
+        adcSampleTimeOffset = 16.5;
         break;
     case DEVICE_ADC_SAMPLING_TIME_32C5:
         command += "32";
+        adcSampleTimeOffset = 32.5;
         break;
     case DEVICE_ADC_SAMPLING_TIME_64C5:
         command += "64";
+        adcSampleTimeOffset = 64.5;
         break;
     case DEVICE_ADC_SAMPLING_TIME_387C5:
         command += "387";
+        adcSampleTimeOffset = 387.5;
         break;
     case DEVICE_ADC_SAMPLING_TIME_810C5:
         command += "810";
+        adcSampleTimeOffset = 810.5;
         break;
     }
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
@@ -324,6 +346,7 @@ bool Device::setChSampleTime(device_adc_ch_sampling_time_t sampleTime)
         return false;
     }
     adcChSamplingTime = sampleTime;
+    obtainSamplingTime();
     return true;
 }
 
@@ -341,38 +364,47 @@ bool Device::getChSampleTime(device_adc_ch_sampling_time_t *sampleTime)
     case 1:
         adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_1C5;
         signalResponse      =   "1C5";
+        adcSampleTimeOffset =   1.5;
         break;
     case 2:
         adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_2C5;
         signalResponse      =   "2C5";
+        adcSampleTimeOffset =   2.5;
         break;
     case 8:
         adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_8C5;
         signalResponse      =   "8C5";
+        adcSampleTimeOffset =   8.5;
         break;
     case 16:
         adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_16C5;
         signalResponse      =   "16C5";
+        adcSampleTimeOffset =   16.5;
         break;
     case 32:
         adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_32C5;
         signalResponse      =   "32C5";
+        adcSampleTimeOffset =   32.5;
         break;
     case 64:
         adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_64C5;
         signalResponse      =   "64C5";
+        adcSampleTimeOffset =   64.5;
         break;
     case 128:
         adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_387C5;
         signalResponse      =   "387C5";
+        adcSampleTimeOffset =   387.5;
         break;
     default:
         adcChSamplingTime = DEVICE_ADC_SAMPLING_TIME_810C5;
         signalResponse      =   "810C5";
+        adcSampleTimeOffset =   810.5;
         break;
     }
     if(sampleTime != NULL) *sampleTime = adcChSamplingTime;
     emit sigChSampleTimeObtained(signalResponse);
+    obtainSamplingTime();
     return true;
 }
 
@@ -424,6 +456,7 @@ bool Device::setAvrRatio(device_adc_averaging_t averagingRatio)
         return false;
     }
     adcAveraging = averagingRatio;
+    obtainSamplingTime();
     return true;
 }
 
@@ -489,32 +522,53 @@ bool Device::getAvrRatio(device_adc_averaging_t *averagingRatio)
     }
     if(averagingRatio != NULL) *averagingRatio = adcAveraging;
     emit sigAvgRatio(signalResponse);
+    obtainSamplingTime();
     return true;
 }
-bool Device::setSamplingTime(QString time)
+bool Device::setSamplingPeriod(QString time)
 {
+    int prescaller = 1;
+    int period = 1;
+    double rest = 1000;
+    double tmprest = 1;
+    double timeValue = time.toDouble();
+
+    for(int i = 1; i < 65536; i++)
+    {
+        for(int j = 1; j < 65536; j++)
+        {
+            tmprest = (timeValue*(double)DEVICE_ADC_TIMER_INPUT_CLK) - ((i+1.0)*(j+1.0));
+            if(abs(tmprest) < abs(rest))
+            {
+                rest = tmprest;
+                prescaller = i;
+                period = j;
+            }
+        }
+        if(rest < 0.01) break;
+    }
     QString response;
-    QString command = "device adc stime set -sid=" + QString::number(streamID) + " -value=";
-    command += time;
+    QString command = "device adc speriod set -sid=" + QString::number(streamID) + " -period=" + QString::number(period) + " -prescaler=" + QString::number(prescaller) ;
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     if(response != "OK"){
         return false;
     }
-    samplingTime = time;
+    samplingPeriod = 1.0/(double)DEVICE_ADC_TIMER_INPUT_CLK*((double)prescaller+1)*((double)period+1);
     return true;
 }
 
-bool Device::getSamplingTime(QString *time)
+bool Device::getSamplingPeriod(QString *time)
 {
     QString response;
-    QString command = "device adc stime get -sid=" + QString::number(streamID);
+    QString command = "device adc speriod get -sid=" + QString::number(streamID);
     unsigned int tmpSTime;
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     //Parse response
-    tmpSTime = response.toInt();
-    samplingTime = response;
+    tmpSTime = response.toDouble();
+    samplingPeriod = response.toDouble();
     if(time != NULL) *time = QString::number(tmpSTime);
     emit sigSampleTimeObtained(response);
+    obtainSamplingTime();
     return true;
 }
 
@@ -575,16 +629,25 @@ bool Device::getADCInputClk(QString *clk)
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     //Parse response
     adcInputClk = response;
+    adcInputClkValue = response.toDouble();
     if(clk != NULL) *clk = adcInputClk;
     emit sigAdcInputClkObtained(response);
+    obtainSamplingTime();
     return true;
+}
+
+double Device::obtainSamplingTime()
+{
+    adcSampleTime = (adcResolutionSampleTimeOffset + adcSampleTimeOffset)*(double)adcClockingDiv/adcInputClkValue*(double)adcAveraging;
+    emit sigSamplingTimeChanged(adcSampleTime);
+    return adcSampleTime;
 }
 
 bool Device::acquireDeviceConfiguration()
 {
     getResolution();
     getClockDiv();
-    getSamplingTime();
+    getSamplingPeriod();
     getChSampleTime();
     getVOffset();
     getCOffset();
