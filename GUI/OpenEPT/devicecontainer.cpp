@@ -43,6 +43,7 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(device,     SIGNAL(sigVOffsetObtained(QString)),                        this, SLOT(onDeviceVOffsetObtained(QString)));
     connect(device,     SIGNAL(sigAvgRatio(QString)),                               this, SLOT(onDeviceAvgRatioChanged(QString)));
     connect(device,     SIGNAL(sigVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>)), this, SLOT(onDeviceNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>)));
+    connect(device,     SIGNAL(sigNewSamplesBuffersProcessingStatistics(double,uint,uint)), this, SLOT(onDeviceNewSamplesBuffersProcessingStatistics(double,uint,uint)));
 
     log->printLogMessage("Device container successfully created", LOG_MESSAGE_TYPE_INFO);
     device->statusLinkCreate();
@@ -505,6 +506,11 @@ void DeviceContainer::onDeviceNewVoltageCurrentSamplesReceived(QVector<double> v
 {
     deviceWnd->plotUpdateVoltageValues(voltage, keys);
     deviceWnd->plotUpdateCurrentValues(current, keys);
+}
+
+void DeviceContainer::onDeviceNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID)
+{
+    deviceWnd->setStatisticsData(dropRate, fullReceivedBuffersNo, lastBufferID);
 }
 
 device_adc_resolution_t DeviceContainer::getAdcResolutionFromString(QString resolution)

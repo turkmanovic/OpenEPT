@@ -122,6 +122,8 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     consumptionChart->setXLabel("[ms]");
 
     ui->maxNumOfPacketsLine->setText(QString::number(DEVICEWND_DEFAULT_MAX_NUMBER_OF_BUFFERS));
+    ui->statisticsPacketCounterLabe2->setText(QString::number(0));
+    ui->statisticsDropRateProb->setValue(0);
 
     setDeviceState(DEVICE_STATE_UNDEFINED);
 
@@ -445,6 +447,12 @@ bool DeviceWnd::setVOffset(QString voffset)
 {
     advanceConfigurationWnd->setVOffset(voffset);
     return true;
+}
+
+void DeviceWnd::setStatisticsData(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID)
+{
+    ui->statisticsPacketCounterLabe2->setText(QString::number(fullReceivedBuffersNo));
+    ui->statisticsDropRateProb->setValue(dropRate);
 }
 
 bool DeviceWnd::plotUpdateVoltageValues(QVector<double> values, QVector<double> keys)

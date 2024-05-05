@@ -48,6 +48,7 @@ public:
     bool            setInCkl(QString inClk);
     bool            setCOffset(QString coffset);
     bool            setVOffset(QString voffset);
+    void            setStatisticsData(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
 
     bool            plotUpdateVoltageValues(QVector<double> values, QVector<double> keys);
     bool            plotUpdateCurrentValues(QVector<double> values, QVector<double> keys);

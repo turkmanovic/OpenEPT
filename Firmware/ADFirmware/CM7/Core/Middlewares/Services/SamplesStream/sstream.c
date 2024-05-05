@@ -109,6 +109,7 @@ static void prvSSTREAM_StreamTaskFunc(void* pvParam)
 	struct ip4_addr 		dest;
 	struct pbuf				*p;
 	err_t					error;
+	unsigned int			testPacketcounter = 0;
 
 	LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Samples stream task created\r\n");
 	for(;;)
@@ -159,7 +160,10 @@ static void prvSSTREAM_StreamTaskFunc(void* pvParam)
 
 			memcpy(p->payload, (void*)packetData.address, 2*(CONF_AIN_MAX_BUFFER_SIZE + DRV_AIN_ADC_BUFFER_OFFSET));
 
-			error = udp_send(pcb, p);
+			if(testPacketcounter & 0x05){
+				error = udp_send(pcb, p);
+			}
+			testPacketcounter += 1;
 
 			if(error != ERR_OK)
 			{

@@ -110,6 +110,7 @@ signals:
     void        sigVOffsetObtained(QString voffset);
     void        sigAvgRatio(QString voffset);
     void        sigVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys);
+    void        sigNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
 public slots:
     void        onControlLinkConnected();
     void        onControlLinkDisconnected();
@@ -118,6 +119,7 @@ private slots:
     void        onStatusLinkNewDeviceAdded(QString aDeviceIP);
     void        onStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
     void        onNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys);
+    void        onNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
 
 private:
     QString                         deviceName;

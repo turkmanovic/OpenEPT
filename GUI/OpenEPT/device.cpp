@@ -25,7 +25,9 @@ bool Device::acquisitionStart()
     QString response;
     QString command = "device stream start -sid=" + QString::number(streamID);
     if(controlLink == NULL) return false;
+    dataProcessing->setAcquisitionStatus(DATAPROCESSING_ACQUISITION_STATUS_ACTIVE);
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
+
     return true;
 }
 
@@ -34,6 +36,7 @@ bool Device::acquisitionStop()
     QString response;
     QString command = "device stream stop -sid=" + QString::number(streamID);
     if(controlLink == NULL) return false;
+    dataProcessing->setAcquisitionStatus(DATAPROCESSING_ACQUISITION_STATUS_INACTIVE);
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     return true;
 }
@@ -82,6 +85,7 @@ bool Device::createStreamLink(QString ip, quint16 port, int* id)
     QObject::connect(streamLink, &StreamLink::sigNewSamplesBufferReceived, dataProcessing, &DataProcessing::onNewSampleBufferReceived, Qt::QueuedConnection);
     connect(dataProcessing, SIGNAL(sigNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>)),
             this, SLOT(onNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>)));
+    connect(dataProcessing, SIGNAL(sigSamplesBufferReceiveStatistics(double,uint,uint)), this, SLOT(onNewSamplesBuffersProcessingStatistics(double,uint,uint)));
     /*  */
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     streamID = response.toInt();
@@ -617,4 +621,9 @@ void Device::onStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage)
 void Device::onNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys)
 {
     emit sigVoltageCurrentSamplesReceived(voltage, current, keys);
+}
+
+void Device::onNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID)
+{
+    emit sigNewSamplesBuffersProcessingStatistics(dropRate, fullReceivedBuffersNo, lastBufferID);
 }
