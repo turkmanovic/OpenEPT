@@ -121,6 +121,8 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     consumptionChart->setYLabel("[mAh]");
     consumptionChart->setXLabel("[ms]");
 
+    ui->maxNumOfPacketsLine->setText(QString::number(DEVICEWND_DEFAULT_MAX_NUMBER_OF_BUFFERS));
+
     setDeviceState(DEVICE_STATE_UNDEFINED);
 
     consoleWnd  = new ConsoleWnd();
@@ -140,9 +142,10 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
 
     connect(ui->clockDivComb,           SIGNAL(currentTextChanged(QString)),    this, SLOT(onClockDivChanged(QString)));
     connect(ui->sampleTimeComb,         SIGNAL(currentTextChanged(QString)),    this, SLOT(onSampleTimeChanged(QString)));
-    connect(ui->resolutionComb,         SIGNAL(currentTextChanged(QString)),   this, SLOT(onResolutionChanged(QString)));
+    connect(ui->resolutionComb,         SIGNAL(currentTextChanged(QString)),    this, SLOT(onResolutionChanged(QString)));
     connect(ui->samplingTimeLine,       SIGNAL(returnPressed()),                this, SLOT(onSamplingTimeChanged()));
     connect(ui->streamServerInterfComb, SIGNAL(currentTextChanged(QString)),    this, SLOT(onInterfaceChanged(QString)));
+    connect(ui->maxNumOfPacketsLine,    SIGNAL(editingFinished()),              this, SLOT(onMaxNumberOfBuffersChanged()));
 
 
     connect(advanceConfigurationWnd, SIGNAL(sigAdvConfigurationChanged(QVariant)), this, SLOT(onAdvConfigurationChanged(QVariant)));
@@ -181,6 +184,13 @@ void DeviceWnd::onAdvConfigurationChanged(QVariant aConfig)
 void DeviceWnd::onAdvConfigurationReqested(void)
 {
     emit sigAdvConfigurationReqested();
+}
+
+void DeviceWnd::onMaxNumberOfBuffersChanged()
+{
+    QString maxNumberOfSamplesBuffers = ui->maxNumOfPacketsLine->text();
+    emit sigMaxNumberOfBuffersChanged(maxNumberOfSamplesBuffers.toInt());
+
 }
 
 void DeviceWnd::onResolutionChanged(QString resolution)

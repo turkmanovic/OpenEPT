@@ -589,6 +589,11 @@ bool Device::acquireDeviceConfiguration()
     return true;
 }
 
+bool Device::setDataProcessingMaxNumberOfBuffers(unsigned int maxNumber)
+{
+    return dataProcessing->setNumberOfBuffersToCollect(maxNumber);
+}
+
 void Device::onControlLinkConnected()
 {
     emit sigControlLinkConnected();

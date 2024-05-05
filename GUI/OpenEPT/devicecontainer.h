@@ -32,9 +32,9 @@ public slots:
     void    onDeviceWndAdvConfGet();
     void    onDeviceWndAcquisitionRefresh();
     void    onDeviceWndNewConfiguration(QVariant newConfig);
-
-
     void    onDeviceWndClosed();
+    void    onDeviceWndMaxNumberOfBuffersChanged(unsigned int maxNumber);
+
     void    onDeviceControlLinkDisconnected();
     void    onDeviceControlLinkConnected();
     void    onDeviceStatusLinkNewDeviceAdded(QString aDeviceIP);
@@ -48,7 +48,6 @@ public slots:
     void    onDeviceAvgRatioChanged(QString aAvgRatio);
     void    onDeviceCOffsetObtained(QString coffset);
     void    onDeviceVOffsetObtained(QString voffset);
-
     void    onDeviceNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys);
 
 

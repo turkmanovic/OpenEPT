@@ -7,6 +7,8 @@
 #include "Windows/Console/consolewnd.h"
 #include "Windows/Device/advcofigurationdata.h"
 
+#define     DEVICEWND_DEFAULT_MAX_NUMBER_OF_BUFFERS 100
+
 typedef enum
 {
     DEVICE_STATE_CONNECTED,
@@ -74,6 +76,7 @@ signals:
     void            sigNewControlMessageRcvd(const QString &response);
     void            sigAdvConfigurationReqested();
     void            sigAdvConfigurationChanged(QVariant newConfig);
+    void            sigMaxNumberOfBuffersChanged(unsigned int maxNumberOfBuffers);
 protected:
     void            closeEvent(QCloseEvent *event);
 
@@ -92,6 +95,7 @@ public slots:
     void            onInterfaceChanged(QString interfaceInfo);
     void            onAdvConfigurationChanged(QVariant aConfig);
     void            onAdvConfigurationReqested(void);
+    void            onMaxNumberOfBuffersChanged();
 
 
     void            onAdvanceConfigurationButtonPressed(bool pressed);

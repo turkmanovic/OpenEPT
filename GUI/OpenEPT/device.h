@@ -92,6 +92,7 @@ public:
     bool        getCOffset(QString* off=NULL);
     bool        getADCInputClk(QString* clk = NULL);
     bool        acquireDeviceConfiguration();
+    bool        setDataProcessingMaxNumberOfBuffers(unsigned int maxNumber);
 
 signals:
     void        sigControlLinkConnected();

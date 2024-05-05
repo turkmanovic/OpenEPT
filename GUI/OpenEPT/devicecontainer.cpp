@@ -26,6 +26,7 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(deviceWnd,  SIGNAL(sigRefreshAcquisition()),                            this, SLOT(onDeviceWndAcquisitionRefresh()));
     connect(deviceWnd,  SIGNAL(sigAdvConfigurationReqested()),                      this, SLOT(onDeviceWndAdvConfGet()));
     connect(deviceWnd,  SIGNAL(sigAdvConfigurationChanged(QVariant)),               this, SLOT(onDeviceWndNewConfiguration(QVariant)));
+    connect(deviceWnd,  SIGNAL(sigMaxNumberOfBuffersChanged(uint)),                 this, SLOT(onDeviceWndMaxNumberOfBuffersChanged(uint)));
 
     /*Device signals*/
     connect(device,     SIGNAL(sigControlLinkConnected()),                          this, SLOT(onDeviceControlLinkConnected()));
@@ -80,6 +81,18 @@ void DeviceContainer::onDeviceStatusLinkNewMessageReceived(QString aDeviceIP, QS
 void DeviceContainer::onDeviceWndClosed()
 {
     emit sigDeviceClosed(device);
+}
+
+void DeviceContainer::onDeviceWndMaxNumberOfBuffersChanged(unsigned int maxNumber)
+{
+    if(device->setDataProcessingMaxNumberOfBuffers(maxNumber))
+    {
+        log->printLogMessage("Max number of samples buffers sucessfully configured", LOG_MESSAGE_TYPE_INFO);
+    }
+    else
+    {
+        log->printLogMessage("Unable to sucessfully configure max number of samples buffers", LOG_MESSAGE_TYPE_ERROR);
+    }
 }
 
 void DeviceContainer::onConsoleWndMessageRcvd(QString msg)
