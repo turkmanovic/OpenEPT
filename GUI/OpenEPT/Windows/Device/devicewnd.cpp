@@ -124,6 +124,7 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     ui->maxNumOfPacketsLine->setText(QString::number(DEVICEWND_DEFAULT_MAX_NUMBER_OF_BUFFERS));
     ui->statisticsPacketCounterLabe2->setText(QString::number(0));
     ui->statisticsDropRateProb->setValue(0);
+    ui->statisticsSamplingPeriodLabe2->setText(QString::number(0));
 
     setDeviceState(DEVICE_STATE_UNDEFINED);
 
