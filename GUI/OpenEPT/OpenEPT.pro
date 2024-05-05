@@ -15,6 +15,7 @@ SOURCES += \
     Links/controllink.cpp \
     Links/statuslink.cpp \
     Links/streamlink.cpp \
+    Processing/dataprocessing.cpp \
     Utility/log.cpp \
     Windows/AddDevice/adddevicewnd.cpp \
     Windows/Console/consolewnd.cpp \
@@ -31,6 +32,7 @@ HEADERS += \
     Links/controllink.h \
     Links/statuslink.h \
     Links/streamlink.h \
+    Processing/dataprocessing.h \
     Utility/log.h \
     Windows/AddDevice/adddevicewnd.h \
     Windows/Console/consolewnd.h \

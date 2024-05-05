@@ -6,7 +6,7 @@
 #include <QThread>
 #include <QVector>
 
-#define  STREAM_LINK_PACKET_SIZE            712
+#define  STREAM_LINK_PACKET_SIZE            500
 
 class StreamLink : public QObject
 {
@@ -19,7 +19,7 @@ public:
     void            enable();
 
 signals:
-    void            newDataRecevied(QVector<double> rawData, int packetCounter);
+    void            sigNewSamplesBufferReceived(QVector<double> rawData, int packetCounter, int magic);
 
 private slots:
     void            initStreamLinkThread();

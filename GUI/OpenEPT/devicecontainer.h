@@ -49,6 +49,8 @@ public slots:
     void    onDeviceCOffsetObtained(QString coffset);
     void    onDeviceVOffsetObtained(QString voffset);
 
+    void    onDeviceNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys);
+
 
 
 private:

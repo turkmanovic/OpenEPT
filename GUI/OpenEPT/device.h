@@ -6,6 +6,7 @@
 #include "Links/controllink.h"
 #include "Links/statuslink.h"
 #include "Links/streamlink.h"
+#include "Processing/dataprocessing.h"
 
 typedef enum{
     DEVICE_ADC_RESOLUTION_UKNOWN       = 0,
@@ -107,6 +108,7 @@ signals:
     void        sigCOffsetObtained(QString coffset);
     void        sigVOffsetObtained(QString voffset);
     void        sigAvgRatio(QString voffset);
+    void        sigVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys);
 public slots:
     void        onControlLinkConnected();
     void        onControlLinkDisconnected();
@@ -114,6 +116,7 @@ public slots:
 private slots:
     void        onStatusLinkNewDeviceAdded(QString aDeviceIP);
     void        onStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
+    void        onNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys);
 
 private:
     QString                         deviceName;
@@ -126,6 +129,7 @@ private:
     ControlLink*                    controlLink;
     StatusLink*                     statusLink;
     StreamLink*                     streamLink;
+    DataProcessing*                 dataProcessing;
     QString                         voltageOffset;
     QString                         currentOffset;
     QString                         adcInputClk;

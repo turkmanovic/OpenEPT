@@ -436,3 +436,15 @@ bool DeviceWnd::setVOffset(QString voffset)
     advanceConfigurationWnd->setVOffset(voffset);
     return true;
 }
+
+bool DeviceWnd::plotUpdateVoltageValues(QVector<double> values, QVector<double> keys)
+{
+    voltageChart->setData(values, keys);
+    return true;
+}
+
+bool DeviceWnd::plotUpdateCurrentValues(QVector<double> values, QVector<double> keys)
+{
+    currentChart->setData(values, keys);
+    return true;
+}

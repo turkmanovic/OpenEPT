@@ -238,21 +238,9 @@ static void prvSSTREAM_ControlTaskFunc(void* pvParam)
 			}
 
 			/* Try to configure default sampling time */
-			if(DRV_AIN_SetChannelAvgRatio(DRV_AIN_ADC_3, 1, SSTREAM_AIN_DEFAULT_CH_AVG_RATIO) == DRV_AIN_STATUS_OK)
+			if(DRV_AIN_SetChannelAvgRatio(DRV_AIN_ADC_3, SSTREAM_AIN_DEFAULT_CH_AVG_RATIO) == DRV_AIN_STATUS_OK)
 			{
 				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Channel 1 averaging ration %d set\r\n", SSTREAM_AIN_DEFAULT_CH_AVG_RATIO);
-				connectionData->ainConfig.ch1.avgRatio = SSTREAM_AIN_DEFAULT_CH_AVG_RATIO;
-			}
-			else
-			{
-				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to set default channel 1 averaging ration\r\n");
-				connectionData->ainConfig.ch1.avgRatio = 0;
-			}
-
-			/* Try to configure default sampling time */
-			if(DRV_AIN_SetChannelAvgRatio(DRV_AIN_ADC_3, 2, SSTREAM_AIN_DEFAULT_CH_AVG_RATIO) == DRV_AIN_STATUS_OK)
-			{
-				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Channel 2 averaging ration %d set\r\n", SSTREAM_AIN_DEFAULT_CH_AVG_RATIO);
 				connectionData->ainConfig.ch1.avgRatio = SSTREAM_AIN_DEFAULT_CH_AVG_RATIO;
 			}
 			else
@@ -466,31 +454,13 @@ static void prvSSTREAM_ControlTaskFunc(void* pvParam)
 			if(notifyValue & SSTREAM_TASK_SET_ADC_CH1_AVERAGING_RATIO)
 			{
 				/* Try to configure ADC channel 1 sampling time */
-				if(DRV_AIN_SetChannelAvgRatio(DRV_AIN_ADC_3, 1, connectionData->ainConfig.ch1.avgRatio) == DRV_AIN_STATUS_OK)
+				if(DRV_AIN_SetChannelAvgRatio(DRV_AIN_ADC_3, connectionData->ainConfig.ch1.avgRatio) == DRV_AIN_STATUS_OK)
 				{
 					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Channel 1 averaging ration %d successfully set\r\n", connectionData->ainConfig.ch1.avgRatio);
 				}
 				else
 				{
 					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "Unable to set channel 1 averaging ratio\r\n");
-				}
-				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
-				{
-					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release init semaphore\r\n");
-					connectionData->state = SSTREAM_STATE_ERROR;
-					break;
-				}
-			}
-			if(notifyValue & SSTREAM_TASK_SET_ADC_CH2_AVERAGING_RATIO)
-			{
-				/* Try to configure ADC channel 1 sampling time */
-				if(DRV_AIN_SetChannelAvgRatio(DRV_AIN_ADC_3, 2, connectionData->ainConfig.ch2.avgRatio) == DRV_AIN_STATUS_OK)
-				{
-					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Channel 2 averaging ration %d successfully set\r\n", connectionData->ainConfig.ch1.avgRatio);
-				}
-				else
-				{
-					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "Unable to set channel 2 averaging ratio\r\n");
 				}
 				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
 				{

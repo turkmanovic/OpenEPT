@@ -343,6 +343,7 @@ drv_ain_status 						DRV_AIN_Start(drv_ain_adc_t adc)
 	prvDRV_AIN_ADC_ACTIVE_BUFFER	= 0;
 	prvDRV_AIN_ADC_BUFFER_COUNTER	= 0;
 
+	while(HAL_ADCEx_Calibration_Start(&prvDRV_AIN_DEVICE_ADC_HANDLER, ADC_CALIB_OFFSET_LINEARITY, ADC_SINGLE_ENDED) != HAL_OK);
 	if(HAL_TIM_Base_Start(&prvDRV_AIN_DEVICE_TIMER_HANDLER) != HAL_OK) return DRV_AIN_STATUS_ERROR;
 	if(HAL_ADC_Start_DMA(&prvDRV_AIN_DEVICE_ADC_HANDLER,
 			(uint32_t*)(&prvDRV_AIN_ADC_DATA_SAMPLES[0][DRV_AIN_ADC_BUFFER_OFFSET]),
@@ -513,9 +514,97 @@ drv_ain_status 						DRV_AIN_SetChannelOffset(drv_ain_adc_t adc, uint32_t channe
 	return DRV_AIN_STATUS_OK;
 }
 
-drv_ain_status 						DRV_AIN_SetChannelAvgRatio(drv_ain_adc_t adc, uint32_t channel,  drv_adc_ch_avg_ratio_t avgRatio)
+drv_ain_status 						DRV_AIN_SetChannelAvgRatio(drv_ain_adc_t adc, drv_adc_ch_avg_ratio_t avgRatio)
 {
+	if(prvDRV_AIN_ACQUISITION_STATUS == DRV_AIN_ADC_ACQUISITION_STATUS_ACTIVE) return DRV_AIN_STATUS_ERROR;
 
+	switch(avgRatio)
+	{
+	case DRV_AIN_ADC_AVG_RATIO_UNDEFINED:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.OversamplingMode 					= DISABLE;
+		break;
+	case DRV_AIN_ADC_AVG_RATIO_1:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.OversamplingMode         			= ENABLE;      							/* Oversampling enabled */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.Ratio                 	= 1;    								/* Oversampling ratio */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.RightBitShift         	= ADC_RIGHTBITSHIFT_NONE;         			/* Right shift of the oversampled summation */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.TriggeredMode         	= ADC_TRIGGEREDMODE_SINGLE_TRIGGER;     /* Specifies whether or not a trigger is needed for each sample */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.OversamplingStopReset 	= ADC_REGOVERSAMPLING_CONTINUED_MODE; 	/* Specifies whether or not the oversampling buffer is maintained during injection sequence */
+		break;
+	case DRV_AIN_ADC_AVG_RATIO_2:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.OversamplingMode         			= ENABLE;      							/* Oversampling enabled */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.Ratio                 	= 2;    								/* Oversampling ratio */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.RightBitShift         	= ADC_RIGHTBITSHIFT_1;         			/* Right shift of the oversampled summation */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.TriggeredMode         	= ADC_TRIGGEREDMODE_SINGLE_TRIGGER;     /* Specifies whether or not a trigger is needed for each sample */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.OversamplingStopReset 	= ADC_REGOVERSAMPLING_CONTINUED_MODE; 	/* Specifies whether or not the oversampling buffer is maintained during injection sequence */
+		break;
+	case DRV_AIN_ADC_AVG_RATIO_4:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.OversamplingMode         			= ENABLE;      							/* Oversampling enabled */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.Ratio                 	= 4;    								/* Oversampling ratio */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.RightBitShift         	= ADC_RIGHTBITSHIFT_2;         			/* Right shift of the oversampled summation */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.TriggeredMode         	= ADC_TRIGGEREDMODE_SINGLE_TRIGGER;     /* Specifies whether or not a trigger is needed for each sample */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.OversamplingStopReset 	= ADC_REGOVERSAMPLING_CONTINUED_MODE; 	/* Specifies whether or not the oversampling buffer is maintained during injection sequence */
+		break;
+	case DRV_AIN_ADC_AVG_RATIO_8:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.OversamplingMode         			= ENABLE;      							/* Oversampling enabled */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.Ratio                 	= 8;    								/* Oversampling ratio */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.RightBitShift         	= ADC_RIGHTBITSHIFT_3;         			/* Right shift of the oversampled summation */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.TriggeredMode         	= ADC_TRIGGEREDMODE_SINGLE_TRIGGER;     /* Specifies whether or not a trigger is needed for each sample */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.OversamplingStopReset 	= ADC_REGOVERSAMPLING_CONTINUED_MODE; 	/* Specifies whether or not the oversampling buffer is maintained during injection sequence */
+		break;
+	case DRV_AIN_ADC_AVG_RATIO_16:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.OversamplingMode         			= ENABLE;      							/* Oversampling enabled */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.Ratio                 	= 16;    								/* Oversampling ratio */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.RightBitShift         	= ADC_RIGHTBITSHIFT_4;         			/* Right shift of the oversampled summation */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.TriggeredMode         	= ADC_TRIGGEREDMODE_SINGLE_TRIGGER;     /* Specifies whether or not a trigger is needed for each sample */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.OversamplingStopReset 	= ADC_REGOVERSAMPLING_CONTINUED_MODE; 	/* Specifies whether or not the oversampling buffer is maintained during injection sequence */
+		break;
+	case DRV_AIN_ADC_AVG_RATIO_32:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.OversamplingMode         			= ENABLE;      							/* Oversampling enabled */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.Ratio                 	= 32;    								/* Oversampling ratio */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.RightBitShift         	= ADC_RIGHTBITSHIFT_5;         			/* Right shift of the oversampled summation */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.TriggeredMode         	= ADC_TRIGGEREDMODE_SINGLE_TRIGGER;     /* Specifies whether or not a trigger is needed for each sample */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.OversamplingStopReset 	= ADC_REGOVERSAMPLING_CONTINUED_MODE; 	/* Specifies whether or not the oversampling buffer is maintained during injection sequence */
+		break;
+	case DRV_AIN_ADC_AVG_RATIO_64:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.OversamplingMode         			= ENABLE;      							/* Oversampling enabled */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.Ratio                 	= 64;    								/* Oversampling ratio */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.RightBitShift         	= ADC_RIGHTBITSHIFT_6;         			/* Right shift of the oversampled summation */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.TriggeredMode         	= ADC_TRIGGEREDMODE_SINGLE_TRIGGER;     /* Specifies whether or not a trigger is needed for each sample */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.OversamplingStopReset 	= ADC_REGOVERSAMPLING_CONTINUED_MODE; 	/* Specifies whether or not the oversampling buffer is maintained during injection sequence */
+		break;
+	case DRV_AIN_ADC_AVG_RATIO_128:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.OversamplingMode         			= ENABLE;      							/* Oversampling enabled */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.Ratio                 	= 128;    								/* Oversampling ratio */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.RightBitShift         	= ADC_RIGHTBITSHIFT_7;         			/* Right shift of the oversampled summation */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.TriggeredMode         	= ADC_TRIGGEREDMODE_SINGLE_TRIGGER;     /* Specifies whether or not a trigger is needed for each sample */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.OversamplingStopReset 	= ADC_REGOVERSAMPLING_CONTINUED_MODE; 	/* Specifies whether or not the oversampling buffer is maintained during injection sequence */
+		break;
+	case DRV_AIN_ADC_AVG_RATIO_256:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.OversamplingMode         			= ENABLE;      							/* Oversampling enabled */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.Ratio                 	= 256;    								/* Oversampling ratio */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.RightBitShift         	= ADC_RIGHTBITSHIFT_8;         			/* Right shift of the oversampled summation */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.TriggeredMode         	= ADC_TRIGGEREDMODE_SINGLE_TRIGGER;     /* Specifies whether or not a trigger is needed for each sample */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.OversamplingStopReset 	= ADC_REGOVERSAMPLING_CONTINUED_MODE; 	/* Specifies whether or not the oversampling buffer is maintained during injection sequence */
+		break;
+	case DRV_AIN_ADC_AVG_RATIO_512:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.OversamplingMode         			= ENABLE;      							/* Oversampling enabled */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.Ratio                 	= 512;    								/* Oversampling ratio */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.RightBitShift         	= ADC_RIGHTBITSHIFT_9;         			/* Right shift of the oversampled summation */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.TriggeredMode         	= ADC_TRIGGEREDMODE_SINGLE_TRIGGER;     /* Specifies whether or not a trigger is needed for each sample */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.OversamplingStopReset 	= ADC_REGOVERSAMPLING_CONTINUED_MODE; 	/* Specifies whether or not the oversampling buffer is maintained during injection sequence */
+		break;
+	case DRV_AIN_ADC_AVG_RATIO_1024:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.OversamplingMode         			= ENABLE;      							/* Oversampling enabled */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.Ratio                 	= 1024;    								/* Oversampling ratio */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.RightBitShift         	= ADC_RIGHTBITSHIFT_10;         			/* Right shift of the oversampled summation */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.TriggeredMode         	= ADC_TRIGGEREDMODE_SINGLE_TRIGGER;     /* Specifies whether or not a trigger is needed for each sample */
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Oversampling.OversamplingStopReset 	= ADC_REGOVERSAMPLING_CONTINUED_MODE; 	/* Specifies whether or not the oversampling buffer is maintained during injection sequence */
+		break;
+	default:
+		prvDRV_AIN_DEVICE_ADC_HANDLER.Init.OversamplingMode 					= DISABLE;
+		return DRV_AIN_STATUS_ERROR;
+	}
+	if (HAL_ADC_Init(&prvDRV_AIN_DEVICE_ADC_HANDLER) != HAL_OK) return DRV_AIN_STATUS_ERROR;
 	return DRV_AIN_STATUS_OK;
 }
 drv_ain_status 						DRV_AIN_SetSamplingResolutionTime(drv_ain_adc_t adc, uint32_t time)

@@ -47,6 +47,9 @@ public:
     bool            setCOffset(QString coffset);
     bool            setVOffset(QString voffset);
 
+    bool            plotUpdateVoltageValues(QVector<double> values, QVector<double> keys);
+    bool            plotUpdateCurrentValues(QVector<double> values, QVector<double> keys);
+
 
     QStringList*    getChSamplingTimeOptions();
     QStringList*    getChAvgRationOptions();

@@ -12,6 +12,7 @@ Device::Device(QObject *parent)
     samplingTime            = "";
     controlLink             = NULL;
     streamLink              = NULL;
+    dataProcessing          = new DataProcessing();
 }
 
 Device::~Device()
@@ -78,6 +79,9 @@ bool Device::createStreamLink(QString ip, quint16 port, int* id)
     streamLink->setPort(port);
     streamLink->enable();
 
+    QObject::connect(streamLink, &StreamLink::sigNewSamplesBufferReceived, dataProcessing, &DataProcessing::onNewSampleBufferReceived, Qt::QueuedConnection);
+    connect(dataProcessing, SIGNAL(sigNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>)),
+            this, SLOT(onNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>)));
     /*  */
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     streamID = response.toInt();
@@ -603,4 +607,9 @@ void Device::onStatusLinkNewDeviceAdded(QString aDeviceIP)
 void Device::onStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage)
 {
     emit sigStatusLinkNewMessageReceived(aDeviceIP, aMessage);
+}
+
+void Device::onNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys)
+{
+    emit sigVoltageCurrentSamplesReceived(voltage, current, keys);
 }
