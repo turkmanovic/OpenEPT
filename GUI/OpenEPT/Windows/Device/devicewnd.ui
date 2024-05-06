@@ -1472,7 +1472,7 @@
               </size>
              </property>
              <property name="text">
-              <string>Sampling period [ms]</string>
+              <string>Sampling period [us]</string>
              </property>
             </widget>
            </item>

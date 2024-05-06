@@ -119,7 +119,7 @@ signals:
     void        sigVOffsetObtained(QString voffset);
     void        sigAvgRatio(QString voffset);
     void        sigSamplingTimeChanged(double value);
-    void        sigVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys);
+    void        sigVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys);
     void        sigNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
 public slots:
     void        onControlLinkConnected();
@@ -128,12 +128,12 @@ public slots:
 private slots:
     void        onStatusLinkNewDeviceAdded(QString aDeviceIP);
     void        onStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
-    void        onNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys);
+    void        onNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys);
     void        onNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
 
 private:
     QString                         deviceName;
-    double                          samplingPeriod;
+    double                          samplingPeriod;                //ms
     device_adc_resolution_t         adcResolution;
     device_adc_ch_sampling_time_t   adcChSamplingTime;
     device_adc_clock_div_t          adcClockingDiv;
@@ -142,7 +142,7 @@ private:
 
     double                          adcResolutionSampleTimeOffset;
     double                          adcSampleTimeOffset;
-    double                          adcSampleTime;
+    double                          adcSampleTime;                  //s
 
     ControlLink*                    controlLink;
     StatusLink*                     statusLink;

@@ -125,6 +125,7 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     ui->statisticsPacketCounterLabe2->setText(QString::number(0));
     ui->statisticsDropRateProb->setValue(0);
     ui->statisticsSamplingPeriodLabe2->setText(QString::number(0));
+    ui->samplingPeriodLine->setText(QString::number(0));
 
     setDeviceState(DEVICE_STATE_UNDEFINED);
 
@@ -218,6 +219,7 @@ void DeviceWnd::onSamplingPeriodChanged()
 {
     QString time = ui->samplingPeriodLine->text();
     advanceConfigurationWnd->setSamplingTime(time);
+    ui->statisticsSamplingPeriodLabe2->setText(time);
     emit sigSamplingPeriodChanged(time);
 }
 
@@ -425,10 +427,11 @@ bool DeviceWnd::setResolution(QString resolution)
     return true;
 }
 
-bool DeviceWnd::setSTime(QString stime)
+bool DeviceWnd::setSamplingPeriod(QString stime)
 {
     if(!advanceConfigurationWnd->setSamplingTime(stime)) return false;
     ui->samplingPeriodLine->setText(stime);
+    ui->statisticsSamplingPeriodLabe2->setText(stime);
     return true;
 }
 

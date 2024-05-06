@@ -22,11 +22,13 @@ public:
     explicit                            DataProcessing(QObject *parent = nullptr);
     bool                                setNumberOfBuffersToCollect(unsigned int numberOfBaffers);
     bool                                setSamplesBufferSize(unsigned int size);
+    bool                                setSamplingPeriod(double aSamplingPeriod);  //us
+    bool                                setSamplingTime(double aSamplingTime);      //us
 
     bool                                setAcquisitionStatus(dataprocessing_acquisition_status_t aAcquisitionStatus);
 
 signals:
-    void                                sigNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys);
+    void                                sigNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys);
     void                                sigSamplesBufferReceiveStatistics(double dropRate, unsigned int fullPacketCounter, unsigned int lastPacketID);
 
 
@@ -51,13 +53,18 @@ private:
     bool                                firstPacketReceived;    //
 
     /* */
+    double                              samplingPeriod;         //ms
+    double                              samplingTime;           //ms
+
+    /* */
     unsigned int                        maxNumberOfBuffers;
     unsigned int                        samplesBufferSize;
 
     /* */
     QVector<double>                     voltageDataCollected;
     QVector<double>                     currentDataCollected;
-    QVector<double>                     keysDataCollected;
+    QVector<double>                     voltageKeysDataCollected;
+    QVector<double>                     currentKeysDataCollected;
 
 
     /**/

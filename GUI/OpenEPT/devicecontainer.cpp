@@ -37,13 +37,14 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(device,     SIGNAL(sigResolutionObtained(QString)),                     this, SLOT(onDeviceResolutionObtained(QString)));
     connect(device,     SIGNAL(sigChSampleTimeObtained(QString)),                   this, SLOT(onDeviceChSampleTimeObtained(QString)));
     connect(device,     SIGNAL(sigClockDivObtained(QString)),                       this, SLOT(onDeviceClkDivObtained(QString)));
-    connect(device,     SIGNAL(sigSampleTimeObtained(QString)),                     this, SLOT(onDeviceSTimeObtained(QString)));
+    connect(device,     SIGNAL(sigSampleTimeObtained(QString)),                     this, SLOT(onDeviceSamplingPeriodObtained(QString)));
     connect(device,     SIGNAL(sigAdcInputClkObtained(QString)),                    this, SLOT(onDeviceAdcInClkObtained(QString)));
     connect(device,     SIGNAL(sigCOffsetObtained(QString)),                        this, SLOT(onDeviceCOffsetObtained(QString)));
     connect(device,     SIGNAL(sigVOffsetObtained(QString)),                        this, SLOT(onDeviceVOffsetObtained(QString)));
     connect(device,     SIGNAL(sigAvgRatio(QString)),                               this, SLOT(onDeviceAvgRatioChanged(QString)));
     connect(device,     SIGNAL(sigSamplingTimeChanged(double)),                     this, SLOT(onDeviceSamplingTimeChanged(double)));
-    connect(device,     SIGNAL(sigVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>)), this, SLOT(onDeviceNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>)));
+    connect(device,     SIGNAL(sigVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>, QVector<double>)),
+            this, SLOT(onDeviceNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>, QVector<double>)));
     connect(device,     SIGNAL(sigNewSamplesBuffersProcessingStatistics(double,uint,uint)), this, SLOT(onDeviceNewSamplesBuffersProcessingStatistics(double,uint,uint)));
 
     log->printLogMessage("Device container successfully created", LOG_MESSAGE_TYPE_INFO);
@@ -397,7 +398,7 @@ void DeviceContainer::onDeviceWndNewConfiguration(QVariant newConfig)
         else
         {
             log->printLogMessage("Sampling time: " + config.samplingTime + "[ms] - sucessfully set", LOG_MESSAGE_TYPE_INFO);
-            deviceWnd->setSTime(config.samplingTime);
+            deviceWnd->setSamplingPeriod(config.samplingTime);
         }
     }
 
@@ -439,9 +440,9 @@ void DeviceContainer::onDeviceChSampleTimeObtained(QString stime)
     }
 }
 
-void DeviceContainer::onDeviceSTimeObtained(QString stime)
+void DeviceContainer::onDeviceSamplingPeriodObtained(QString stime)
 {
-    if(!deviceWnd->setSTime(stime))
+    if(!deviceWnd->setSamplingPeriod(stime))
     {
         log->printLogMessage("Unable to show obtained sampling time: " + stime + "us", LOG_MESSAGE_TYPE_ERROR);
     }
@@ -504,10 +505,10 @@ void DeviceContainer::onDeviceSamplingTimeChanged(double value)
     deviceWnd->setStatisticsSamplingTime(value);
 }
 
-void DeviceContainer::onDeviceNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys)
+void DeviceContainer::onDeviceNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys)
 {
-    deviceWnd->plotUpdateVoltageValues(voltage, keys);
-    deviceWnd->plotUpdateCurrentValues(current, keys);
+    deviceWnd->plotUpdateVoltageValues(voltage, voltageKeys);
+    deviceWnd->plotUpdateCurrentValues(current, currentKeys);
 }
 
 void DeviceContainer::onDeviceNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID)

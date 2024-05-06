@@ -241,7 +241,7 @@ static void prvSSTREAM_ControlTaskFunc(void* pvParam)
 				connectionData->ainConfig.ch2.sampleTime = DRV_AIN_ADC_SAMPLE_TIME_UKNOWN;
 			}
 
-			/* Try to configure default sampling time */
+			/* Try to configure default avg ratio */
 			if(DRV_AIN_SetChannelAvgRatio(DRV_AIN_ADC_3, SSTREAM_AIN_DEFAULT_CH_AVG_RATIO) == DRV_AIN_STATUS_OK)
 			{
 				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Channel 1 averaging ration %d set\r\n", SSTREAM_AIN_DEFAULT_CH_AVG_RATIO);
@@ -262,6 +262,24 @@ static void prvSSTREAM_ControlTaskFunc(void* pvParam)
 			{
 				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "Unable to obtain ADC clock\r\n");
 			}
+
+			/* Try to configure sampling time */
+			if(DRV_AIN_SetSamplingPeriod(DRV_AIN_ADC_3, SSTREAM_AIN_DEFAULT_PERIOD, SSTREAM_AIN_DEFAULT_PRESCALER) == DRV_AIN_STATUS_OK)
+			{
+				connectionData->ainConfig.prescaler = SSTREAM_AIN_DEFAULT_PRESCALER;
+				connectionData->ainConfig.period 	= SSTREAM_AIN_DEFAULT_PERIOD;
+				connectionData->ainConfig.samplingTime = (double)1.0/(double)DRV_AIN_ADC_TIM_INPUT_CLK*
+						((double)connectionData->ainConfig.prescaler + 1.0)*((double)connectionData->ainConfig.period + 1.0)*
+						(double)connectionData->ainConfig.ch1.avgRatio*1000000;
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Sampling time %f set\r\n", connectionData->ainConfig.samplingTime);
+
+			}
+			else
+			{
+				LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to set sampling time\r\n");
+				connectionData->ainConfig.samplingTime = 0;
+			}
+
 
 			DRV_AIN_Stream_RegisterCallback(DRV_AIN_ADC_3, prvSSTREAM_NewPacketSampled);
 
@@ -368,7 +386,7 @@ static void prvSSTREAM_ControlTaskFunc(void* pvParam)
 			if(notifyValue & SSTREAM_TASK_SET_ADC_STIME_BIT)
 			{
 				/* Try to configure ADC clock div */
-				if(DRV_AIN_SetSamplingResolutionTime(DRV_AIN_ADC_3, connectionData->ainConfig.prescaler, connectionData->ainConfig.period) == DRV_AIN_STATUS_OK)
+				if(DRV_AIN_SetSamplingPeriod(DRV_AIN_ADC_3, connectionData->ainConfig.prescaler, connectionData->ainConfig.period) == DRV_AIN_STATUS_OK)
 				{
 					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Sampling time %d set\r\n", connectionData->ainConfig.samplingTime);
 				}
@@ -473,6 +491,9 @@ static void prvSSTREAM_ControlTaskFunc(void* pvParam)
 					break;
 				}
 			}
+			connectionData->ainConfig.samplingTime = (double)1.0/(double)DRV_AIN_ADC_TIM_INPUT_CLK*
+									((double)connectionData->ainConfig.prescaler + 1.0)*((double)connectionData->ainConfig.period + 1.0)*
+									(double)connectionData->ainConfig.ch1.avgRatio*1000000;
 			break;
 
 		case SSTREAM_STATE_ERROR:
@@ -624,11 +645,16 @@ sstream_status_t				SSTREAM_SetResolution(sstream_connection_info* connectionHan
 			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
 	return SSTREAM_STATUS_OK;
 }
-sstream_status_t				SSTREAM_SetSamplingTime(sstream_connection_info* connectionHandler, uint32_t prescaller, uint32_t period, uint32_t timeout)
+sstream_status_t				SSTREAM_SetSamplingPeriod(sstream_connection_info* connectionHandler, uint32_t prescaller, uint32_t period, uint32_t timeout)
 {
 	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
-	prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.prescaler = prescaller;
-	prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.period = period;
+
+	prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.prescaler 		= prescaller;
+	prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.period 		= period;
+	prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.samplingTime 	= (double)1.0/(double)DRV_AIN_ADC_TIM_INPUT_CLK*
+							((double)prescaller + 1.0)*((double)period + 1.0)*
+							(double)prvSSTREAM_DATA.controlInfo[connectionHandler->id].ainConfig.ch1.avgRatio*1000000;
+
 	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	/* Send request to configure AIN*/
@@ -777,7 +803,7 @@ sstream_adc_clk_div_t			SSTREAM_GetClkDiv(sstream_connection_info* connectionHan
 
 	return adcClockDiv;
 }
-uint32_t						SSTREAM_GetSamplingTime(sstream_connection_info* connectionHandler, uint32_t timeout)
+uint32_t						SSTREAM_GetSamplingPeriod(sstream_connection_info* connectionHandler, uint32_t timeout)
 {
 	uint32_t stime;
 

@@ -43,13 +43,14 @@ public slots:
     void    onDeviceResolutionObtained(QString resolution);
     void    onDeviceClkDivObtained(QString clkDiv);
     void    onDeviceChSampleTimeObtained(QString stime);
-    void    onDeviceSTimeObtained(QString stime);
+    void    onDeviceSamplingPeriodObtained(QString stime);
     void    onDeviceAdcInClkObtained(QString inClk);
     void    onDeviceAvgRatioChanged(QString aAvgRatio);
     void    onDeviceCOffsetObtained(QString coffset);
     void    onDeviceVOffsetObtained(QString voffset);
     void    onDeviceSamplingTimeChanged(double value);
-    void    onDeviceNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys);
+
+    void    onDeviceNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys);
     void    onDeviceNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
 
 

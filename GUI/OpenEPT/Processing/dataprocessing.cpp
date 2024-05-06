@@ -35,6 +35,20 @@ bool DataProcessing::setSamplesBufferSize(unsigned int size)
     return true;
 }
 
+bool DataProcessing::setSamplingPeriod(double aSamplingPeriod)
+{
+    if(acquisitionStatus == DATAPROCESSING_ACQUISITION_STATUS_ACTIVE) return false;
+    samplingPeriod = aSamplingPeriod/1000.0; //convert us to ms
+    return true;
+}
+
+bool DataProcessing::setSamplingTime(double aSamplingTime)
+{
+    if(acquisitionStatus == DATAPROCESSING_ACQUISITION_STATUS_ACTIVE) return false;
+    samplingTime = aSamplingTime/1000.0; //convert us to ms
+    return true;
+}
+
 bool DataProcessing::setAcquisitionStatus(dataprocessing_acquisition_status_t aAcquisitionStatus)
 {
     acquisitionStatus = aAcquisitionStatus;
@@ -59,9 +73,10 @@ bool DataProcessing::setAcquisitionStatus(dataprocessing_acquisition_status_t aA
 
 void DataProcessing::onNewSampleBufferReceived(QVector<double> rawData, int packetID, int magic)
 {
-    uint32_t        keyStartValue = packetID*rawData.size()/2;
+    double          keyStartValue = packetID*rawData.size()/2*samplingPeriod;
     double          dropRate = 0;
-    unsigned int i = 0;
+    unsigned int    i = 0;
+    unsigned int    j = 0;
 
     /* Calculate packet statistics */
     if(firstPacketReceived)
@@ -88,24 +103,26 @@ void DataProcessing::onNewSampleBufferReceived(QVector<double> rawData, int pack
     for(; i < rawData.size();)
     {
         voltageDataCollected[lastBufferUsedPositionIndex] = rawData[i];
-        i += 1;
-        currentDataCollected[lastBufferUsedPositionIndex] = rawData[i];
-        i += 1;
         if(i == 0)
         {
-            keysDataCollected[lastBufferUsedPositionIndex] = keyStartValue;
+            voltageKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue;
+            currentKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + samplingTime;
         }
         else
         {
-            keysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + i;
+            voltageKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + (double)j*samplingPeriod;
+            currentKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + (double)j*samplingPeriod + samplingTime;
         }
+        currentDataCollected[lastBufferUsedPositionIndex] = rawData[i+1];
+        i                           += 2;
         lastBufferUsedPositionIndex += 1;
+        j +=1;
     }
 
     currentNumberOfBuffers += 1;
     if(currentNumberOfBuffers == maxNumberOfBuffers)
     {
-        emit sigNewVoltageCurrentSamplesReceived(voltageDataCollected, currentDataCollected, keysDataCollected);
+        emit sigNewVoltageCurrentSamplesReceived(voltageDataCollected, currentDataCollected, voltageKeysDataCollected, currentKeysDataCollected);
         emit sigSamplesBufferReceiveStatistics(dropRate, receivedPacketCounter, lastReceivedPacketID);
         initBuffers();
     }
@@ -136,8 +153,10 @@ void DataProcessing::initCurrentBuffer()
 
 void DataProcessing::initKeyBuffer()
 {
-    keysDataCollected.resize(maxNumberOfBuffers*samplesBufferSize);
-    keysDataCollected.fill(0);
+    voltageKeysDataCollected.resize(maxNumberOfBuffers*samplesBufferSize);
+    currentKeysDataCollected.resize(maxNumberOfBuffers*samplesBufferSize);
+    voltageKeysDataCollected.fill(0);
+    currentKeysDataCollected.fill(0);
     currentNumberOfBuffers = 0;
     lastBufferUsedPositionIndex = 0;
 }

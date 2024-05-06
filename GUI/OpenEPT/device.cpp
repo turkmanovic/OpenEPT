@@ -48,6 +48,7 @@ bool Device::acquisitionPause()
     QString command = "device stream stop -sid=" + QString::number(streamID);
     if(controlLink == NULL) return false;
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
+    dataProcessing->setAcquisitionStatus(DATAPROCESSING_ACQUISITION_STATUS_INACTIVE);
     return true;
 }
 
@@ -84,8 +85,8 @@ bool Device::createStreamLink(QString ip, quint16 port, int* id)
     streamLink->enable();
 
     QObject::connect(streamLink, &StreamLink::sigNewSamplesBufferReceived, dataProcessing, &DataProcessing::onNewSampleBufferReceived, Qt::QueuedConnection);
-    connect(dataProcessing, SIGNAL(sigNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>)),
-            this, SLOT(onNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>)));
+    connect(dataProcessing, SIGNAL(sigNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>,QVector<double>)),
+            this, SLOT(onNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>,QVector<double>)));
     connect(dataProcessing, SIGNAL(sigSamplesBufferReceiveStatistics(double,uint,uint)), this, SLOT(onNewSamplesBuffersProcessingStatistics(double,uint,uint)));
     /*  */
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
@@ -537,10 +538,10 @@ bool Device::setSamplingPeriod(QString time)
     {
         for(int j = 1; j < 65536; j++)
         {
-            tmprest = (timeValue*(double)DEVICE_ADC_TIMER_INPUT_CLK) - ((i+1.0)*(j+1.0));
+            tmprest = (timeValue*(double)DEVICE_ADC_TIMER_INPUT_CLK/(double)1000000) - ((i+1.0)*(j+1.0));
             if(abs(tmprest) < abs(rest))
             {
-                rest = tmprest;
+                rest = abs(tmprest);
                 prescaller = i;
                 period = j;
             }
@@ -553,7 +554,8 @@ bool Device::setSamplingPeriod(QString time)
     if(response != "OK"){
         return false;
     }
-    samplingPeriod = 1.0/(double)DEVICE_ADC_TIMER_INPUT_CLK*((double)prescaller+1)*((double)period+1);
+    samplingPeriod = 1.0/(double)DEVICE_ADC_TIMER_INPUT_CLK*((double)prescaller+1)*((double)period+1)*1000; //ms
+    dataProcessing->setSamplingPeriod(samplingPeriod*1000);
     return true;
 }
 
@@ -569,6 +571,7 @@ bool Device::getSamplingPeriod(QString *time)
     if(time != NULL) *time = QString::number(tmpSTime);
     emit sigSampleTimeObtained(response);
     obtainSamplingTime();
+    dataProcessing->setSamplingPeriod(samplingPeriod);
     return true;
 }
 
@@ -640,6 +643,7 @@ double Device::obtainSamplingTime()
 {
     adcSampleTime = (adcResolutionSampleTimeOffset + adcSampleTimeOffset)*(double)adcClockingDiv/adcInputClkValue*(double)adcAveraging;
     emit sigSamplingTimeChanged(adcSampleTime);
+    dataProcessing->setSamplingTime(adcSampleTime * 1000000); // convert s to us
     return adcSampleTime;
 }
 
@@ -681,9 +685,9 @@ void Device::onStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage)
     emit sigStatusLinkNewMessageReceived(aDeviceIP, aMessage);
 }
 
-void Device::onNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> keys)
+void Device::onNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys)
 {
-    emit sigVoltageCurrentSamplesReceived(voltage, current, keys);
+    emit sigVoltageCurrentSamplesReceived(voltage, current, voltageKeys, currentKeys);
 }
 
 void Device::onNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID)

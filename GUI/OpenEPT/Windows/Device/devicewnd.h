@@ -43,7 +43,7 @@ public:
     bool            setChAvgRatio(QString avgRatio);
     bool            setClkDiv(QString clkDiv);
     bool            setResolution(QString resolution);
-    bool            setSTime(QString stime);
+    bool            setSamplingPeriod(QString stime);
     bool            setADCClk(QString adcClk);
     bool            setInCkl(QString inClk);
     bool            setCOffset(QString coffset);

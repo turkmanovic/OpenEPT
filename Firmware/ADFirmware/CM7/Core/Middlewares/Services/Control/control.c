@@ -426,7 +426,7 @@ static void prvCONTROL_SetSamplingtime(const char* arguments, uint16_t arguments
 		return;
 	}
 
-	if(SSTREAM_SetSamplingTime(connectionInfo, prescaler, period, 1000) != SSTREAM_STATUS_OK)
+	if(SSTREAM_SetSamplingPeriod(connectionInfo, prescaler, period, 1000) != SSTREAM_STATUS_OK)
 	{
 		prvCONTROL_PrepareErrorResponse(response, responseSize);
 		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to set sampling time %d\r\n", valueNumber);
@@ -453,6 +453,7 @@ static void prvCONTROL_GetSamplingtime(const char* arguments, uint16_t arguments
 	uint32_t					streamID;
 
 	memset(&value, 0, sizeof(cmparse_value_t));
+
 	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
 	{
 		prvCONTROL_PrepareErrorResponse(response, responseSize);
@@ -468,7 +469,7 @@ static void prvCONTROL_GetSamplingtime(const char* arguments, uint16_t arguments
 		prvCONTROL_PrepareErrorResponse(response, responseSize);
 		return;
 	}
-	resolution = SSTREAM_GetSamplingTime(connectionInfo, 1000);
+	resolution = SSTREAM_GetSamplingPeriod(connectionInfo, 1000);
 	resolutionStringLength = sprintf(resolutionString, "%lu", resolution);
 	prvCONTROL_PrepareOkResponse(response, responseSize, resolutionString, resolutionStringLength);
 }
