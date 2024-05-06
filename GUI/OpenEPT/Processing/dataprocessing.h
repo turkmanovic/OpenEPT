@@ -15,6 +15,14 @@ typedef enum
     DATAPROCESSING_ACQUISITION_STATUS_INACTIVE
 }dataprocessing_acquisition_status_t;
 
+typedef enum
+{
+    DATAPROCESSING_CONSUMPTION_MODE_CURRENT,
+    DATAPROCESSING_CONSUMPTION_MODE_CUMULATIVE,
+}dataprocessing_consumption_mode_t;
+Q_DECLARE_METATYPE(dataprocessing_consumption_mode_t);
+
+
 class DataProcessing : public QObject
 {
     Q_OBJECT
@@ -24,11 +32,13 @@ public:
     bool                                setSamplesBufferSize(unsigned int size);
     bool                                setSamplingPeriod(double aSamplingPeriod);  //us
     bool                                setSamplingTime(double aSamplingTime);      //us
+    bool                                setConsumptionMode(dataprocessing_consumption_mode_t aConsumptionMode);
 
     bool                                setAcquisitionStatus(dataprocessing_acquisition_status_t aAcquisitionStatus);
 
 signals:
     void                                sigNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys);
+    void                                sigNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t consumptionMode);
     void                                sigSamplesBufferReceiveStatistics(double dropRate, unsigned int fullPacketCounter, unsigned int lastPacketID);
 
 
@@ -39,6 +49,7 @@ private:
     void                                initBuffers();
     void                                initVoltageBuffer();
     void                                initCurrentBuffer();
+    void                                initConsumptionBuffer();
     void                                initKeyBuffer();
 
     /* Stream link received data in separate worker thread*/
@@ -63,12 +74,17 @@ private:
     /* */
     QVector<double>                     voltageDataCollected;
     QVector<double>                     currentDataCollected;
+    QVector<double>                     currentConsumptionDataCollected;
+    QVector<double>                     cumulativeConsumptionDataCollected;
+    double                              lastCumulativeCurrentConsumptionValue;
     QVector<double>                     voltageKeysDataCollected;
     QVector<double>                     currentKeysDataCollected;
+    QVector<double>                     consumptionKeysDataCollected;
 
 
     /**/
     dataprocessing_acquisition_status_t acquisitionStatus;
+    dataprocessing_consumption_mode_t   consumptionMode;
 
 };
 

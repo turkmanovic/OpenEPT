@@ -127,6 +127,15 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     ui->statisticsSamplingPeriodLabe2->setText(QString::number(0));
     ui->samplingPeriodLine->setText(QString::number(0));
 
+    /*Group consumption type selecrion radio buttons*/
+    consumptionTypeSelection = new QButtonGroup();
+    consumptionTypeSelection->addButton(ui->currentRadb);
+    consumptionTypeSelection->addButton(ui->cumulativeRadb);
+    consumptionTypeSelection->setId(ui->currentRadb, 1);
+    consumptionTypeSelection->setId(ui->cumulativeRadb, 2);
+
+    ui->currentRadb->setChecked(true);
+
     setDeviceState(DEVICE_STATE_UNDEFINED);
 
     consoleWnd  = new ConsoleWnd();
@@ -144,12 +153,13 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     connect(ui->refreshPusb, SIGNAL(clicked(bool)), this, SLOT(onRefreshAcquisiton()));
     connect(ui->ConsolePusb, SIGNAL(clicked(bool)), this, SLOT(onConsolePressed()));
 
-    connect(ui->clockDivComb,           SIGNAL(currentTextChanged(QString)),    this, SLOT(onClockDivChanged(QString)));
-    connect(ui->sampleTimeComb,         SIGNAL(currentTextChanged(QString)),    this, SLOT(onSampleTimeChanged(QString)));
-    connect(ui->resolutionComb,         SIGNAL(currentTextChanged(QString)),    this, SLOT(onResolutionChanged(QString)));
-    connect(ui->samplingPeriodLine,     SIGNAL(returnPressed()),                this, SLOT(onSamplingPeriodChanged()));
-    connect(ui->streamServerInterfComb, SIGNAL(currentTextChanged(QString)),    this, SLOT(onInterfaceChanged(QString)));
-    connect(ui->maxNumOfPacketsLine,    SIGNAL(editingFinished()),              this, SLOT(onMaxNumberOfBuffersChanged()));
+    connect(ui->clockDivComb,           SIGNAL(currentTextChanged(QString)),        this, SLOT(onClockDivChanged(QString)));
+    connect(ui->sampleTimeComb,         SIGNAL(currentTextChanged(QString)),        this, SLOT(onSampleTimeChanged(QString)));
+    connect(ui->resolutionComb,         SIGNAL(currentTextChanged(QString)),        this, SLOT(onResolutionChanged(QString)));
+    connect(ui->samplingPeriodLine,     SIGNAL(returnPressed()),                    this, SLOT(onSamplingPeriodChanged()));
+    connect(ui->streamServerInterfComb, SIGNAL(currentTextChanged(QString)),        this, SLOT(onInterfaceChanged(QString)));
+    connect(ui->maxNumOfPacketsLine,    SIGNAL(editingFinished()),                  this, SLOT(onMaxNumberOfBuffersChanged()));
+    connect(consumptionTypeSelection,   SIGNAL(buttonClicked(QAbstractButton*)),    this, SLOT(onConsumptionTypeChanged(QAbstractButton*)));
 
 
     connect(advanceConfigurationWnd, SIGNAL(sigAdvConfigurationChanged(QVariant)), this, SLOT(onAdvConfigurationChanged(QVariant)));
@@ -195,6 +205,23 @@ void DeviceWnd::onMaxNumberOfBuffersChanged()
     QString maxNumberOfSamplesBuffers = ui->maxNumOfPacketsLine->text();
     emit sigMaxNumberOfBuffersChanged(maxNumberOfSamplesBuffers.toInt());
 
+}
+
+void DeviceWnd::onConsumptionTypeChanged(QAbstractButton* button)
+{
+    int id = consumptionTypeSelection->id(button);
+    switch(id)
+    {
+    case 1:
+        emit sigConsumptionTypeChanged("Current");
+        break;
+    case 2:
+        emit sigConsumptionTypeChanged("Cumulative");
+        break;
+    default:
+        emit sigConsumptionTypeChanged("Undef");
+        break;
+    }
 }
 
 void DeviceWnd::onResolutionChanged(QString resolution)
@@ -263,6 +290,9 @@ void DeviceWnd::onPauseAcquisition()
 
 void DeviceWnd::onStopAcquisiton()
 {
+    voltageChart->clear();
+    currentChart->clear();
+    consumptionChart->clear();
     emit sigStopAcquisition();
 }
 
@@ -464,14 +494,20 @@ void DeviceWnd::setStatisticsSamplingTime(double stime)
     ui->statisticsSamplingTimeLabe2->setText(QString::number(stime*1000, 'f', 10));
 }
 
-bool DeviceWnd::plotUpdateVoltageValues(QVector<double> values, QVector<double> keys)
+bool DeviceWnd::plotSetVoltageValues(QVector<double> values, QVector<double> keys)
 {
     voltageChart->setData(values, keys);
     return true;
 }
 
-bool DeviceWnd::plotUpdateCurrentValues(QVector<double> values, QVector<double> keys)
+bool DeviceWnd::plotSetCurrentValues(QVector<double> values, QVector<double> keys)
 {
     currentChart->setData(values, keys);
+    return true;
+}
+
+bool DeviceWnd::plotAppendConsumptionValues(QVector<double> values, QVector<double> keys)
+{
+    consumptionChart->appendData(values, keys);
     return true;
 }

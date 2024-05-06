@@ -34,6 +34,7 @@ public slots:
     void    onDeviceWndNewConfiguration(QVariant newConfig);
     void    onDeviceWndClosed();
     void    onDeviceWndMaxNumberOfBuffersChanged(unsigned int maxNumber);
+    void    onDeviceWndConsumptionTypeChanged(QString aConsumptionType);
 
     void    onDeviceControlLinkDisconnected();
     void    onDeviceControlLinkConnected();
@@ -51,6 +52,7 @@ public slots:
     void    onDeviceSamplingTimeChanged(double value);
 
     void    onDeviceNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys);
+    void    onDeviceNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t mode);
     void    onDeviceNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
 
 

@@ -87,6 +87,10 @@ bool Device::createStreamLink(QString ip, quint16 port, int* id)
     QObject::connect(streamLink, &StreamLink::sigNewSamplesBufferReceived, dataProcessing, &DataProcessing::onNewSampleBufferReceived, Qt::QueuedConnection);
     connect(dataProcessing, SIGNAL(sigNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>,QVector<double>)),
             this, SLOT(onNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>,QVector<double>)));
+
+    connect(dataProcessing, SIGNAL(sigNewConsumptionDataReceived(QVector<double>,QVector<double>,dataprocessing_consumption_mode_t)),
+            this, SLOT(onNewConsumptionDataReceived(QVector<double>,QVector<double>,dataprocessing_consumption_mode_t)));
+
     connect(dataProcessing, SIGNAL(sigSamplesBufferReceiveStatistics(double,uint,uint)), this, SLOT(onNewSamplesBuffersProcessingStatistics(double,uint,uint)));
     /*  */
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
@@ -665,6 +669,11 @@ bool Device::setDataProcessingMaxNumberOfBuffers(unsigned int maxNumber)
     return dataProcessing->setNumberOfBuffersToCollect(maxNumber);
 }
 
+bool Device::setDataProcessingConsumptionType(dataprocessing_consumption_mode_t aConsumptionMode)
+{
+    return dataProcessing->setConsumptionMode(aConsumptionMode);
+}
+
 void Device::onControlLinkConnected()
 {
     emit sigControlLinkConnected();
@@ -693,4 +702,9 @@ void Device::onNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector
 void Device::onNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID)
 {
     emit sigNewSamplesBuffersProcessingStatistics(dropRate, fullReceivedBuffersNo, lastBufferID);
+}
+
+void Device::onNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t mode)
+{
+    emit sigNewConsumptionDataReceived(consumption, keys, mode);
 }

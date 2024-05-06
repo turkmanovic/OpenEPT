@@ -2,6 +2,8 @@
 #define DEVICEWND_H
 
 #include <QWidget>
+#include <QButtonGroup>
+#include <QAbstractButton>
 #include "Windows/Plot/plot.h"
 #include "Windows/Device/advanceconfigurationwnd.h"
 #include "Windows/Console/consolewnd.h"
@@ -51,8 +53,9 @@ public:
     void            setStatisticsData(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
     void            setStatisticsSamplingTime(double stime);
 
-    bool            plotUpdateVoltageValues(QVector<double> values, QVector<double> keys);
-    bool            plotUpdateCurrentValues(QVector<double> values, QVector<double> keys);
+    bool            plotSetVoltageValues(QVector<double> values, QVector<double> keys);
+    bool            plotSetCurrentValues(QVector<double> values, QVector<double> keys);
+    bool            plotAppendConsumptionValues(QVector<double> values, QVector<double> keys);
 
 
     QStringList*    getChSamplingTimeOptions();
@@ -79,6 +82,7 @@ signals:
     void            sigAdvConfigurationReqested();
     void            sigAdvConfigurationChanged(QVariant newConfig);
     void            sigMaxNumberOfBuffersChanged(unsigned int maxNumberOfBuffers);
+    void            sigConsumptionTypeChanged(QString consumptionType);
 protected:
     void            closeEvent(QCloseEvent *event);
 
@@ -98,6 +102,8 @@ public slots:
     void            onAdvConfigurationChanged(QVariant aConfig);
     void            onAdvConfigurationReqested(void);
     void            onMaxNumberOfBuffersChanged();
+
+    void            onConsumptionTypeChanged(QAbstractButton* button);
 
 
     void            onAdvanceConfigurationButtonPressed(bool pressed);
@@ -135,6 +141,10 @@ private:
     /* */
     void                        setDeviceStateDisconnected();
     void                        setDeviceStateConnected();
+
+    /**/
+
+    QButtonGroup*               consumptionTypeSelection;
 };
 
 #endif // DEVICEWND_H

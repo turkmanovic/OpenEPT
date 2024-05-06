@@ -101,7 +101,9 @@ public:
     bool        getADCInputClk(QString* clk = NULL);
     double      obtainSamplingTime();    //This function determine time interval from start of until the acquisition end. Dont mix it with acquisiton (sampling) period
     bool        acquireDeviceConfiguration();
+
     bool        setDataProcessingMaxNumberOfBuffers(unsigned int maxNumber);
+    bool        setDataProcessingConsumptionType(dataprocessing_consumption_mode_t aConsumptionMode);
 
 signals:
     void        sigControlLinkConnected();
@@ -120,6 +122,7 @@ signals:
     void        sigAvgRatio(QString voffset);
     void        sigSamplingTimeChanged(double value);
     void        sigVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys);
+    void        sigNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t mode);
     void        sigNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
 public slots:
     void        onControlLinkConnected();
@@ -130,6 +133,7 @@ private slots:
     void        onStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
     void        onNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys);
     void        onNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
+    void        onNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t mode);
 
 private:
     QString                         deviceName;
