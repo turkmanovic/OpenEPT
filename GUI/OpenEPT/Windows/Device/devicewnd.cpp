@@ -177,8 +177,15 @@ void    DeviceWnd::onNewControlMsgRcvd(QString text)
 
 void DeviceWnd::onPathInfo()
 {
-    QString chosenPath = QFileDialog::getExistingDirectory(this, "Select Directory", QDir::homePath());
+    QString selfilter = tr("Text File (*.txt)" );
+    QString chosenPath = QFileDialog::getSaveFileName(
+        this,
+        "Select Directory",
+        QDir::homePath(),
+        selfilter,
+        &selfilter);
     ui->pathLine->setText(chosenPath);
+    emit sigPathChanged(chosenPath);
 }
 
 void DeviceWnd::onInterfaceChanged(QString interfaceInfo)

@@ -3,9 +3,10 @@
 DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device* aDevice)
     : QObject{parent}
 {
-    deviceWnd   = aDeviceWnd;
-    device      = aDevice;
-    log         = new Log();
+    deviceWnd       = aDeviceWnd;
+    device          = aDevice;
+    log             = new Log();
+    fileProcessing  = new FileProcessing();
     log->assignLogWidget(deviceWnd->getLogWidget());
 
 
@@ -28,6 +29,7 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(deviceWnd,  SIGNAL(sigAdvConfigurationChanged(QVariant)),               this, SLOT(onDeviceWndNewConfiguration(QVariant)));
     connect(deviceWnd,  SIGNAL(sigMaxNumberOfBuffersChanged(uint)),                 this, SLOT(onDeviceWndMaxNumberOfBuffersChanged(uint)));
     connect(deviceWnd,  SIGNAL(sigConsumptionTypeChanged(QString)),                 this, SLOT(onDeviceWndConsumptionTypeChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigPathChanged(QString)),                            this, SLOT(onDeviceWndSamplesSavePathChanged(QString)));
 
     /*Device signals*/
     connect(device,     SIGNAL(sigControlLinkConnected()),                          this, SLOT(onDeviceControlLinkConnected()));
@@ -44,6 +46,7 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(device,     SIGNAL(sigVOffsetObtained(QString)),                        this, SLOT(onDeviceVOffsetObtained(QString)));
     connect(device,     SIGNAL(sigAvgRatio(QString)),                               this, SLOT(onDeviceAvgRatioChanged(QString)));
     connect(device,     SIGNAL(sigSamplingTimeChanged(double)),                     this, SLOT(onDeviceSamplingTimeChanged(double)));
+
     connect(device,     SIGNAL(sigVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>, QVector<double>)),
             this, SLOT(onDeviceNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>, QVector<double>)));
     connect(device,     SIGNAL(sigNewSamplesBuffersProcessingStatistics(double,uint,uint)), this, SLOT(onDeviceNewSamplesBuffersProcessingStatistics(double,uint,uint)));
@@ -113,6 +116,20 @@ void DeviceContainer::onDeviceWndConsumptionTypeChanged(QString aConsumptionType
     else
     {
         log->printLogMessage("Unable to sucessfully configure Consumption type", LOG_MESSAGE_TYPE_ERROR);
+    }
+}
+
+void DeviceContainer::onDeviceWndSamplesSavePathChanged(QString path)
+{
+    if(fileProcessing->open(FILEPROCESSING_TYPE_SAMPLES, path))
+    {
+        log->printLogMessage("Samples log file sucessfully opened (Path = " + path + ")", LOG_MESSAGE_TYPE_INFO);
+        fileProcessing->setSamplesFileHeader("Voltage and Current samples");
+        fileProcessing->setConsumptionFileHeader("Consumption samples");
+    }
+    else
+    {
+        log->printLogMessage("Unable to open samples log file (Path = " + path + ")", LOG_MESSAGE_TYPE_ERROR);
     }
 }
 
@@ -527,11 +544,13 @@ void DeviceContainer::onDeviceNewVoltageCurrentSamplesReceived(QVector<double> v
 {
     deviceWnd->plotSetVoltageValues(voltage, voltageKeys);
     deviceWnd->plotSetCurrentValues(current, currentKeys);
+    fileProcessing->appendSampleDataQueued(voltage, voltageKeys, current, currentKeys);
 }
 
 void DeviceContainer::onDeviceNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t mode)
 {
     deviceWnd->plotAppendConsumptionValues(consumption, keys);
+    fileProcessing->appendConsumptionQueued(consumption, keys);
 }
 
 void DeviceContainer::onDeviceNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID)

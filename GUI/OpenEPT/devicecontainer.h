@@ -5,6 +5,7 @@
 #include "device.h"
 #include "Windows/Device/devicewnd.h"
 #include "Utility/log.h"
+#include "Processing/fileprocessing.h"
 
 class DeviceContainer : public QObject
 {
@@ -35,6 +36,7 @@ public slots:
     void    onDeviceWndClosed();
     void    onDeviceWndMaxNumberOfBuffersChanged(unsigned int maxNumber);
     void    onDeviceWndConsumptionTypeChanged(QString aConsumptionType);
+    void    onDeviceWndSamplesSavePathChanged(QString path);
 
     void    onDeviceControlLinkDisconnected();
     void    onDeviceControlLinkConnected();
@@ -58,9 +60,10 @@ public slots:
 
 
 private:
-    DeviceWnd*  deviceWnd;
-    Device*     device;
-    Log*        log;
+    DeviceWnd*                      deviceWnd;
+    Device*                         device;
+    Log*                            log;
+    FileProcessing*                 fileProcessing;
 
 
     device_adc_resolution_t         getAdcResolutionFromString(QString resolution);

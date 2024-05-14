@@ -78,6 +78,7 @@ signals:
     void            sigPauseAcquisition();
     void            sigStopAcquisition();
     void            sigRefreshAcquisition();
+    void            sigPathChanged(QString path);
     void            sigNewControlMessageRcvd(const QString &response);
     void            sigAdvConfigurationReqested();
     void            sigAdvConfigurationChanged(QVariant newConfig);
