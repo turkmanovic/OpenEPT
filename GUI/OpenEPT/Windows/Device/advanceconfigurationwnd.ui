@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>949</width>
-    <height>496</height>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -725,9 +725,9 @@
        <item>
         <layout class="QHBoxLayout" name="deviceConfigVerlHorl5">
          <item>
-          <layout class="QHBoxLayout" name="deviceConfigVerlHorl5SampleTimeHorl">
+          <layout class="QHBoxLayout" name="deviceConfigVerlHorl5SamplePeriodHorl">
            <item>
-            <widget class="QLabel" name="samplingTimeLabe">
+            <widget class="QLabel" name="samplingPeriodLabe">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -747,12 +747,12 @@
               </size>
              </property>
              <property name="text">
-              <string>Sampling Time [us]</string>
+              <string>Sampling Period [us]</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="samplingTimeLine">
+            <widget class="QLineEdit" name="samplingPeriodLine">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -774,7 +774,7 @@
             </widget>
            </item>
            <item>
-            <spacer name="samplingTimeHors">
+            <spacer name="samplingPeriodHors">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>

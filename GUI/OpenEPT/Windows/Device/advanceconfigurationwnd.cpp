@@ -52,7 +52,7 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
     /* Set default Value for Current Offset Line*/
     ui->deviceNameLine->setText("ADevice 1");
 
-    ui->samplingTimeLine->setText(QString::number(ADVANCEWNDCONFIG_SAMPLING_TIME));
+    ui->samplingPeriodLine->setText(QString::number(ADVANCEWNDCONFIG_SAMPLING_TIME));
 
     /* Uknown profile layout */
     QLabel*  uknownLabel = new QLabel();
@@ -182,7 +182,7 @@ AdvanceConfigurationWnd::AdvanceConfigurationWnd(QWidget *parent) :
     connect(ui->adcSampleTimeComb,  SIGNAL(currentIndexChanged(int)),   this, SLOT(onAdvSampleTimeChanged(int)));
     connect(ui->averagingRatioComb, SIGNAL(currentIndexChanged(int)),   this, SLOT(onAdvAvrRatioChanged(int)));
 
-    connect(ui->samplingTimeLine,   SIGNAL(textEdited(QString)),        this, SLOT(onAdvSamplingTimeChanged(QString)));
+    connect(ui->samplingPeriodLine,   SIGNAL(textEdited(QString)),        this, SLOT(onAdvSamplingTimeChanged(QString)));
     connect(ui->voltageOffsetLine,  SIGNAL(textEdited(QString)),        this, SLOT(onAdvVOffsetChanged(QString)));
     connect(ui->currentOffsetLine,  SIGNAL(textEdited(QString)),        this, SLOT(onAdvCOffsetChanged(QString)));
 
@@ -383,12 +383,12 @@ bool    AdvanceConfigurationWnd::setCOffset(QString aCOffset)
 
 bool AdvanceConfigurationWnd::setSamplingTime(QString sTime)
 {
-    ui->samplingTimeLine->setText(sTime);
+    ui->samplingPeriodLine->setText(sTime);
 
     // Set text color to black
-    QPalette palette = ui->samplingTimeLine->palette();
+    QPalette palette = ui->samplingPeriodLine->palette();
     palette.setColor(QPalette::Text, Qt::black);
-    ui->samplingTimeLine->setPalette(palette);
+    ui->samplingPeriodLine->setPalette(palette);
 
     return true;
 }
@@ -426,9 +426,9 @@ void    AdvanceConfigurationWnd::onAdvSampleTimeChanged(int index)
 
 void    AdvanceConfigurationWnd::onAdvSamplingTimeChanged(QString time)
 {
-    QPalette palette = ui->samplingTimeLine->palette();
+    QPalette palette = ui->samplingPeriodLine->palette();
     palette.setColor(QPalette::Text, Qt::red); // Set text color to red
-    ui->samplingTimeLine->setPalette(palette);
+    ui->samplingPeriodLine->setPalette(palette);
     LabelChangedNotUpdated();
 }
 
@@ -488,9 +488,9 @@ void    AdvanceConfigurationWnd::onAdvConfigurationPressed(void)
     {
         cdata.averaginRatio = "";
     }
-    if(ui->samplingTimeLine->palette().color(QPalette::Text) == Qt::red)
+    if(ui->samplingPeriodLine->palette().color(QPalette::Text) == Qt::red)
     {
-        cdata.samplingTime = ui->samplingTimeLine->text();
+        cdata.samplingTime = ui->samplingPeriodLine->text();
     }
     else
     {
