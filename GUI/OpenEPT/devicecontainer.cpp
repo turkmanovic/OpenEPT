@@ -3,9 +3,10 @@
 DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device* aDevice)
     : QObject{parent}
 {
-    deviceWnd   = aDeviceWnd;
-    device      = aDevice;
-    log         = new Log();
+    deviceWnd       = aDeviceWnd;
+    device          = aDevice;
+    log             = new Log();
+    fileProcessing  = new FileProcessing();
     log->assignLogWidget(deviceWnd->getLogWidget());
 
 
@@ -14,8 +15,8 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(deviceWnd,  SIGNAL(sigNewControlMessageRcvd(QString)),                  this, SLOT(onConsoleWndMessageRcvd(QString)));
     connect(deviceWnd,  SIGNAL(sigResolutionChanged(QString)),                      this, SLOT(onDeviceWndResolutionChanged(QString)));
     connect(deviceWnd,  SIGNAL(sigClockDivChanged(QString)),                        this, SLOT(onDeviceWndClockDivChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigSampleTimeChanged(QString)),                      this, SLOT(onDeviceWndSampleTimeChanged(QString)));
-    connect(deviceWnd,  SIGNAL(sigSamplingTimeChanged(QString)),                    this, SLOT(onDeviceWndSamplingTimeChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigSampleTimeChanged(QString)),                      this, SLOT(onDeviceWndChannelSamplingTimeChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigSamplingPeriodChanged(QString)),                  this, SLOT(onDeviceWndSamplingPeriodChanged(QString)));
     connect(deviceWnd,  SIGNAL(sigAvrRatioChanged(QString)),                        this, SLOT(onDeviceWndAvrRatioChanged(QString)));
     connect(deviceWnd,  SIGNAL(sigVOffsetChanged(QString)),                         this, SLOT(onDeviceWndVOffsetChanged(QString)));
     connect(deviceWnd,  SIGNAL(sigCOffsetChanged(QString)),                         this, SLOT(onDeviceWndCOffsetChanged(QString)));
@@ -26,6 +27,9 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(deviceWnd,  SIGNAL(sigRefreshAcquisition()),                            this, SLOT(onDeviceWndAcquisitionRefresh()));
     connect(deviceWnd,  SIGNAL(sigAdvConfigurationReqested()),                      this, SLOT(onDeviceWndAdvConfGet()));
     connect(deviceWnd,  SIGNAL(sigAdvConfigurationChanged(QVariant)),               this, SLOT(onDeviceWndNewConfiguration(QVariant)));
+    connect(deviceWnd,  SIGNAL(sigMaxNumberOfBuffersChanged(uint)),                 this, SLOT(onDeviceWndMaxNumberOfBuffersChanged(uint)));
+    connect(deviceWnd,  SIGNAL(sigConsumptionTypeChanged(QString)),                 this, SLOT(onDeviceWndConsumptionTypeChanged(QString)));
+    connect(deviceWnd,  SIGNAL(sigPathChanged(QString)),                            this, SLOT(onDeviceWndSamplesSavePathChanged(QString)));
 
     /*Device signals*/
     connect(device,     SIGNAL(sigControlLinkConnected()),                          this, SLOT(onDeviceControlLinkConnected()));
@@ -36,11 +40,18 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(device,     SIGNAL(sigResolutionObtained(QString)),                     this, SLOT(onDeviceResolutionObtained(QString)));
     connect(device,     SIGNAL(sigChSampleTimeObtained(QString)),                   this, SLOT(onDeviceChSampleTimeObtained(QString)));
     connect(device,     SIGNAL(sigClockDivObtained(QString)),                       this, SLOT(onDeviceClkDivObtained(QString)));
-    connect(device,     SIGNAL(sigSampleTimeObtained(QString)),                     this, SLOT(onDeviceSTimeObtained(QString)));
+    connect(device,     SIGNAL(sigSampleTimeObtained(QString)),                     this, SLOT(onDeviceSamplingPeriodObtained(QString)));
     connect(device,     SIGNAL(sigAdcInputClkObtained(QString)),                    this, SLOT(onDeviceAdcInClkObtained(QString)));
     connect(device,     SIGNAL(sigCOffsetObtained(QString)),                        this, SLOT(onDeviceCOffsetObtained(QString)));
     connect(device,     SIGNAL(sigVOffsetObtained(QString)),                        this, SLOT(onDeviceVOffsetObtained(QString)));
     connect(device,     SIGNAL(sigAvgRatio(QString)),                               this, SLOT(onDeviceAvgRatioChanged(QString)));
+    connect(device,     SIGNAL(sigSamplingTimeChanged(double)),                     this, SLOT(onDeviceSamplingTimeChanged(double)));
+
+    connect(device,     SIGNAL(sigVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>, QVector<double>)),
+            this, SLOT(onDeviceNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>, QVector<double>)));
+    connect(device,     SIGNAL(sigNewSamplesBuffersProcessingStatistics(double,uint,uint)), this, SLOT(onDeviceNewSamplesBuffersProcessingStatistics(double,uint,uint)));
+    connect(device,     SIGNAL(sigNewConsumptionDataReceived(QVector<double>,QVector<double>, dataprocessing_consumption_mode_t)),
+            this, SLOT(onDeviceNewConsumptionDataReceived(QVector<double>,QVector<double>, dataprocessing_consumption_mode_t)));
 
     log->printLogMessage("Device container successfully created", LOG_MESSAGE_TYPE_INFO);
     device->statusLinkCreate();
@@ -79,6 +90,47 @@ void DeviceContainer::onDeviceStatusLinkNewMessageReceived(QString aDeviceIP, QS
 void DeviceContainer::onDeviceWndClosed()
 {
     emit sigDeviceClosed(device);
+}
+
+void DeviceContainer::onDeviceWndMaxNumberOfBuffersChanged(unsigned int maxNumber)
+{
+    if(device->setDataProcessingMaxNumberOfBuffers(maxNumber))
+    {
+        log->printLogMessage("Max number of samples buffers sucessfully configured", LOG_MESSAGE_TYPE_INFO);
+    }
+    else
+    {
+        log->printLogMessage("Unable to sucessfully configure max number of samples buffers", LOG_MESSAGE_TYPE_ERROR);
+    }
+}
+
+void DeviceContainer::onDeviceWndConsumptionTypeChanged(QString aConsumptionType)
+{
+    dataprocessing_consumption_mode_t consumptionType;
+    if(aConsumptionType == "Current") consumptionType = DATAPROCESSING_CONSUMPTION_MODE_CURRENT;
+    if(aConsumptionType == "Cumulative") consumptionType = DATAPROCESSING_CONSUMPTION_MODE_CUMULATIVE;
+    if(device->setDataProcessingConsumptionType(consumptionType))
+    {
+        log->printLogMessage("Consumption type: \"" + aConsumptionType + "\" successfully set", LOG_MESSAGE_TYPE_INFO);
+    }
+    else
+    {
+        log->printLogMessage("Unable to sucessfully configure Consumption type", LOG_MESSAGE_TYPE_ERROR);
+    }
+}
+
+void DeviceContainer::onDeviceWndSamplesSavePathChanged(QString path)
+{
+    if(fileProcessing->open(FILEPROCESSING_TYPE_SAMPLES, path))
+    {
+        log->printLogMessage("Samples log file sucessfully opened (Path = " + path + ")", LOG_MESSAGE_TYPE_INFO);
+        fileProcessing->setSamplesFileHeader("Voltage and Current samples");
+        fileProcessing->setConsumptionFileHeader("Consumption samples");
+    }
+    else
+    {
+        log->printLogMessage("Unable to open samples log file (Path = " + path + ")", LOG_MESSAGE_TYPE_ERROR);
+    }
 }
 
 void DeviceContainer::onConsoleWndMessageRcvd(QString msg)
@@ -121,7 +173,7 @@ void DeviceContainer::onDeviceWndClockDivChanged(QString clockDiv)
     }
 }
 
-void DeviceContainer::onDeviceWndSampleTimeChanged(QString stime)
+void DeviceContainer::onDeviceWndChannelSamplingTimeChanged(QString stime)
 {
     /* call deviceWnd function with recieved msg from FW <- */
     device_adc_ch_sampling_time_t tmpSampleTime = getAdcChSamplingTimeFromString(stime);
@@ -149,16 +201,12 @@ void DeviceContainer::onDeviceWndAvrRatioChanged(QString avgRatio)
     }
 }
 
-void DeviceContainer::onDeviceWndSamplingTimeChanged(QString time)
+void DeviceContainer::onDeviceWndSamplingPeriodChanged(QString time)
 {
     bool conversionOk;
-    int  numericValue = time.toInt(&conversionOk);
-    if(!(conversionOk && numericValue >0))
-    {
-        return;
-    }
+    double  numericValue = time.toDouble(&conversionOk);
 
-    if(!device->setSamplingTime(time))
+    if(!device->setSamplingPeriod(time))
     {
         log->printLogMessage("Unable to set sampling time: " + time, LOG_MESSAGE_TYPE_ERROR);
     }
@@ -378,14 +426,14 @@ void DeviceContainer::onDeviceWndNewConfiguration(QVariant newConfig)
 
     if(config.samplingTime != "")
     {
-        if(!device->setSamplingTime(config.samplingTime))
+        if(!device->setSamplingPeriod(config.samplingTime))
         {
             log->printLogMessage("Unable to set sampling time: " + config.samplingTime, LOG_MESSAGE_TYPE_ERROR);
         }
         else
         {
             log->printLogMessage("Sampling time: " + config.samplingTime + "[ms] - sucessfully set", LOG_MESSAGE_TYPE_INFO);
-            deviceWnd->setSTime(config.samplingTime);
+            deviceWnd->setSamplingPeriod(config.samplingTime);
         }
     }
 
@@ -427,9 +475,9 @@ void DeviceContainer::onDeviceChSampleTimeObtained(QString stime)
     }
 }
 
-void DeviceContainer::onDeviceSTimeObtained(QString stime)
+void DeviceContainer::onDeviceSamplingPeriodObtained(QString stime)
 {
-    if(!deviceWnd->setSTime(stime))
+    if(!deviceWnd->setSamplingPeriod(stime))
     {
         log->printLogMessage("Unable to show obtained sampling time: " + stime + "us", LOG_MESSAGE_TYPE_ERROR);
     }
@@ -485,6 +533,29 @@ void DeviceContainer::onDeviceVOffsetObtained(QString voffset)
     {
         log->printLogMessage("Voltage offset sucessfully obained and presented ", LOG_MESSAGE_TYPE_INFO);
     }
+}
+
+void DeviceContainer::onDeviceSamplingTimeChanged(double value)
+{
+    deviceWnd->setStatisticsSamplingTime(value);
+}
+
+void DeviceContainer::onDeviceNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys)
+{
+    deviceWnd->plotSetVoltageValues(voltage, voltageKeys);
+    deviceWnd->plotSetCurrentValues(current, currentKeys);
+    fileProcessing->appendSampleDataQueued(voltage, voltageKeys, current, currentKeys);
+}
+
+void DeviceContainer::onDeviceNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t mode)
+{
+    deviceWnd->plotAppendConsumptionValues(consumption, keys);
+    fileProcessing->appendConsumptionQueued(consumption, keys);
+}
+
+void DeviceContainer::onDeviceNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID)
+{
+    deviceWnd->setStatisticsData(dropRate, fullReceivedBuffersNo, lastBufferID);
 }
 
 device_adc_resolution_t DeviceContainer::getAdcResolutionFromString(QString resolution)

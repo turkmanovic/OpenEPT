@@ -2,10 +2,14 @@
 #define DEVICEWND_H
 
 #include <QWidget>
+#include <QButtonGroup>
+#include <QAbstractButton>
 #include "Windows/Plot/plot.h"
 #include "Windows/Device/advanceconfigurationwnd.h"
 #include "Windows/Console/consolewnd.h"
 #include "Windows/Device/advcofigurationdata.h"
+
+#define     DEVICEWND_DEFAULT_MAX_NUMBER_OF_BUFFERS 100
 
 typedef enum
 {
@@ -41,11 +45,17 @@ public:
     bool            setChAvgRatio(QString avgRatio);
     bool            setClkDiv(QString clkDiv);
     bool            setResolution(QString resolution);
-    bool            setSTime(QString stime);
+    bool            setSamplingPeriod(QString stime);
     bool            setADCClk(QString adcClk);
     bool            setInCkl(QString inClk);
     bool            setCOffset(QString coffset);
     bool            setVOffset(QString voffset);
+    void            setStatisticsData(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
+    void            setStatisticsSamplingTime(double stime);
+
+    bool            plotSetVoltageValues(QVector<double> values, QVector<double> keys);
+    bool            plotSetCurrentValues(QVector<double> values, QVector<double> keys);
+    bool            plotAppendConsumptionValues(QVector<double> values, QVector<double> keys);
 
 
     QStringList*    getChSamplingTimeOptions();
@@ -55,7 +65,7 @@ public:
 
 signals:
     void            sigWndClosed();
-    void            sigSamplingTimeChanged(QString time);
+    void            sigSamplingPeriodChanged(QString time);
     void            sigResolutionChanged(QString resolution);
     void            sigClockDivChanged(QString clockDiv);
     void            sigSampleTimeChanged(QString sampleTime);
@@ -68,9 +78,12 @@ signals:
     void            sigPauseAcquisition();
     void            sigStopAcquisition();
     void            sigRefreshAcquisition();
+    void            sigPathChanged(QString path);
     void            sigNewControlMessageRcvd(const QString &response);
     void            sigAdvConfigurationReqested();
     void            sigAdvConfigurationChanged(QVariant newConfig);
+    void            sigMaxNumberOfBuffersChanged(unsigned int maxNumberOfBuffers);
+    void            sigConsumptionTypeChanged(QString consumptionType);
 protected:
     void            closeEvent(QCloseEvent *event);
 
@@ -85,10 +98,13 @@ public slots:
     void            onResolutionChanged(QString aResolution);
     void            onClockDivChanged(QString aClockDiv);
     void            onSampleTimeChanged(QString aSTime);
-    void            onSamplingTimeChanged();
+    void            onSamplingPeriodChanged();
     void            onInterfaceChanged(QString interfaceInfo);
     void            onAdvConfigurationChanged(QVariant aConfig);
     void            onAdvConfigurationReqested(void);
+    void            onMaxNumberOfBuffersChanged();
+
+    void            onConsumptionTypeChanged(QAbstractButton* button);
 
 
     void            onAdvanceConfigurationButtonPressed(bool pressed);
@@ -126,6 +142,10 @@ private:
     /* */
     void                        setDeviceStateDisconnected();
     void                        setDeviceStateConnected();
+
+    /**/
+
+    QButtonGroup*               consumptionTypeSelection;
 };
 
 #endif // DEVICEWND_H

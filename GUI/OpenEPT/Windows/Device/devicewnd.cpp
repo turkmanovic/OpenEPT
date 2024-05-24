@@ -121,6 +121,21 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     consumptionChart->setYLabel("[mAh]");
     consumptionChart->setXLabel("[ms]");
 
+    ui->maxNumOfPacketsLine->setText(QString::number(DEVICEWND_DEFAULT_MAX_NUMBER_OF_BUFFERS));
+    ui->statisticsPacketCounterLabe2->setText(QString::number(0));
+    ui->statisticsDropRateProb->setValue(0);
+    ui->statisticsSamplingPeriodLabe2->setText(QString::number(0));
+    ui->samplingPeriodLine->setText(QString::number(0));
+
+    /*Group consumption type selecrion radio buttons*/
+    consumptionTypeSelection = new QButtonGroup();
+    consumptionTypeSelection->addButton(ui->currentRadb);
+    consumptionTypeSelection->addButton(ui->cumulativeRadb);
+    consumptionTypeSelection->setId(ui->currentRadb, 1);
+    consumptionTypeSelection->setId(ui->cumulativeRadb, 2);
+
+    ui->currentRadb->setChecked(true);
+
     setDeviceState(DEVICE_STATE_UNDEFINED);
 
     consoleWnd  = new ConsoleWnd();
@@ -138,11 +153,13 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     connect(ui->refreshPusb, SIGNAL(clicked(bool)), this, SLOT(onRefreshAcquisiton()));
     connect(ui->ConsolePusb, SIGNAL(clicked(bool)), this, SLOT(onConsolePressed()));
 
-    connect(ui->clockDivComb,           SIGNAL(currentTextChanged(QString)),    this, SLOT(onClockDivChanged(QString)));
-    connect(ui->sampleTimeComb,         SIGNAL(currentTextChanged(QString)),    this, SLOT(onSampleTimeChanged(QString)));
-    connect(ui->resolutionComb,         SIGNAL(currentTextChanged(QString)),   this, SLOT(onResolutionChanged(QString)));
-    connect(ui->samplingTimeLine,       SIGNAL(returnPressed()),                this, SLOT(onSamplingTimeChanged()));
-    connect(ui->streamServerInterfComb, SIGNAL(currentTextChanged(QString)),    this, SLOT(onInterfaceChanged(QString)));
+    connect(ui->clockDivComb,           SIGNAL(currentTextChanged(QString)),        this, SLOT(onClockDivChanged(QString)));
+    connect(ui->sampleTimeComb,         SIGNAL(currentTextChanged(QString)),        this, SLOT(onSampleTimeChanged(QString)));
+    connect(ui->resolutionComb,         SIGNAL(currentTextChanged(QString)),        this, SLOT(onResolutionChanged(QString)));
+    connect(ui->samplingPeriodLine,     SIGNAL(returnPressed()),                    this, SLOT(onSamplingPeriodChanged()));
+    connect(ui->streamServerInterfComb, SIGNAL(currentTextChanged(QString)),        this, SLOT(onInterfaceChanged(QString)));
+    connect(ui->maxNumOfPacketsLine,    SIGNAL(editingFinished()),                  this, SLOT(onMaxNumberOfBuffersChanged()));
+    connect(consumptionTypeSelection,   SIGNAL(buttonClicked(QAbstractButton*)),    this, SLOT(onConsumptionTypeChanged(QAbstractButton*)));
 
 
     connect(advanceConfigurationWnd, SIGNAL(sigAdvConfigurationChanged(QVariant)), this, SLOT(onAdvConfigurationChanged(QVariant)));
@@ -160,8 +177,15 @@ void    DeviceWnd::onNewControlMsgRcvd(QString text)
 
 void DeviceWnd::onPathInfo()
 {
-    QString chosenPath = QFileDialog::getExistingDirectory(this, "Select Directory", QDir::homePath());
+    QString selfilter = tr("Text File (*.txt)" );
+    QString chosenPath = QFileDialog::getSaveFileName(
+        this,
+        "Select Directory",
+        QDir::homePath(),
+        selfilter,
+        &selfilter);
     ui->pathLine->setText(chosenPath);
+    emit sigPathChanged(chosenPath);
 }
 
 void DeviceWnd::onInterfaceChanged(QString interfaceInfo)
@@ -183,6 +207,30 @@ void DeviceWnd::onAdvConfigurationReqested(void)
     emit sigAdvConfigurationReqested();
 }
 
+void DeviceWnd::onMaxNumberOfBuffersChanged()
+{
+    QString maxNumberOfSamplesBuffers = ui->maxNumOfPacketsLine->text();
+    emit sigMaxNumberOfBuffersChanged(maxNumberOfSamplesBuffers.toInt());
+
+}
+
+void DeviceWnd::onConsumptionTypeChanged(QAbstractButton* button)
+{
+    int id = consumptionTypeSelection->id(button);
+    switch(id)
+    {
+    case 1:
+        emit sigConsumptionTypeChanged("Current");
+        break;
+    case 2:
+        emit sigConsumptionTypeChanged("Cumulative");
+        break;
+    default:
+        emit sigConsumptionTypeChanged("Undef");
+        break;
+    }
+}
+
 void DeviceWnd::onResolutionChanged(QString resolution)
 {
     advanceConfigurationWnd->setResolution(resolution);
@@ -201,11 +249,12 @@ void DeviceWnd::onSampleTimeChanged(QString aSTime)
     emit sigSampleTimeChanged(ui->sampleTimeComb->currentText());
 }
 
-void DeviceWnd::onSamplingTimeChanged()
+void DeviceWnd::onSamplingPeriodChanged()
 {
-    QString time = ui->samplingTimeLine->text();
+    QString time = ui->samplingPeriodLine->text();
     advanceConfigurationWnd->setSamplingTime(time);
-    emit sigSamplingTimeChanged(time);
+    ui->statisticsSamplingPeriodLabe2->setText(time);
+    emit sigSamplingPeriodChanged(time);
 }
 
 
@@ -248,6 +297,9 @@ void DeviceWnd::onPauseAcquisition()
 
 void DeviceWnd::onStopAcquisiton()
 {
+    voltageChart->clear();
+    currentChart->clear();
+    consumptionChart->clear();
     emit sigStopAcquisition();
 }
 
@@ -264,6 +316,7 @@ void DeviceWnd::setDeviceStateDisconnected()
     ui->refreshPusb->setEnabled(false);
     ui->dischargeControlPusb1->setEnabled(false);
     ui->dischargeControlPusb2->setEnabled(false);
+    ui->pathPusb->setEnabled(false);
     ui->deviceConnectedLabe->setText("Disconnected");
     ui->deviceConnectedLabe->setStyleSheet("QLabel { background-color : red; color : black; }");
 }
@@ -276,6 +329,7 @@ void DeviceWnd::setDeviceStateConnected()
     ui->refreshPusb->setEnabled(true);
     ui->dischargeControlPusb1->setEnabled(true);
     ui->dischargeControlPusb2->setEnabled(true);
+    ui->pathPusb->setEnabled(true);
     ui->deviceConnectedLabe->setText("Connected");
     ui->deviceConnectedLabe->setStyleSheet("QLabel { background-color : green; color : black; }");
 }
@@ -322,7 +376,7 @@ void DeviceWnd::setDeviceInterfaceSelectionState(device_interface_selection_stat
     switch(selectionState)
     {
     case DEVICE_INTERFACE_SELECTION_STATE_UNDEFINED:
-        ui->samplingTimeLine->setEnabled(false);
+        ui->samplingPeriodLine->setEnabled(false);
         ui->resolutionComb->setEnabled(false);
         ui->clockDivComb->setEnabled(false);
         ui->sampleTimeComb->setEnabled(false);
@@ -335,7 +389,7 @@ void DeviceWnd::setDeviceInterfaceSelectionState(device_interface_selection_stat
         ui->streamServerInterfComb->setEnabled(true);
         break;
     case DEVICE_INTERFACE_SELECTION_STATE_SELECTED:
-        ui->samplingTimeLine->setEnabled(true);
+        ui->samplingPeriodLine->setEnabled(true);
         ui->resolutionComb->setEnabled(true);
         ui->clockDivComb->setEnabled(true);
         ui->sampleTimeComb->setEnabled(true);
@@ -412,10 +466,11 @@ bool DeviceWnd::setResolution(QString resolution)
     return true;
 }
 
-bool DeviceWnd::setSTime(QString stime)
+bool DeviceWnd::setSamplingPeriod(QString stime)
 {
     if(!advanceConfigurationWnd->setSamplingTime(stime)) return false;
-    ui->samplingTimeLine->setText(stime);
+    ui->samplingPeriodLine->setText(stime);
+    ui->statisticsSamplingPeriodLabe2->setText(stime);
     return true;
 }
 
@@ -434,5 +489,34 @@ bool DeviceWnd::setCOffset(QString coffset)
 bool DeviceWnd::setVOffset(QString voffset)
 {
     advanceConfigurationWnd->setVOffset(voffset);
+    return true;
+}
+
+void DeviceWnd::setStatisticsData(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID)
+{
+    ui->statisticsPacketCounterLabe2->setText(QString::number(fullReceivedBuffersNo));
+    ui->statisticsDropRateProb->setValue(dropRate);
+}
+
+void DeviceWnd::setStatisticsSamplingTime(double stime)
+{
+    ui->statisticsSamplingTimeLabe2->setText(QString::number(stime*1000, 'f', 10));
+}
+
+bool DeviceWnd::plotSetVoltageValues(QVector<double> values, QVector<double> keys)
+{
+    voltageChart->setData(values, keys);
+    return true;
+}
+
+bool DeviceWnd::plotSetCurrentValues(QVector<double> values, QVector<double> keys)
+{
+    currentChart->setData(values, keys);
+    return true;
+}
+
+bool DeviceWnd::plotAppendConsumptionValues(QVector<double> values, QVector<double> keys)
+{
+    consumptionChart->appendData(values, keys);
     return true;
 }

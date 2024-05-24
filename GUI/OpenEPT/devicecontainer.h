@@ -5,6 +5,7 @@
 #include "device.h"
 #include "Windows/Device/devicewnd.h"
 #include "Utility/log.h"
+#include "Processing/fileprocessing.h"
 
 class DeviceContainer : public QObject
 {
@@ -20,8 +21,8 @@ public slots:
     void    onConsoleWndMessageRcvd(QString msg);
     void    onDeviceWndResolutionChanged(QString resolution);
     void    onDeviceWndClockDivChanged(QString clockDiv);
-    void    onDeviceWndSampleTimeChanged(QString stime);
-    void    onDeviceWndSamplingTimeChanged(QString time);
+    void    onDeviceWndChannelSamplingTimeChanged(QString stime);
+    void    onDeviceWndSamplingPeriodChanged(QString time);
     void    onDeviceWndInterfaceChanged(QString interfaceIp);
     void    onDeviceWndAvrRatioChanged(QString avgRatio);
     void    onDeviceWndVOffsetChanged(QString off);
@@ -32,9 +33,11 @@ public slots:
     void    onDeviceWndAdvConfGet();
     void    onDeviceWndAcquisitionRefresh();
     void    onDeviceWndNewConfiguration(QVariant newConfig);
-
-
     void    onDeviceWndClosed();
+    void    onDeviceWndMaxNumberOfBuffersChanged(unsigned int maxNumber);
+    void    onDeviceWndConsumptionTypeChanged(QString aConsumptionType);
+    void    onDeviceWndSamplesSavePathChanged(QString path);
+
     void    onDeviceControlLinkDisconnected();
     void    onDeviceControlLinkConnected();
     void    onDeviceStatusLinkNewDeviceAdded(QString aDeviceIP);
@@ -43,18 +46,24 @@ public slots:
     void    onDeviceResolutionObtained(QString resolution);
     void    onDeviceClkDivObtained(QString clkDiv);
     void    onDeviceChSampleTimeObtained(QString stime);
-    void    onDeviceSTimeObtained(QString stime);
+    void    onDeviceSamplingPeriodObtained(QString stime);
     void    onDeviceAdcInClkObtained(QString inClk);
     void    onDeviceAvgRatioChanged(QString aAvgRatio);
     void    onDeviceCOffsetObtained(QString coffset);
     void    onDeviceVOffsetObtained(QString voffset);
+    void    onDeviceSamplingTimeChanged(double value);
+
+    void    onDeviceNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys);
+    void    onDeviceNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t mode);
+    void    onDeviceNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
 
 
 
 private:
-    DeviceWnd*  deviceWnd;
-    Device*     device;
-    Log*        log;
+    DeviceWnd*                      deviceWnd;
+    Device*                         device;
+    Log*                            log;
+    FileProcessing*                 fileProcessing;
 
 
     device_adc_resolution_t         getAdcResolutionFromString(QString resolution);
