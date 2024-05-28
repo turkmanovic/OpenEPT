@@ -155,6 +155,7 @@ bool Device::setResolution(device_adc_resolution_t resolution)
     }
     adcResolution = resolution;
     obtainSamplingTime();
+    dataProcessing->setResolution(adcResolution);
     return true;
 }
 
@@ -201,6 +202,7 @@ bool Device::getResolution(device_adc_resolution_t *resolution)
     }
     emit sigResolutionObtained(signalResponse);
     obtainSamplingTime();
+    dataProcessing->setResolution(adcResolution);
     return true;
 }
 

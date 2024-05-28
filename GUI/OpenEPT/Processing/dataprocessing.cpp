@@ -1,3 +1,4 @@
+#include "qmath.h"
 #include "dataprocessing.h"
 
 DataProcessing::DataProcessing(QObject *parent)
@@ -47,6 +48,14 @@ bool DataProcessing::setSamplingTime(double aSamplingTime)
 {
     if(acquisitionStatus == DATAPROCESSING_ACQUISITION_STATUS_ACTIVE) return false;
     samplingTime = aSamplingTime/1000.0; //convert us to ms
+    return true;
+}
+
+bool DataProcessing::setResolution(double aResolution)
+{
+    if(acquisitionStatus == DATAPROCESSING_ACQUISITION_STATUS_ACTIVE) return false;
+    voltageInc = (double)DATAPROCESSING_DEFAULT_ADC_VOLTAGE_REF/qPow(2,aResolution);
+    currentInc = (double)DATAPROCESSING_DEFAULT_ADC_VOLTAGE_REF/qPow(2,aResolution);
     return true;
 }
 
@@ -113,7 +122,7 @@ void DataProcessing::onNewSampleBufferReceived(QVector<double> rawData, int pack
     /* Take data */
     for(; i < rawData.size();)
     {
-        voltageDataCollected[lastBufferUsedPositionIndex] = rawData[i];
+        voltageDataCollected[lastBufferUsedPositionIndex] = rawData[i]*voltageInc;
         if(i == 0)
         {
             voltageKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue;
@@ -126,7 +135,7 @@ void DataProcessing::onNewSampleBufferReceived(QVector<double> rawData, int pack
             currentKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + (double)j*samplingPeriod + samplingTime;
             consumptionKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + (double)j*samplingPeriod + samplingTime;
         }
-        currentDataCollected[lastBufferUsedPositionIndex] = rawData[i+1];
+        currentDataCollected[lastBufferUsedPositionIndex] = rawData[i+1]*currentInc;
         currentConsumptionDataCollected[lastBufferUsedPositionIndex] = rawData[i+1]*(samplingPeriod)/3600000; //mAh
         lastCumulativeCurrentConsumptionValue += rawData[i+1]*(samplingPeriod)/3600000;                         //This value remember last consumption in case when buffers are restarted
         cumulativeConsumptionDataCollected[lastBufferUsedPositionIndex] = lastCumulativeCurrentConsumptionValue;

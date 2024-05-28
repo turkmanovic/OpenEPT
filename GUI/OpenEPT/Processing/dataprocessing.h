@@ -8,6 +8,7 @@
 #define DATAPROCESSING_DEFAULT_NUMBER_OF_BUFFERS        100
 #define DATAPROCESSING_DEFAULT_SAMPLES_BUFFER_SIZE      500
 #define DATAPROCESSING_DEFAULT_SAMPLE_SIZE              2
+#define DATAPROCESSING_DEFAULT_ADC_VOLTAGE_REF          3.3
 
 typedef enum
 {
@@ -30,8 +31,9 @@ public:
     explicit                            DataProcessing(QObject *parent = nullptr);
     bool                                setNumberOfBuffersToCollect(unsigned int numberOfBaffers);
     bool                                setSamplesBufferSize(unsigned int size);
-    bool                                setSamplingPeriod(double aSamplingPeriod);  //us
-    bool                                setSamplingTime(double aSamplingTime);      //us
+    bool                                setSamplingPeriod(double aSamplingPeriod);                  //us
+    bool                                setSamplingTime(double aSamplingTime);                      //us
+    bool                                setResolution(double aResolution);
     bool                                setConsumptionMode(dataprocessing_consumption_mode_t aConsumptionMode);
 
     bool                                setAcquisitionStatus(dataprocessing_acquisition_status_t aAcquisitionStatus);
@@ -66,6 +68,8 @@ private:
     /* */
     double                              samplingPeriod;         //ms
     double                              samplingTime;           //ms
+    double                              voltageInc;
+    double                              currentInc;
 
     /* */
     unsigned int                        maxNumberOfBuffers;
