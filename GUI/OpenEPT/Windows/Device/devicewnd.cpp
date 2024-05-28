@@ -492,9 +492,10 @@ bool DeviceWnd::setVOffset(QString voffset)
     return true;
 }
 
-void DeviceWnd::setStatisticsData(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID)
+void DeviceWnd::setStatisticsData(double dropRate, unsigned int dropPacketsNo, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID)
 {
     ui->statisticsPacketCounterLabe2->setText(QString::number(fullReceivedBuffersNo));
+    ui->statisticsDropRateNoLabe->setText(QString::number(dropPacketsNo));
     ui->statisticsDropRateProb->setValue(dropRate);
 }
 

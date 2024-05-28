@@ -41,7 +41,13 @@ private:
 
     QCPTextElement *title;
 
+    QVector<double> xData;
+    QVector<double> yData;
+
     bool        enableTracking;
+    bool        replotActive;
+
+    void        setButtonStyle();
 
 };
 

@@ -148,7 +148,7 @@ void DataProcessing::onNewSampleBufferReceived(QVector<double> rawData, int pack
     if(currentNumberOfBuffers == maxNumberOfBuffers)
     {
         emit sigNewVoltageCurrentSamplesReceived(voltageDataCollected, currentDataCollected, voltageKeysDataCollected, currentKeysDataCollected);
-        emit sigSamplesBufferReceiveStatistics(dropRate, receivedPacketCounter, lastReceivedPacketID);
+        emit sigSamplesBufferReceiveStatistics(dropRate, dropPacketsNo, receivedPacketCounter, lastReceivedPacketID);
         switch(consumptionMode)
         {
         case DATAPROCESSING_CONSUMPTION_MODE_CURRENT:

@@ -113,7 +113,7 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>Sampling Period</string>
+                  <string>Sampling Period [us]</string>
                  </property>
                 </widget>
                </item>
@@ -1346,7 +1346,14 @@
               </size>
              </property>
              <property name="text">
-              <string>Drop rate %</string>
+              <string>Drop rate</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="statisticsDropRateNoLabe">
+             <property name="text">
+              <string>TextLabel</string>
              </property>
             </widget>
            </item>

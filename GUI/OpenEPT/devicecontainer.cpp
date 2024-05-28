@@ -49,7 +49,7 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
 
     connect(device,     SIGNAL(sigVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>, QVector<double>)),
             this, SLOT(onDeviceNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>, QVector<double>)));
-    connect(device,     SIGNAL(sigNewSamplesBuffersProcessingStatistics(double,uint,uint)), this, SLOT(onDeviceNewSamplesBuffersProcessingStatistics(double,uint,uint)));
+    connect(device,     SIGNAL(sigNewSamplesBuffersProcessingStatistics(double,uint,uint,uint)), this, SLOT(onDeviceNewSamplesBuffersProcessingStatistics(double,uint,uint,uint)));
     connect(device,     SIGNAL(sigNewConsumptionDataReceived(QVector<double>,QVector<double>, dataprocessing_consumption_mode_t)),
             this, SLOT(onDeviceNewConsumptionDataReceived(QVector<double>,QVector<double>, dataprocessing_consumption_mode_t)));
 
@@ -553,9 +553,9 @@ void DeviceContainer::onDeviceNewConsumptionDataReceived(QVector<double> consump
     fileProcessing->appendConsumptionQueued(consumption, keys);
 }
 
-void DeviceContainer::onDeviceNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID)
+void DeviceContainer::onDeviceNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int dropPacketsNo, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID)
 {
-    deviceWnd->setStatisticsData(dropRate, fullReceivedBuffersNo, lastBufferID);
+    deviceWnd->setStatisticsData(dropRate, dropPacketsNo, fullReceivedBuffersNo, lastBufferID);
 }
 
 device_adc_resolution_t DeviceContainer::getAdcResolutionFromString(QString resolution)

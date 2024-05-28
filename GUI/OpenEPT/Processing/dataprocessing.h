@@ -41,7 +41,7 @@ public:
 signals:
     void                                sigNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys);
     void                                sigNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t consumptionMode);
-    void                                sigSamplesBufferReceiveStatistics(double dropRate, unsigned int fullPacketCounter, unsigned int lastPacketID);
+    void                                sigSamplesBufferReceiveStatistics(double dropRate, unsigned int dopPacketsNo, unsigned int fullPacketCounter, unsigned int lastPacketID);
 
 
 public slots:

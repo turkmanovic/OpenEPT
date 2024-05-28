@@ -1,6 +1,9 @@
 #include <QDataStream>
 #include <QNetworkDatagram>
+#include <QDebug>
 #include "streamlink.h"
+#include <winsock2.h>
+#include <ws2tcpip.h>
 
 StreamLink::StreamLink(QObject *parent)
     : QObject{parent}
@@ -37,7 +40,12 @@ void StreamLink::initStreamLinkThread()
 {
     udpSocket = new QUdpSocket();
     udpSocket->bind(port);
-    udpSocket->setReadBufferSize(8000000);
+    int rcvbufsize = 120000*1024*2;
+    int socketDesc = udpSocket->socketDescriptor();
+    int ret = 0;
+    udpSocket->setReadBufferSize(rcvbufsize);
+    ret = setsockopt(socketDesc,SOL_SOCKET,SO_RCVBUF,(char*)&rcvbufsize,sizeof(rcvbufsize));
+    qDebug()<< ret ;
     connect(udpSocket, SIGNAL(readyRead()), this, SLOT(readPendingData()));
 }
 
