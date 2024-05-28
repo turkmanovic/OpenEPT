@@ -28,6 +28,7 @@
 #include "lan8742.h"
 #include <string.h>
 #include "lwip/netifapi.h"
+#include "cmsis_os2.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
