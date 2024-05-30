@@ -1,16 +1,18 @@
 #include "fileprocessing.h"
 #include <QTextStream>
+#include <QDebug>
 
 FileProcessing::FileProcessing(QObject *parent)
     : QObject{parent}
 {
     type = FILEPROCESSING_TYPE_UKNOWN;
+    sync = new QSemaphore(0);
 }
 
 bool FileProcessing::open(fileprocessing_type_t aType, QString aPath)
 {
     samplesFilePath = aPath;
-    consumptionFilePath = aPath.split('.')[0] + "_Cons.txt";
+    consumptionFilePath = aPath.split('.')[0] + "_Cons.csv";
     type = aType;
     switch(type)
     {
@@ -24,9 +26,9 @@ bool FileProcessing::open(fileprocessing_type_t aType, QString aPath)
         thread = new QThread(this);
         this->moveToThread(thread);
         connect(thread, SIGNAL(started()), this, SLOT(onThreadStart()));
-        connect(this, SIGNAL(sigAppendSampleData(QVector<double>,QVector<double>,QVector<double>,QVector<double>)), this, SLOT(onAppendSampleData(QVector<double>,QVector<double>,QVector<double>,QVector<double>)), Qt::QueuedConnection);
-        connect(this, SIGNAL(sigAppendConsumptionData(QVector<double>,QVector<double>)),                            this, SLOT(onAppendConsumptionData(QVector<double>,QVector<double>)), Qt::QueuedConnection);
         thread->start();
+        /*Wait until files are created*/
+        sync->acquire();
         break;
     }
     return true;
@@ -150,6 +152,11 @@ void FileProcessing::onThreadStart()
         consumptionFile = new QFile(consumptionFilePath);
         samplesFile->open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append);
         consumptionFile->open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append);
+        qDebug() << samplesFile;
+        qRegisterMetaType<QVector<int> >("QVector<double>");
+        connect(this, SIGNAL(sigAppendSampleData(QVector<double>,QVector<double>,QVector<double>,QVector<double>)), this, SLOT(onAppendSampleData(QVector<double>,QVector<double>,QVector<double>,QVector<double>)), Qt::QueuedConnection);
+        connect(this, SIGNAL(sigAppendConsumptionData(QVector<double>,QVector<double>)),                            this, SLOT(onAppendConsumptionData(QVector<double>,QVector<double>)), Qt::QueuedConnection);
+        sync->release();
         break;
     }
 }

@@ -1,3 +1,4 @@
+#include <QtOpenGL>
 #include "plot.h"
 
 #define BUTTONS_SIZE 30
@@ -13,6 +14,7 @@ Plot::Plot(int mw, int mh, QWidget *parent)
     plot->setOpenGl(true);
     plot->setMinimumSize(mw, mh);
     plot->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    plot->setAntialiasedElements(QCP::aeAll);
 
     plot->addGraph(); // blue line
     plot->graph(0)->setPen(QPen(QColor(40, 110, 255)));
@@ -120,6 +122,11 @@ void        Plot::appendData(QVector<double> data, QVector<double> keys)
     //plot->graph(0)->addData(keys, data);
     xData.append(keys);
     yData.append(data);
+    if(xData.size() > 10000000)
+    {
+        xData.remove(0,data.size());
+        yData.remove(0,data.size());
+    }
     if(replotActive)
     {
         double minxValue = keys.at(keys.size()-1) - 10000 ;

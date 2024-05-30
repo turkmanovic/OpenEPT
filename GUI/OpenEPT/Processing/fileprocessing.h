@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QFile>
 #include <QThread>
+#include <QSemaphore>
 
 typedef enum
 {
@@ -47,6 +48,7 @@ private:
     QFile                   *samplesFile;
     QFile                   *consumptionFile;
     QThread                 *thread;
+    QSemaphore              *sync;
 
 };
 

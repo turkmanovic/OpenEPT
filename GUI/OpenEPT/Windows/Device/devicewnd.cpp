@@ -3,6 +3,7 @@
 #include "Windows/Console/consolewnd.h"
 #include <QFileDialog>
 #include <QNetworkInterface>
+#include <QOpenGLWidget>
 
 /*TODO: Declare this in config file*/
 #define PLOT_MINIMUM_SIZE_WIDTH     600
@@ -177,14 +178,15 @@ void    DeviceWnd::onNewControlMsgRcvd(QString text)
 
 void DeviceWnd::onPathInfo()
 {
-    QString selfilter = tr("Text File (*.txt)" );
+    QString selfilter = tr("CSV files (*.csv)" );
     QString chosenPath = QFileDialog::getSaveFileName(
         this,
-        "Select Directory",
+        "Select directory to save files",
         QDir::homePath(),
         selfilter,
         &selfilter);
     ui->pathLine->setText(chosenPath);
+    qDebug() << chosenPath;
     emit sigPathChanged(chosenPath);
 }
 
@@ -316,7 +318,6 @@ void DeviceWnd::setDeviceStateDisconnected()
     ui->refreshPusb->setEnabled(false);
     ui->dischargeControlPusb1->setEnabled(false);
     ui->dischargeControlPusb2->setEnabled(false);
-    ui->pathPusb->setEnabled(false);
     ui->deviceConnectedLabe->setText("Disconnected");
     ui->deviceConnectedLabe->setStyleSheet("QLabel { background-color : red; color : black; }");
 }
@@ -329,7 +330,6 @@ void DeviceWnd::setDeviceStateConnected()
     ui->refreshPusb->setEnabled(true);
     ui->dischargeControlPusb1->setEnabled(true);
     ui->dischargeControlPusb2->setEnabled(true);
-    ui->pathPusb->setEnabled(true);
     ui->deviceConnectedLabe->setText("Connected");
     ui->deviceConnectedLabe->setStyleSheet("QLabel { background-color : green; color : black; }");
 }
