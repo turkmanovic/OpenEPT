@@ -4,5 +4,8 @@ Easy-to-use, low-cost, open-source solution that includes compatible hardware an
 Official product website 
 [OpenEPT](https://openept.net/)
 
+Official [youtube](https://www.youtube.com/playlist?list=PLTG-EoxvlLos_3Sex3R0yfDCwpDYyRSOo) channel 
+
+
 # Supported by
 [![NLNet](https://nlnet.nl/image/logo_nlnet.svg )](https://nlnet.nl/)
