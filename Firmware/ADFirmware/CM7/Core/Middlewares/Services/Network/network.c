@@ -146,6 +146,7 @@ static void prvNETWORK_Task()
 			prvNETWORK_DATA.state = NETWORK_STATE_SERVICE;
 			break;
 		case NETWORK_STATE_SERVICE:
+			LOCK_TCPIP_CORE();
 			PHYLinkState = LAN8742_GetLinkState(&LAN8742);
 
 			if(netif_is_link_up(&prvNETWORK_DATA.gnetif) && (PHYLinkState <= LAN8742_STATUS_LINK_DOWN))
@@ -194,6 +195,7 @@ static void prvNETWORK_Task()
 					netif_set_link_up(&prvNETWORK_DATA.gnetif);
 				}
 			}
+			UNLOCK_TCPIP_CORE();
 			vTaskDelay(pdMS_TO_TICKS(100));
 			break;
 		case NETWORK_STATE_ERROR:

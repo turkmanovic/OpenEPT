@@ -127,7 +127,7 @@ osSemaphoreId TxPktSemaphore = NULL;   /* Semaphore to signal transmit packet co
 
 /* Global Ethernet handle */
 ETH_HandleTypeDef HETH;
-ETH_TxPacketConfig TxConfig;
+ETH_TxPacketConfigTypeDef TxConfig;
 
 
 /* Private function prototypes -----------------------------------------------*/
@@ -198,7 +198,7 @@ static void low_level_init(struct netif *netif)
 	LWIP_MEMPOOL_INIT(RX_POOL);
 
 	/* Set Tx packet config common parameters */
-	memset(&TxConfig, 0 , sizeof(ETH_TxPacketConfig));
+	memset(&TxConfig, 0 , sizeof(ETH_TxPacketConfigTypeDef));
 	TxConfig.Attributes = ETH_TX_PACKETS_FEATURES_CSUM | ETH_TX_PACKETS_FEATURES_CRCPAD;
 	TxConfig.ChecksumCtrl = ETH_CHECKSUM_IPHDR_PAYLOAD_INSERT_PHDR_CALC;
 	TxConfig.CRCPadCtrl = ETH_CRC_PAD_INSERT;
@@ -209,10 +209,10 @@ static void low_level_init(struct netif *netif)
 	TxPktSemaphore =  osSemaphoreNew(1, 0, NULL);
 
 	/* create the task that handles the ETH_MAC */
-	memset(&attributes,0x0,sizeof(osThreadAttr_t));
-	attributes.name = "EthIf";
-	attributes.stack_size = 4 * INTERFACE_THREAD_STACK_SIZE;
-	attributes.priority = osPriorityRealtime;
+	memset(&attributes, 0x0, sizeof(osThreadAttr_t));
+	attributes.name			 = "EthIf";
+	attributes.stack_size	 = 4 * INTERFACE_THREAD_STACK_SIZE;
+	attributes.priority		 = osPriorityRealtime;
 	osThreadNew(ethernetif_input, netif, &attributes);
 
 	/* Set PHY IO functions */
@@ -221,9 +221,9 @@ static void low_level_init(struct netif *netif)
 	/* Initialize the LAN8742 ETH PHY */
 	if(LAN8742_Init(&LAN8742) != LAN8742_STATUS_OK)
 	{
-	netif_set_link_down(netif);
-	netif_set_down(netif);
-	return;
+		netif_set_link_down(netif);
+		netif_set_down(netif);
+		return;
 	}
 
 	PHYLinkState = LAN8742_GetLinkState(&LAN8742);
@@ -294,20 +294,19 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 
 	for(q = p; q != NULL; q = q->next)
 	{
-		if(i >= ETH_TX_DESC_CNT)
-		  return ERR_IF;
+		if(i >= ETH_TX_DESC_CNT) return ERR_IF;
 
 		Txbuffer[i].buffer = q->payload;
 		Txbuffer[i].len = q->len;
 
 		if(i>0)
 		{
-		  Txbuffer[i-1].next = &Txbuffer[i];
+			Txbuffer[i-1].next = &Txbuffer[i];
 		}
 
 		if(q->next == NULL)
 		{
-		  Txbuffer[i].next = NULL;
+			Txbuffer[i].next = NULL;
 		}
 
 		i++;
@@ -323,7 +322,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 	{
 		if(HAL_ETH_Transmit_IT(&HETH, &TxConfig) == HAL_OK)
 		{
-		  errval = ERR_OK;
+			errval = ERR_OK;
 		}
 		else
 		{

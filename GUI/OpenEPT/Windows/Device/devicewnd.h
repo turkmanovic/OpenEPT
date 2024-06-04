@@ -52,6 +52,7 @@ public:
     bool            setVOffset(QString voffset);
     void            setStatisticsData(double dropRate, unsigned int dropPacketsNo, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
     void            setStatisticsSamplingTime(double stime);
+    void            setStatisticsElapsedTime(int elapsedTime);
 
     bool            plotSetVoltageValues(QVector<double> values, QVector<double> keys);
     bool            plotSetCurrentValues(QVector<double> values, QVector<double> keys);

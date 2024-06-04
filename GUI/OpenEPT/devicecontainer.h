@@ -2,6 +2,7 @@
 #define DEVICECONTAINER_H
 
 #include <QObject>
+#include <QTimer>
 #include "device.h"
 #include "Windows/Device/devicewnd.h"
 #include "Utility/log.h"
@@ -53,6 +54,11 @@ public slots:
     void    onDeviceVOffsetObtained(QString voffset);
     void    onDeviceSamplingTimeChanged(double value);
 
+    void    onDeviceAcquisitonStarted();
+    void    onDeviceAcquisitonStopped();
+
+    void    onTimeout();
+
     void    onDeviceNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys);
     void    onDeviceNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t mode);
     void    onDeviceNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int dropPacketsNo, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
@@ -70,6 +76,9 @@ private:
     device_adc_clock_div_t          getAdcClockDivFromString(QString clkDiv);
     device_adc_ch_sampling_time_t   getAdcChSamplingTimeFromString(QString chstime);
     device_adc_averaging_t          getAdcAvgRatioFromString(QString avgRatio);
+
+    double                          elapsedTime;
+    QTimer                          *timer;
 
 };
 

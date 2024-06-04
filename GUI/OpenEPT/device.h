@@ -125,6 +125,7 @@ signals:
     void        sigNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t mode);
     void        sigNewSamplesBuffersProcessingStatistics(double dropRate,  unsigned int dropPacketsNo, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
     void        sigAcqusitionStarted();
+    void        sigAcqusitionStopped();
 public slots:
     void        onControlLinkConnected();
     void        onControlLinkDisconnected();

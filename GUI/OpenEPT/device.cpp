@@ -29,6 +29,8 @@ bool Device::acquisitionStart()
     dataProcessing->setAcquisitionStatus(DATAPROCESSING_ACQUISITION_STATUS_ACTIVE);
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
 
+    emit sigAcqusitionStarted();
+
     return true;
 }
 
@@ -39,6 +41,9 @@ bool Device::acquisitionStop()
     if(controlLink == NULL) return false;
     dataProcessing->setAcquisitionStatus(DATAPROCESSING_ACQUISITION_STATUS_INACTIVE);
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
+
+    emit sigAcqusitionStopped();
+
     return true;
 }
 

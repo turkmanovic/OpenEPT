@@ -9,6 +9,11 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     fileProcessing  = new FileProcessing();
     log->assignLogWidget(deviceWnd->getLogWidget());
 
+    elapsedTime     = 0;
+    timer           = new QTimer();
+
+    connect(timer,      SIGNAL(timeout()),                                           this, SLOT(onTimeout()));
+
 
     /*Device window signals*/
     connect(deviceWnd,  SIGNAL(sigWndClosed()),                                     this, SLOT(onDeviceWndClosed()));
@@ -46,6 +51,8 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(device,     SIGNAL(sigVOffsetObtained(QString)),                        this, SLOT(onDeviceVOffsetObtained(QString)));
     connect(device,     SIGNAL(sigAvgRatio(QString)),                               this, SLOT(onDeviceAvgRatioChanged(QString)));
     connect(device,     SIGNAL(sigSamplingTimeChanged(double)),                     this, SLOT(onDeviceSamplingTimeChanged(double)));
+    connect(device,     SIGNAL(sigAcqusitionStarted()),                             this, SLOT(onDeviceAcquisitonStarted()));
+    connect(device,     SIGNAL(sigAcqusitionStopped()),                             this, SLOT(onDeviceAcquisitonStopped()));
 
     connect(device,     SIGNAL(sigVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>, QVector<double>)),
             this, SLOT(onDeviceNewVoltageCurrentSamplesReceived(QVector<double>,QVector<double>,QVector<double>, QVector<double>)));
@@ -538,6 +545,26 @@ void DeviceContainer::onDeviceVOffsetObtained(QString voffset)
 void DeviceContainer::onDeviceSamplingTimeChanged(double value)
 {
     deviceWnd->setStatisticsSamplingTime(value);
+}
+
+void DeviceContainer::onDeviceAcquisitonStarted()
+{
+    elapsedTime = 0;
+    timer->start(1000);
+
+}
+
+void DeviceContainer::onDeviceAcquisitonStopped()
+{
+    elapsedTime = 0;
+    timer->stop();
+    deviceWnd->setStatisticsElapsedTime(elapsedTime);
+}
+
+void DeviceContainer::onTimeout()
+{
+    elapsedTime += 1;
+    deviceWnd->setStatisticsElapsedTime(elapsedTime);
 }
 
 void DeviceContainer::onDeviceNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys)

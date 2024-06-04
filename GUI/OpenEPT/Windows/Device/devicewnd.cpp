@@ -135,6 +135,8 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     consumptionTypeSelection->setId(ui->currentRadb, 1);
     consumptionTypeSelection->setId(ui->cumulativeRadb, 2);
 
+    setStatisticsElapsedTime(0);
+
     ui->currentRadb->setChecked(true);
 
     setDeviceState(DEVICE_STATE_UNDEFINED);
@@ -502,6 +504,18 @@ void DeviceWnd::setStatisticsData(double dropRate, unsigned int dropPacketsNo, u
 void DeviceWnd::setStatisticsSamplingTime(double stime)
 {
     ui->statisticsSamplingTimeLabe2->setText(QString::number(stime*1000, 'f', 10));
+}
+
+void DeviceWnd::setStatisticsElapsedTime(int elapsedTime)
+{
+    int hours = elapsedTime / 3600;
+    int minutes = (elapsedTime % 3600) / 60;
+    int seconds = elapsedTime % 60;
+
+    ui->statisticsAcquisitionDurationValueLabe->setText(QString("%1:%2:%3")
+                                                            .arg(hours, 2, 10, QChar('0'))
+                                                            .arg(minutes, 2, 10, QChar('0'))
+                                                            .arg(seconds, 2, 10, QChar('0')));
 }
 
 bool DeviceWnd::plotSetVoltageValues(QVector<double> values, QVector<double> keys)

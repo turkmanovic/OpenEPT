@@ -92,7 +92,7 @@ Plot::Plot(int mw, int mh, QWidget *parent)
     plotLayout->setSpacing(3);
 
     plot->plotLayout()->insertRow(0);
-    title = new QCPTextElement(plot, "NN", QFont("Times", 17, QFont::Bold));
+    title = new QCPTextElement(plot, "NN", QFont("Helvetica", 16));
     plot->plotLayout()->addElement(0, 0, title);
 
     enableTracking      = true;

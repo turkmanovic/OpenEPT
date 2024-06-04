@@ -182,10 +182,10 @@ void TIM6_DAC_IRQHandler(void)
   /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
 
   /* USER CODE END TIM6_DAC_IRQn 0 */
-  if (hdac1.State != HAL_DAC_STATE_RESET) {
-    HAL_DAC_IRQHandler(&hdac1);
-  }
-  HAL_TIM_IRQHandler(&htim6);
+	if (hdac1.State != HAL_DAC_STATE_RESET) {
+		HAL_DAC_IRQHandler(&hdac1);
+	}
+	HAL_TIM_IRQHandler(&htim6);
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
 
   /* USER CODE END TIM6_DAC_IRQn 1 */
@@ -196,13 +196,13 @@ void TIM6_DAC_IRQHandler(void)
   */
 void ETH_IRQHandler(void)
 {
-  /* USER CODE BEGIN ETH_IRQn 0 */
+	/* USER CODE BEGIN ETH_IRQn 0 */
 
-  /* USER CODE END ETH_IRQn 0 */
-  HAL_ETH_IRQHandler(&HETH);
-  /* USER CODE BEGIN ETH_IRQn 1 */
+	/* USER CODE END ETH_IRQn 0 */
+	HAL_ETH_IRQHandler(&HETH);
+	/* USER CODE BEGIN ETH_IRQn 1 */
 
-  /* USER CODE END ETH_IRQn 1 */
+	/* USER CODE END ETH_IRQn 1 */
 }
 
 /**

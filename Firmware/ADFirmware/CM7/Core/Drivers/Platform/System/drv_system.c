@@ -109,6 +109,7 @@ static drv_system_status_t prvDRV_SYSTEM_MPU_Init()
 	/* Configure the MPU attributes as Normal Non Cacheable
 	 for LwIP RAM heap which contains the Tx buffers */
 	MPU_InitStruct.Enable 			= MPU_REGION_ENABLE;
+	MPU_InitStruct.Number 			= MPU_REGION_NUMBER1;
 	MPU_InitStruct.BaseAddress 		= 0x30020000;
 	MPU_InitStruct.Size 			= MPU_REGION_SIZE_128KB;
 	MPU_InitStruct.SubRegionDisable = 0x00;
@@ -118,13 +119,13 @@ static drv_system_status_t prvDRV_SYSTEM_MPU_Init()
 	MPU_InitStruct.IsShareable 		= MPU_ACCESS_NOT_SHAREABLE;
 	MPU_InitStruct.IsCacheable 		= MPU_ACCESS_NOT_CACHEABLE;
 	MPU_InitStruct.IsBufferable 	= MPU_ACCESS_NOT_BUFFERABLE;
-	MPU_InitStruct.Number 			= MPU_REGION_NUMBER1;
 
 	HAL_MPU_ConfigRegion(&MPU_InitStruct);
 
   /* Configure the MPU attributes as Device not cacheable
 	 for ETH DMA descriptors */
 	MPU_InitStruct.Enable 			= MPU_REGION_ENABLE;
+	MPU_InitStruct.Number 			= MPU_REGION_NUMBER2;
 	MPU_InitStruct.BaseAddress 		= 0x30040000;
 	MPU_InitStruct.Size 			= MPU_REGION_SIZE_512B;
 	MPU_InitStruct.SubRegionDisable = 0x00;
@@ -134,7 +135,6 @@ static drv_system_status_t prvDRV_SYSTEM_MPU_Init()
 	MPU_InitStruct.IsShareable 		= MPU_ACCESS_SHAREABLE;
 	MPU_InitStruct.IsCacheable 		= MPU_ACCESS_NOT_CACHEABLE;
 	MPU_InitStruct.IsBufferable 	= MPU_ACCESS_BUFFERABLE;
-	MPU_InitStruct.Number 			= MPU_REGION_NUMBER2;
 
 	HAL_MPU_ConfigRegion(&MPU_InitStruct);
 

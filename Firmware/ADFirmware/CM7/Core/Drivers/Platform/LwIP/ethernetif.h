@@ -21,6 +21,7 @@
 #ifndef __ETHERNETIF_H__
 #define __ETHERNETIF_H__
 
+#include "FreeRTOS.h"
 #include "lwip/err.h"
 #include "lwip/netif.h"
 #include "cmsis_os.h"
