@@ -2109,7 +2109,7 @@ HAL_StatusTypeDef HAL_ADC_Stop_IT(ADC_HandleTypeDef *hadc)
   * @param Length Number of data to be transferred from ADC peripheral to memory
   * @retval HAL status.
   */
-HAL_StatusTypeDef HAL_ADC_Start_DMA(ADC_HandleTypeDef *hadc, uint32_t *pData, uint32_t Length)
+HAL_StatusTypeDef HAL_ADC_Start_DMA(ADC_HandleTypeDef *hadc, uint32_t *pData, uint32_t *pData1, uint32_t Length)
 {
   HAL_StatusTypeDef tmp_hal_status;
   uint32_t tmp_multimode_config = LL_ADC_GetMultimode(__LL_ADC_COMMON_INSTANCE(hadc->Instance));
@@ -2211,7 +2211,10 @@ HAL_StatusTypeDef HAL_ADC_Start_DMA(ADC_HandleTypeDef *hadc, uint32_t *pData, ui
 
 
         /* Start the DMA channel */
-        tmp_hal_status = HAL_DMA_Start_IT(hadc->DMA_Handle, (uint32_t)&hadc->Instance->DR, (uint32_t)pData, Length);
+        //tmp_hal_status = HAL_DMA_Start_IT(hadc->DMA_Handle, (uint32_t)&hadc->Instance->DR, (uint32_t)pData, Length);
+        tmp_hal_status = HAL_DMAEx_MultiBufferStart_IT(hadc->DMA_Handle, (uint32_t)&hadc->Instance->DR,
+        		(uint32_t)pData,
+				(uint32_t)pData1, Length);
 
         /* Enable conversion of regular group.                                  */
         /* If software start has been selected, conversion starts immediately.  */

@@ -26,7 +26,7 @@ void Log::printLogMessage(QString message, log_message_type_t type, log_message_
         tmpMessageDeviceType += "[ACDevice]    ";
         break;
     case LOG_MESSAGE_DEVICE_TYPE_CONSOLE:
-        tmpMessageDeviceType += "[Console]    ";
+        tmpMessageDeviceType += "[Console]     ";
         break;
     }
     plainTextWidget->moveCursor(QTextCursor::End);
@@ -35,7 +35,7 @@ void Log::printLogMessage(QString message, log_message_type_t type, log_message_
     case LOG_MESSAGE_TYPE_INFO:
         tmpMessage = "<p style=\"color:black;\">";
         tmpMessage += tmpMessageDeviceType;
-        tmpMessage += QTime::currentTime().toString() + ":";
+        tmpMessage += "[" + QTime::currentTime().toString() + "]:";
         tmpMessage += message;
         tmpMessage += "</p>";
         plainTextWidget->appendHtml(tmpMessage);
@@ -43,7 +43,7 @@ void Log::printLogMessage(QString message, log_message_type_t type, log_message_
     case LOG_MESSAGE_TYPE_WARNING:
         tmpMessage = "<p style=\"color:blue;\">";
         tmpMessage += tmpMessageDeviceType;
-        tmpMessage += QTime::currentTime().toString() + ":";
+        tmpMessage += "[" + QTime::currentTime().toString() + "]:";
         tmpMessage += "[Warning]";
         tmpMessage += message;
         tmpMessage += "</p>";
@@ -52,7 +52,7 @@ void Log::printLogMessage(QString message, log_message_type_t type, log_message_
     case LOG_MESSAGE_TYPE_ERROR:
         tmpMessage = "<p style=\"color:red;\">";
         tmpMessage += tmpMessageDeviceType;
-        tmpMessage += QTime::currentTime().toString() + ":";
+        tmpMessage += "[" + QTime::currentTime().toString() + "]:";
         tmpMessage += "[Error]";
         tmpMessage += message;
         tmpMessage += "</p>";

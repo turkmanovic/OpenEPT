@@ -2,9 +2,11 @@
 #define DEVICECONTAINER_H
 
 #include <QObject>
+#include <QTimer>
 #include "device.h"
 #include "Windows/Device/devicewnd.h"
 #include "Utility/log.h"
+#include "Processing/fileprocessing.h"
 
 class DeviceContainer : public QObject
 {
@@ -17,26 +19,66 @@ signals:
     void    sigDeviceClosed(Device* device);
 
 public slots:
+    void    onConsoleWndMessageRcvd(QString msg);
+    void    onDeviceWndResolutionChanged(QString resolution);
+    void    onDeviceWndClockDivChanged(QString clockDiv);
+    void    onDeviceWndChannelSamplingTimeChanged(QString stime);
+    void    onDeviceWndSamplingPeriodChanged(QString time);
+    void    onDeviceWndInterfaceChanged(QString interfaceIp);
+    void    onDeviceWndAvrRatioChanged(QString avgRatio);
+    void    onDeviceWndVOffsetChanged(QString off);
+    void    onDeviceWndCOffsetChanged(QString off);
+    void    onDeviceWndAcquisitionStart();
+    void    onDeviceWndAcquisitionStop();
+    void    onDeviceWndAcquisitionPause();
+    void    onDeviceWndAdvConfGet();
+    void    onDeviceWndAcquisitionRefresh();
+    void    onDeviceWndNewConfiguration(QVariant newConfig);
+    void    onDeviceWndClosed();
+    void    onDeviceWndMaxNumberOfBuffersChanged(unsigned int maxNumber);
+    void    onDeviceWndConsumptionTypeChanged(QString aConsumptionType);
+    void    onDeviceWndSamplesSavePathChanged(QString path);
+
     void    onDeviceControlLinkDisconnected();
     void    onDeviceControlLinkConnected();
     void    onDeviceStatusLinkNewDeviceAdded(QString aDeviceIP);
     void    onDeviceStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
-    void    onDeviceClosed();
-    void    onConsoleWndMessageRcvd(QString msg);
-    void    onConsoleWndHandleControlMsgResponse(QString msg);
-    void    onResolutionChanged(int index);
-    void    onClockDivChanged(int index);
-    void    onSampleTimeChanged(int index);
-    void    onSamplingTimeChanged(QString time);
-    void    onInterfaceChanged(QString interfaceIp);
-    void    onAvrRatioChanged(int index);
-    void    onVOffsetChanged(QString off);
-    void    onCOffsetChanged(QString off);
+    void    onDeviceHandleControlMsgResponse(QString msg);
+    void    onDeviceResolutionObtained(QString resolution);
+    void    onDeviceClkDivObtained(QString clkDiv);
+    void    onDeviceChSampleTimeObtained(QString stime);
+    void    onDeviceSamplingPeriodObtained(QString stime);
+    void    onDeviceAdcInClkObtained(QString inClk);
+    void    onDeviceAvgRatioChanged(QString aAvgRatio);
+    void    onDeviceCOffsetObtained(QString coffset);
+    void    onDeviceVOffsetObtained(QString voffset);
+    void    onDeviceSamplingTimeChanged(double value);
+
+    void    onDeviceAcquisitonStarted();
+    void    onDeviceAcquisitonStopped();
+
+    void    onTimeout();
+
+    void    onDeviceNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys);
+    void    onDeviceNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t mode);
+    void    onDeviceNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int dropPacketsNo, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID);
+
+
 
 private:
-    DeviceWnd*  deviceWnd;
-    Device*     device;
-    Log*        log;
+    DeviceWnd*                      deviceWnd;
+    Device*                         device;
+    Log*                            log;
+    FileProcessing*                 fileProcessing;
+
+
+    device_adc_resolution_t         getAdcResolutionFromString(QString resolution);
+    device_adc_clock_div_t          getAdcClockDivFromString(QString clkDiv);
+    device_adc_ch_sampling_time_t   getAdcChSamplingTimeFromString(QString chstime);
+    device_adc_averaging_t          getAdcAvgRatioFromString(QString avgRatio);
+
+    double                          elapsedTime;
+    QTimer                          *timer;
 
 };
 

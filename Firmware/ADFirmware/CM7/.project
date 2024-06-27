@@ -47,6 +47,10 @@
 	</linkedResources>
 	<variableList>
 		<variable>
+			<name>PROJECT_PATH</name>
+			<value>file:/C:/Users/Haris/Documents/OpenEPT/OpenEPT/Firmware/ADFirmware</value>
+		</variable>
+		<variable>
 			<name>PROJECT_ROOT</name>
 			<value>file:/D:/prof_Hari/OpenEPT/Firmware/ADFirmware</value>
 		</variable>

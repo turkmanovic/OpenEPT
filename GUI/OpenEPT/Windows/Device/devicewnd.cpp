@@ -3,6 +3,7 @@
 #include "Windows/Console/consolewnd.h"
 #include <QFileDialog>
 #include <QNetworkInterface>
+#include <QOpenGLWidget>
 
 /*TODO: Declare this in config file*/
 #define PLOT_MINIMUM_SIZE_WIDTH     600
@@ -14,29 +15,13 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     ui(new Ui::DeviceWnd)
 {
     ui->setupUi(this);
-//    if (!consoleWnd) {
-//        qDebug() << "Error: Failed to allocate memory for consoleWnd.";
-//        // Handle the error appropriately, e.g., return or exit
-//    }
-    /* Set default Value for ADC Resolution Comb*/
-    /*
-    resolutionOptions=(
-        QStringList()
-        <<""
-        <<"16 Bit"
-        <<"14 Bit"
-        <<"12 Bit"
-        <<"10 Bit"
-        );
-    ui->resolutionComb->addItems(resolutionOptions);
-    */
     resolutionOptions = new QStringList();
     *resolutionOptions
         <<""
-        <<"16 Bit"
-        <<"14 Bit"
-        <<"12 Bit"
-        <<"10 Bit"
+        <<"16"
+        <<"14"
+        <<"12"
+        <<"10"
         ;
     ui->resolutionComb->addItems(*resolutionOptions);
     /* Set default Value for ADC Clock Div Comb*/
@@ -46,14 +31,12 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
         <<"1"
         <<"2"
         <<"4"
-        <<"6"
         <<"8"
-        <<"10"
-        <<"12"
         <<"16"
         <<"32"
         <<"64"
         <<"128"
+        <<"256"
         ;
     ui->clockDivComb->addItems(*clockDivOptions);
 
@@ -72,6 +55,22 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
         ;
     ui->sampleTimeComb->addItems(*sampleTimeOptions);
 
+    /* Set default Value for ADC Averaging Options Comb*/
+    averaginOptions = new QStringList();
+    *averaginOptions
+        <<""
+        <<"1"
+        <<"2"
+        <<"4"
+        <<"8"
+        <<"16"
+        <<"32"
+        <<"64"
+        <<"128"
+        <<"256"
+        <<"512"
+        <<"1024"
+        ;
 
     networkInterfacesNames = new QStringList();
     *networkInterfacesNames << "";
@@ -97,9 +96,11 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     advanceConfigurationWnd  = new AdvanceConfigurationWnd();
     advanceConfigurationWnd->hide();
     //Prethodno se lista kreira dinamicki
-    advanceConfigurationWnd->assignResolutionList(resolutionOptions);
-    advanceConfigurationWnd->assignClockDivList(clockDivOptions);
-    advanceConfigurationWnd->assignSampleTimeList(sampleTimeOptions);
+    advanceConfigurationWnd->assignResolutionOptionsList(resolutionOptions);
+    advanceConfigurationWnd->assignClockDivOptionsList(clockDivOptions);
+    advanceConfigurationWnd->assignSampleTimeOptionsList(sampleTimeOptions);
+    advanceConfigurationWnd->assignAvgRatioOptionsList(averaginOptions);
+
     connect(ui->advanceOptionPusb, SIGNAL(clicked(bool)), this, SLOT(onAdvanceConfigurationButtonPressed(bool)));
 
     voltageChart             = new Plot(PLOT_MINIMUM_SIZE_WIDTH/2, PLOT_MINIMUM_SIZE_HEIGHT);
@@ -121,6 +122,23 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     consumptionChart->setYLabel("[mAh]");
     consumptionChart->setXLabel("[ms]");
 
+    ui->maxNumOfPacketsLine->setText(QString::number(DEVICEWND_DEFAULT_MAX_NUMBER_OF_BUFFERS));
+    ui->statisticsPacketCounterLabe2->setText(QString::number(0));
+    ui->statisticsDropRateProb->setValue(0);
+    ui->statisticsSamplingPeriodLabe2->setText(QString::number(0));
+    ui->samplingPeriodLine->setText(QString::number(0));
+
+    /*Group consumption type selecrion radio buttons*/
+    consumptionTypeSelection = new QButtonGroup();
+    consumptionTypeSelection->addButton(ui->currentRadb);
+    consumptionTypeSelection->addButton(ui->cumulativeRadb);
+    consumptionTypeSelection->setId(ui->currentRadb, 1);
+    consumptionTypeSelection->setId(ui->cumulativeRadb, 2);
+
+    setStatisticsElapsedTime(0);
+
+    ui->currentRadb->setChecked(true);
+
     setDeviceState(DEVICE_STATE_UNDEFINED);
 
     consoleWnd  = new ConsoleWnd();
@@ -137,18 +155,21 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     connect(ui->stopPusb, SIGNAL(clicked(bool)), this, SLOT(onStopAcquisiton()));
     connect(ui->refreshPusb, SIGNAL(clicked(bool)), this, SLOT(onRefreshAcquisiton()));
     connect(ui->ConsolePusb, SIGNAL(clicked(bool)), this, SLOT(onConsolePressed()));
-    connect(consoleWnd, SIGNAL(sigControlMsgSend(QString)), this, SLOT(onNewControlMsgRcvd(QString)));
-    connect(ui->resolutionComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onResolutionChanged(int)));
-    connect(ui->clockDivComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onClockDivChanged(int)));
-    connect(ui->sampleTimeComb, SIGNAL(currentIndexChanged(int)), this, SLOT(onSampleTimeChanged(int)));
-    connect(ui->samplingTimeLine, SIGNAL(returnPressed()), this, SLOT(onSamplingTimeChanged()));
-    connect(ui->samplingTimeLine, SIGNAL(textChanged(QString)), this, SLOT(onSamplingTimeTxtChanged(QString)));
-    connect(ui->streamServerInterfComb, SIGNAL(currentTextChanged(QString)), this, SLOT(onInterfaceChanged(QString)));
-    connect(advanceConfigurationWnd, SIGNAL(sigAdvResolutionChanged(int)), this, SLOT(onAdvResolutionChanged(int)));
-    connect(advanceConfigurationWnd, SIGNAL(sigAdvClockDivChanged(int)), this, SLOT(onAdvClockDivChanged(int)));
-    connect(advanceConfigurationWnd, SIGNAL(sigAdvSampleTimeChanged(int)), this, SLOT(onAdvSampleTimeChanged(int)));
-    //connect(advanceConfigurationWnd, SIGNAL(sigAdvSamplingTimeChanged(QString)), this, SLOT(onAdvSamplingTimeChanged(QString)));
+
+    connect(ui->clockDivComb,           SIGNAL(currentTextChanged(QString)),        this, SLOT(onClockDivChanged(QString)));
+    connect(ui->sampleTimeComb,         SIGNAL(currentTextChanged(QString)),        this, SLOT(onSampleTimeChanged(QString)));
+    connect(ui->resolutionComb,         SIGNAL(currentTextChanged(QString)),        this, SLOT(onResolutionChanged(QString)));
+    connect(ui->samplingPeriodLine,     SIGNAL(returnPressed()),                    this, SLOT(onSamplingPeriodChanged()));
+    connect(ui->streamServerInterfComb, SIGNAL(currentTextChanged(QString)),        this, SLOT(onInterfaceChanged(QString)));
+    connect(ui->maxNumOfPacketsLine,    SIGNAL(editingFinished()),                  this, SLOT(onMaxNumberOfBuffersChanged()));
+    connect(consumptionTypeSelection,   SIGNAL(buttonClicked(QAbstractButton*)),    this, SLOT(onConsumptionTypeChanged(QAbstractButton*)));
+
+
     connect(advanceConfigurationWnd, SIGNAL(sigAdvConfigurationChanged(QVariant)), this, SLOT(onAdvConfigurationChanged(QVariant)));
+    connect(advanceConfigurationWnd, SIGNAL(sigAdvConfigurationRequested()), this, SLOT(onAdvConfigurationReqested()));
+
+
+    connect(consoleWnd, SIGNAL(sigControlMsgSend(QString)), this, SLOT(onNewControlMsgRcvd(QString)));
 }
 
 void    DeviceWnd::onNewControlMsgRcvd(QString text)
@@ -159,29 +180,16 @@ void    DeviceWnd::onNewControlMsgRcvd(QString text)
 
 void DeviceWnd::onPathInfo()
 {
-    QString chosenPath = QFileDialog::getExistingDirectory(this, "Select Directory", QDir::homePath());
+    QString selfilter = tr("CSV files (*.csv)" );
+    QString chosenPath = QFileDialog::getSaveFileName(
+        this,
+        "Select directory to save files",
+        QDir::homePath(),
+        selfilter,
+        &selfilter);
     ui->pathLine->setText(chosenPath);
-}
-
-void DeviceWnd::onAdvResolutionChanged(int index)
-{
-    ui->resolutionComb->blockSignals(true);
-    ui->resolutionComb->setCurrentIndex(index);
-    ui->resolutionComb->blockSignals(false);
-}
-
-void DeviceWnd::onAdvClockDivChanged(int index)
-{
-    ui->clockDivComb->blockSignals(true);
-    ui->clockDivComb->setCurrentIndex(index);
-    ui->clockDivComb->blockSignals(false);
-}
-
-void DeviceWnd::onAdvSampleTimeChanged(int index)
-{
-    ui->sampleTimeComb->blockSignals(true);
-    ui->sampleTimeComb->setCurrentIndex(index);
-    ui->sampleTimeComb->blockSignals(false);
+    qDebug() << chosenPath;
+    emit sigPathChanged(chosenPath);
 }
 
 void DeviceWnd::onInterfaceChanged(QString interfaceInfo)
@@ -193,82 +201,66 @@ void DeviceWnd::onInterfaceChanged(QString interfaceInfo)
     emit sigNewInterfaceSelected(ip);
 }
 
-void DeviceWnd::onAdvSamplingTimeChanged(QString time)
+void DeviceWnd::onAdvConfigurationChanged(QVariant aConfig)
 {
-    ui->samplingTimeLine->blockSignals(true);
-    ui->samplingTimeLine->setText(time);
-    ui->samplingTimeLine->blockSignals(false);
+    emit sigAdvConfigurationChanged(aConfig);
 }
-void DeviceWnd::onAdvConfigurationChanged(QVariant data)
+
+void DeviceWnd::onAdvConfigurationReqested(void)
 {
-    advConfigurationData adata = data.value<advConfigurationData>();
-    ui->resolutionComb  ->  setCurrentText(adata.resolution);
-    ui->sampleTimeComb  ->  setCurrentText(adata.sampleTime);
-    ui->clockDivComb    ->  setCurrentText(adata.clockDiv);
-    samplingTextChanged = true;
-    ui->samplingTimeLine->  setText(adata.samplingTime);
-    DeviceWnd::onAvrRatioChanged(adata.averaginRatioIndex);
-    DeviceWnd::onVOffsetChanged(adata.voltageOffset);
-    DeviceWnd::onCOffsetChanged(adata.currentOffset);
+    emit sigAdvConfigurationReqested();
+}
+
+void DeviceWnd::onMaxNumberOfBuffersChanged()
+{
+    QString maxNumberOfSamplesBuffers = ui->maxNumOfPacketsLine->text();
+    emit sigMaxNumberOfBuffersChanged(maxNumberOfSamplesBuffers.toInt());
 
 }
 
-void DeviceWnd::onVOffsetChanged(QString off)
+void DeviceWnd::onConsumptionTypeChanged(QAbstractButton* button)
 {
-    advanceConfigurationWnd->SetVOffsetFromDevWnd();
-    emit sigVOffsetChanged(off);
-}
-
-void DeviceWnd::onCOffsetChanged(QString off)
-{
-    advanceConfigurationWnd->SetCOffsetFromDevWnd();
-    emit sigCOffsetChanged(off);
-}
-
-void DeviceWnd::onAvrRatioChanged(int index)
-{
-    advanceConfigurationWnd->SetAvrRatioFromDevWnd();
-    emit sigAvrRatioChanged(index);
-}
-
-void DeviceWnd::onResolutionChanged(int index)
-{
-    advanceConfigurationWnd->SetResolutionFromDevWnd(index);
-    emit sigResolutionChanged(index);
-}
-
-void DeviceWnd::onClockDivChanged(int index)
-{
-    advanceConfigurationWnd->SetClockDivFromDevWnd(index);
-    emit sigClockDivChanged(index);
-}
-
-void DeviceWnd::onSampleTimeChanged(int index)
-{
-    advanceConfigurationWnd->SetSampleTimeFromDevWnd(index);
-    emit sigSampleTimeChanged(index);
-}
-
-void DeviceWnd::onSamplingTimeChanged()
-{
-    QString time = ui->samplingTimeLine->text();
-    advanceConfigurationWnd->SetSamplingTimeFromDevWnd(time);
-    emit sigSamplingTimeChanged(time);
-}
-
-void DeviceWnd::onSamplingTimeTxtChanged(QString time)
-{
-    if (samplingTextChanged != true)
+    int id = consumptionTypeSelection->id(button);
+    switch(id)
     {
-        samplingTextChanged = false;
-        return;
-    } else
-    {
-        advanceConfigurationWnd->SetSamplingTimeFromDevWnd(time);
-        samplingTextChanged = false;
-        emit sigSamplingTimeChanged(time);
+    case 1:
+        emit sigConsumptionTypeChanged("Current");
+        break;
+    case 2:
+        emit sigConsumptionTypeChanged("Cumulative");
+        break;
+    default:
+        emit sigConsumptionTypeChanged("Undef");
+        break;
     }
 }
+
+void DeviceWnd::onResolutionChanged(QString resolution)
+{
+    advanceConfigurationWnd->setResolution(resolution);
+    emit sigResolutionChanged(ui->resolutionComb->currentText());
+}
+
+void DeviceWnd::onClockDivChanged(QString aClockDiv)
+{
+    advanceConfigurationWnd->setClockDiv(aClockDiv);
+    emit sigClockDivChanged(ui->clockDivComb->currentText());
+}
+
+void DeviceWnd::onSampleTimeChanged(QString aSTime)
+{
+    advanceConfigurationWnd->setChSampleTime(aSTime);
+    emit sigSampleTimeChanged(ui->sampleTimeComb->currentText());
+}
+
+void DeviceWnd::onSamplingPeriodChanged()
+{
+    QString time = ui->samplingPeriodLine->text();
+    advanceConfigurationWnd->setSamplingTime(time);
+    ui->statisticsSamplingPeriodLabe2->setText(time);
+    emit sigSamplingPeriodChanged(time);
+}
+
 
 void    DeviceWnd::onAdvanceConfigurationButtonPressed(bool pressed)
 {
@@ -291,12 +283,6 @@ void    DeviceWnd::onSaveToFileChanged(int value)
         emit saveToFileEnabled(false);
     }
 }
-/*
-void DeviceWnd::onInfoSaveToFileEnabled(bool enableStatus)
-{
-    saveToFileFlag = enableStatus;
-}
-*/
 
 void DeviceWnd::onConsolePressed()
 {
@@ -305,22 +291,25 @@ void DeviceWnd::onConsolePressed()
 
 void DeviceWnd::onStartAcquisition()
 {
-    emit startAcquisition();
+    emit sigStartAcquisition();
 }
 
 void DeviceWnd::onPauseAcquisition()
 {
-    emit pauseAcquisition();
+    emit sigPauseAcquisition();
 }
 
 void DeviceWnd::onStopAcquisiton()
 {
-    emit stopAcquisition();
+    voltageChart->clear();
+    currentChart->clear();
+    consumptionChart->clear();
+    emit sigStopAcquisition();
 }
 
 void DeviceWnd::onRefreshAcquisiton()
 {
-    emit refreshAcquisition();
+    emit sigRefreshAcquisition();
 }
 
 void DeviceWnd::setDeviceStateDisconnected()
@@ -346,23 +335,6 @@ void DeviceWnd::setDeviceStateConnected()
     ui->deviceConnectedLabe->setText("Connected");
     ui->deviceConnectedLabe->setStyleSheet("QLabel { background-color : green; color : black; }");
 }
-
-/*
-void DeviceWnd::onClockDivCombIndexChanged(int index)
-{
-    emit sigClockDivChanged(clockDivOptions[index]);
-}
-
-void DeviceWnd::onResolutionCombIndexChanged(int index)
-{
-    emit sigResolutionChanged(resolutionOptions[index]);
-}
-
-void DeviceWnd::onSamplingTimeCombIndexChanged(int index)
-{
-    emit sigSamplingTimeChanged(sampleTimeOptions[index]);
-}
-*/
 void    DeviceWnd::closeEvent(QCloseEvent *event)
 {
     emit sigWndClosed();
@@ -406,7 +378,7 @@ void DeviceWnd::setDeviceInterfaceSelectionState(device_interface_selection_stat
     switch(selectionState)
     {
     case DEVICE_INTERFACE_SELECTION_STATE_UNDEFINED:
-        ui->samplingTimeLine->setEnabled(false);
+        ui->samplingPeriodLine->setEnabled(false);
         ui->resolutionComb->setEnabled(false);
         ui->clockDivComb->setEnabled(false);
         ui->sampleTimeComb->setEnabled(false);
@@ -419,7 +391,7 @@ void DeviceWnd::setDeviceInterfaceSelectionState(device_interface_selection_stat
         ui->streamServerInterfComb->setEnabled(true);
         break;
     case DEVICE_INTERFACE_SELECTION_STATE_SELECTED:
-        ui->samplingTimeLine->setEnabled(true);
+        ui->samplingPeriodLine->setEnabled(true);
         ui->resolutionComb->setEnabled(true);
         ui->clockDivComb->setEnabled(true);
         ui->sampleTimeComb->setEnabled(true);
@@ -433,4 +405,133 @@ void DeviceWnd::setDeviceInterfaceSelectionState(device_interface_selection_stat
         break;
     }
     interfaceState = selectionState;
+}
+
+QStringList *DeviceWnd::getChSamplingTimeOptions()
+{
+    return sampleTimeOptions;
+}
+
+QStringList *DeviceWnd::getChAvgRationOptions()
+{
+    return averaginOptions;
+}
+
+QStringList *DeviceWnd::getClockDivOptions()
+{
+    return clockDivOptions;
+}
+
+QStringList *DeviceWnd::getResolutionOptions()
+{
+    return resolutionOptions;
+}
+
+bool DeviceWnd::setChSamplingTime(QString sTime)
+{
+    if(!sampleTimeOptions->contains(sTime)) return false;
+    if(!advanceConfigurationWnd->setChSampleTime(sTime)) return false;
+
+    ui->sampleTimeComb->blockSignals(true);
+    ui->sampleTimeComb->setCurrentIndex(sampleTimeOptions->indexOf(sTime));
+    ui->sampleTimeComb->blockSignals(false);
+    return true;
+}
+
+bool DeviceWnd::setChAvgRatio(QString avgRatio)
+{
+    if(!averaginOptions->contains(avgRatio)) return false;
+    if(!advanceConfigurationWnd->setAvgRatio(avgRatio)) return false;
+    return true;
+}
+
+bool DeviceWnd::setClkDiv(QString clkDiv)
+{
+    if(!clockDivOptions->contains(clkDiv)) return false;
+    if(!advanceConfigurationWnd->setClockDiv(clkDiv)) return false;
+
+    ui->clockDivComb->blockSignals(true);
+    ui->clockDivComb->setCurrentIndex(clockDivOptions->indexOf(clkDiv));
+    ui->clockDivComb->blockSignals(false);
+
+    return true;
+}
+
+bool DeviceWnd::setResolution(QString resolution)
+{
+    if(!resolutionOptions->contains(resolution)) return false;
+    if(!advanceConfigurationWnd->setResolution(resolution)) return false;
+
+    ui->resolutionComb->blockSignals(true);
+    ui->resolutionComb->setCurrentIndex(resolutionOptions->indexOf(resolution));
+    ui->resolutionComb->blockSignals(false);
+    return true;
+}
+
+bool DeviceWnd::setSamplingPeriod(QString stime)
+{
+    if(!advanceConfigurationWnd->setSamplingTime(stime)) return false;
+    ui->samplingPeriodLine->setText(stime);
+    ui->statisticsSamplingPeriodLabe2->setText(stime);
+    return true;
+}
+
+bool DeviceWnd::setInCkl(QString inClk)
+{
+    advanceConfigurationWnd->setADCInClk(inClk);
+    return true;
+}
+
+bool DeviceWnd::setCOffset(QString coffset)
+{
+    advanceConfigurationWnd->setCOffset(coffset);
+    return true;
+}
+
+bool DeviceWnd::setVOffset(QString voffset)
+{
+    advanceConfigurationWnd->setVOffset(voffset);
+    return true;
+}
+
+void DeviceWnd::setStatisticsData(double dropRate, unsigned int dropPacketsNo, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID)
+{
+    ui->statisticsPacketCounterLabe2->setText(QString::number(fullReceivedBuffersNo));
+    ui->statisticsDropRateNoLabe->setText(QString::number(dropPacketsNo));
+    ui->statisticsDropRateProb->setValue(dropRate);
+}
+
+void DeviceWnd::setStatisticsSamplingTime(double stime)
+{
+    ui->statisticsSamplingTimeLabe2->setText(QString::number(stime*1000, 'f', 10));
+}
+
+void DeviceWnd::setStatisticsElapsedTime(int elapsedTime)
+{
+    int hours = elapsedTime / 3600;
+    int minutes = (elapsedTime % 3600) / 60;
+    int seconds = elapsedTime % 60;
+
+    ui->statisticsAcquisitionDurationValueLabe->setText(QString("%1:%2:%3")
+                                                            .arg(hours, 2, 10, QChar('0'))
+                                                            .arg(minutes, 2, 10, QChar('0'))
+                                                            .arg(seconds, 2, 10, QChar('0')));
+}
+
+bool DeviceWnd::plotSetVoltageValues(QVector<double> values, QVector<double> keys)
+{
+    voltageChart->setData(values, keys);
+    return true;
+}
+
+bool DeviceWnd::plotSetCurrentValues(QVector<double> values, QVector<double> keys)
+{
+    currentChart->setData(values, keys);
+    return true;
+}
+
+bool DeviceWnd::plotAppendConsumptionValues(QVector<double> values, QVector<double> keys)
+{
+    consumptionChart->appendData(values, keys);
+    return true;
 }

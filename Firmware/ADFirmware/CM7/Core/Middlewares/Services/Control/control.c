@@ -225,7 +225,7 @@ static void prvCONTROL_SetResolution(const char* arguments, uint16_t argumentsLe
 		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n", valueNumber);
 		return;
 	}
-	sscanf(value.value, "%u", &streamID);
+	sscanf(value.value, "%lu", &streamID);
 
 	memset(&value, 0, sizeof(cmparse_value_t));
 	if(CMPARSE_GetArgValue(arguments, argumentsLength, "value", &value) != CMPARSE_STATUS_OK)
@@ -234,7 +234,7 @@ static void prvCONTROL_SetResolution(const char* arguments, uint16_t argumentsLe
 		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain device resolution from control message\r\n", valueNumber);
 		return;
 	}
-	sscanf(value.value, "%u", &valueNumber);
+	sscanf(value.value, "%lu", &valueNumber);
 
 	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
 	{
@@ -287,7 +287,6 @@ static void prvCONTROL_GetResolution(const char* arguments, uint16_t argumentsLe
 	adcResolution = SSTREAM_GetResolution(connectionInfo, 1000);
 	adcResolutionStringLength = sprintf(adcResolutionString, "%d", adcResolution);
 	prvCONTROL_PrepareOkResponse(response, responseSize, adcResolutionString, adcResolutionStringLength);
-	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device Resolution successfully obtained\r\n");
 }
 
 /**
@@ -389,6 +388,102 @@ static void prvCONTROL_GetClkdiv(const char* arguments, uint16_t argumentsLength
 static void prvCONTROL_SetSamplingtime(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
 	cmparse_value_t				value;
+	uint32_t					prescaler;
+	uint32_t					period;
+	uint32_t					valueNumber;
+	uint32_t					streamID;
+	sstream_connection_info*  	connectionInfo;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n", valueNumber);
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "period", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain period from control message\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &period);
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "prescaler", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain prescaler from control message\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &prescaler);
+
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream connection info\r\n");
+		return;
+	}
+
+	if(SSTREAM_SetSamplingPeriod(connectionInfo, prescaler, period, 1000) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to set sampling time %d\r\n", valueNumber);
+		return;
+	}
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+}
+
+/**
+ * @brief	Get device sample time by utilizing system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_GetSamplingtime(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	cmparse_value_t				value;
+	uint32_t			 		resolution;
+	sstream_connection_info*  	connectionInfo;
+	char						resolutionString[10];
+	uint32_t					resolutionStringLength = 0;
+	uint32_t					streamID;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	memset(resolutionString, 0, 10);
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain connection info\r\n");
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+	resolution = SSTREAM_GetSamplingPeriod(connectionInfo, 1000);
+	resolutionStringLength = sprintf(resolutionString, "%lu", resolution);
+	prvCONTROL_PrepareOkResponse(response, responseSize, resolutionString, resolutionStringLength);
+}
+/**
+ * @brief	Set device averaging ratio by utilizing system service
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_SetChSamplingtime(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	cmparse_value_t				value;
 	uint32_t					valueNumber;
 	uint32_t					streamID;
 	sstream_connection_info*  	connectionInfo;
@@ -418,66 +513,20 @@ static void prvCONTROL_SetSamplingtime(const char* arguments, uint16_t arguments
 		return;
 	}
 
-	if(SSTREAM_SetSamplingTime(connectionInfo, valueNumber, 1000) != SSTREAM_STATUS_OK)
+	if(SSTREAM_SetChannelSamplingTime(connectionInfo, 1, valueNumber, 1000) != SSTREAM_STATUS_OK)
 	{
 		prvCONTROL_PrepareErrorResponse(response, responseSize);
-		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to set sampling time %d\r\n", valueNumber);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to set channel 0 sampling time %d\r\n", valueNumber);
+		return;
+	}
+
+	if(SSTREAM_SetChannelSamplingTime(connectionInfo, 2, valueNumber, 1000) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to set channel 1 sampling time %d\r\n", valueNumber);
 		return;
 	}
 	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
-	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device sample time %d successfully set\r\n", valueNumber);
-}
-
-/**
- * @brief	Get device sample time by utilizing system service
- * @param	arguments: arguments defined within control message
- * @param	argumentsLength: arguments message length
- * @param	response: response message content
- * @param	argumentsLength: length of response message
- * @retval	void
- */
-static void prvCONTROL_GetSamplingtime(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
-{
-	cmparse_value_t				value;
-	uint32_t			 		resolution;
-	sstream_connection_info*  	connectionInfo;
-	char						resolutionString[10];
-	uint32_t					resolutionStringLength = 0;
-	uint32_t					streamID;
-
-	memset(&value, 0, sizeof(cmparse_value_t));
-	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
-	{
-		prvCONTROL_PrepareErrorResponse(response, responseSize);
-		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n");
-		return;
-	}
-	sscanf(value.value, "%lu", &streamID);
-
-	memset(resolutionString, 0, 10);
-	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
-	{
-		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain connection info\r\n");
-		prvCONTROL_PrepareErrorResponse(response, responseSize);
-		return;
-	}
-	resolution = SSTREAM_GetSamplingTime(connectionInfo, 1000);
-	resolutionStringLength = sprintf(resolutionString, "%lu", resolution);
-	prvCONTROL_PrepareOkResponse(response, responseSize, resolutionString, resolutionStringLength);
-	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Sampling time successfully obtained\r\n");
-}
-/**
- * @brief	Set device averaging ratio by utilizing system service
- * @param	arguments: arguments defined within control message
- * @param	argumentsLength: arguments message length
- * @param	response: response message content
- * @param	argumentsLength: length of response message
- * @retval	void
- */
-static void prvCONTROL_SetChSamplingtime(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
-{
-	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
-	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device averaging ratio successfully set\r\n");
 }
 
 /**
@@ -490,8 +539,32 @@ static void prvCONTROL_SetChSamplingtime(const char* arguments, uint16_t argumen
  */
 static void prvCONTROL_GetChSamplingtime(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
-	prvCONTROL_PrepareOkResponse(response, responseSize, "128", 3);
-	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device averaging ratio successfully get\r\n");
+	cmparse_value_t				value;
+	sstream_adc_sampling_time_t	chstime1;
+	sstream_connection_info*  	connectionInfo;
+	char						chstimeString[10];
+	uint32_t					chstimeStringLength = 0;
+	uint32_t					streamID;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	memset(chstimeString, 0, 10);
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain connection info\r\n");
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+	chstime1 = SSTREAM_GetChannelSamplingTime(connectionInfo, 1, 1000);
+	chstimeStringLength = sprintf(chstimeString, "%lu", chstime1);
+	prvCONTROL_PrepareOkResponse(response, responseSize, chstimeString, chstimeStringLength);
 }
 /**
  * @brief	Set device averaging ratio by utilizing system service
@@ -503,8 +576,43 @@ static void prvCONTROL_GetChSamplingtime(const char* arguments, uint16_t argumen
  */
 static void prvCONTROL_SetAveragingratio(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
+	cmparse_value_t				value;
+	uint32_t					valueNumber;
+	uint32_t					streamID;
+	sstream_connection_info*  	connectionInfo;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n", valueNumber);
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "value", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain sampling time from control message\r\n", valueNumber);
+		return;
+	}
+	sscanf(value.value, "%lu", &valueNumber);
+
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream connection info\r\n");
+		return;
+	}
+
+	if(SSTREAM_SetChannelAvgRatio(connectionInfo, 1, valueNumber, 1000) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to set channel 1 averaging ratio %d\r\n", valueNumber);
+		return;
+	}
 	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
-	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device averaging ratio successfully set\r\n");
 }
 
 /**
@@ -517,8 +625,32 @@ static void prvCONTROL_SetAveragingratio(const char* arguments, uint16_t argumen
  */
 static void prvCONTROL_GetAveragingratio(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
-	prvCONTROL_PrepareOkResponse(response, responseSize, "128", 3);
-	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device averaging ratio successfully get\r\n");
+	cmparse_value_t				value;
+	sstream_adc_ch_avg_ratio_t	ch1AveragingRatio;
+	sstream_connection_info*  	connectionInfo;
+	char						ch1AveragingRatioString[10];
+	uint32_t					ch1AveragingRatioStringLength = 0;
+	uint32_t					streamID;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	memset(ch1AveragingRatioString, 0, 10);
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain connection info\r\n");
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+	ch1AveragingRatio = SSTREAM_GetChannelAvgRatio(connectionInfo, 1, 1000);
+	ch1AveragingRatioStringLength = sprintf(ch1AveragingRatioString, "%lu", ch1AveragingRatio);
+	prvCONTROL_PrepareOkResponse(response, responseSize, ch1AveragingRatioString, ch1AveragingRatioStringLength);
 }
 
 /**
@@ -531,8 +663,43 @@ static void prvCONTROL_GetAveragingratio(const char* arguments, uint16_t argumen
  */
 static void prvCONTROL_SetVoltageoffset(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
+	cmparse_value_t				value;
+	uint32_t					valueNumber;
+	uint32_t					streamID;
+	sstream_connection_info*  	connectionInfo;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n", valueNumber);
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "value", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain sampling time from control message\r\n", valueNumber);
+		return;
+	}
+	sscanf(value.value, "%lu", &valueNumber);
+
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream connection info\r\n");
+		return;
+	}
+
+	if(SSTREAM_SetChannelOffset(connectionInfo, SSTREAM_AIN_VOLTAGE_CHANNEL, valueNumber, 1000) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to set voltage offset %d\r\n", valueNumber);
+		return;
+	}
 	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
-	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device voltage offset successfully set\r\n");
 }
 
 /**
@@ -545,8 +712,32 @@ static void prvCONTROL_SetVoltageoffset(const char* arguments, uint16_t argument
  */
 static void prvCONTROL_GetVoltageoffset(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
-	prvCONTROL_PrepareOkResponse(response, responseSize, "1432", 4);
-	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device voltage offset successfully get\r\n");
+	cmparse_value_t				value;
+	uint32_t					voltageOffset;
+	sstream_connection_info*  	connectionInfo;
+	char						voltageOffsetString[10];
+	uint32_t					voltageOffsetStringLength = 0;
+	uint32_t					streamID;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	memset(voltageOffsetString, 0, 10);
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain connection info\r\n");
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+	voltageOffset = SSTREAM_GetChannelOffset(connectionInfo, SSTREAM_AIN_VOLTAGE_CHANNEL, 1000);
+	voltageOffsetStringLength = sprintf(voltageOffsetString, "%lu", voltageOffset);
+	prvCONTROL_PrepareOkResponse(response, responseSize, voltageOffsetString, voltageOffsetStringLength);
 }
 
 /**
@@ -559,8 +750,43 @@ static void prvCONTROL_GetVoltageoffset(const char* arguments, uint16_t argument
  */
 static void prvCONTROL_SetCurrentoffset(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
+	cmparse_value_t				value;
+	uint32_t					valueNumber;
+	uint32_t					streamID;
+	sstream_connection_info*  	connectionInfo;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n", valueNumber);
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "value", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain sampling time from control message\r\n", valueNumber);
+		return;
+	}
+	sscanf(value.value, "%lu", &valueNumber);
+
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream connection info\r\n");
+		return;
+	}
+
+	if(SSTREAM_SetChannelOffset(connectionInfo, SSTREAM_AIN_CURRENT_CHANNEL, valueNumber, 1000) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to set voltage offset %d\r\n", valueNumber);
+		return;
+	}
 	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
-	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device current offset successfully set\r\n");
 }
 
 /**
@@ -573,10 +799,71 @@ static void prvCONTROL_SetCurrentoffset(const char* arguments, uint16_t argument
  */
 static void prvCONTROL_GetCurrentoffset(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
-	prvCONTROL_PrepareOkResponse(response, responseSize, "24", 2);
-	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Device current offset successfully get\r\n");
+	cmparse_value_t				value;
+	uint32_t					voltageOffset;
+	sstream_connection_info*  	connectionInfo;
+	char						voltageOffsetString[10];
+	uint32_t					voltageOffsetStringLength = 0;
+	uint32_t					streamID;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	memset(voltageOffsetString, 0, 10);
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain connection info\r\n");
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+	voltageOffset = SSTREAM_GetChannelOffset(connectionInfo, SSTREAM_AIN_CURRENT_CHANNEL, 1000);
+	voltageOffsetStringLength = sprintf(voltageOffsetString, "%lu", voltageOffset);
+	prvCONTROL_PrepareOkResponse(response, responseSize, voltageOffsetString, voltageOffsetStringLength);
 }
 
+/**
+ * @brief	Get ADC input clk
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_GetADCInputClk(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	cmparse_value_t				value;
+	uint32_t					adcClk;
+	sstream_connection_info*  	connectionInfo;
+	char						adcClkString[10];
+	uint32_t					adcClkStringLength = 0;
+	uint32_t					streamID;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	memset(adcClkString, 0, 10);
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain connection info\r\n");
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+	adcClk = SSTREAM_GetAdcInputClk(connectionInfo, 1000);
+	adcClkStringLength = sprintf(adcClkString, "%lu", adcClk);
+	prvCONTROL_PrepareOkResponse(response, responseSize, adcClkString, adcClkStringLength);
+}
 
 static void prvCONTROL_StreamCreate(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
@@ -619,6 +906,85 @@ static void prvCONTROL_StreamCreate(const char* arguments, uint16_t argumentsLen
 	prvCONTROL_PrepareOkResponse(response, responseSize, streamIDString, streamIDStringLength);
 	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Stream successfully created\r\n");
 }
+
+/**
+ * @brief	Start samples streaming
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_StreamStart(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	cmparse_value_t				value;
+	uint32_t					streamID;
+	sstream_connection_info*  	connectionInfo;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream connection info\r\n");
+		return;
+	}
+
+	if(SSTREAM_Start(connectionInfo, 1000) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to start stream\r\n");
+		return;
+	}
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+}
+
+/**
+ * @brief	Stop samples streaming
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_StreamStop(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	cmparse_value_t				value;
+	uint32_t					streamID;
+	sstream_connection_info*  	connectionInfo;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream connection info\r\n");
+		return;
+	}
+
+	if(SSTREAM_Stop(connectionInfo, 1000) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to stop stream\r\n");
+		return;
+	}
+	prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+}
+
 //TODO: This is just for testing purposes. It should never be used as it is now. Remove!
 control_status_link_instance_t statusLinkInstance;
 /**
@@ -803,7 +1169,8 @@ static void prvCONTROL_TaskFunc(void* pvParameter)
 				}
 				else
 				{
-					LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Control message successfully processed\r\n");
+					LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Control message:%s\r\n", prvCONTROL_DATA.requestBuffer);
+					LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "Response:       %s", prvCONTROL_DATA.responseBuffer);
 				}
 				err = write(newconn, prvCONTROL_DATA.responseBuffer, prvCONTROL_DATA.responseBufferSize);
 				if(err < 0)
@@ -937,6 +1304,9 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	CMPARSE_AddCommand("device setname", 				prvCONTROL_SetDeviceName);
 	CMPARSE_AddCommand("device slink create", 			prvCONTROL_CreateStatusLink);
 	CMPARSE_AddCommand("device slink send", 			prvCONTROL_StatusLinkSendMessage);
+	CMPARSE_AddCommand("device stream create", 			prvCONTROL_StreamCreate);
+	CMPARSE_AddCommand("device stream start", 			prvCONTROL_StreamStart);
+	CMPARSE_AddCommand("device stream stop", 			prvCONTROL_StreamStop);
 
 	CMPARSE_AddCommand("device adc chresolution set", 	prvCONTROL_SetResolution);
 	CMPARSE_AddCommand("device adc chresolution get", 	prvCONTROL_GetResolution);
@@ -946,13 +1316,13 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	CMPARSE_AddCommand("device adc chstime get", 		prvCONTROL_GetChSamplingtime);
 	CMPARSE_AddCommand("device adc chavrratio set", 	prvCONTROL_SetAveragingratio);
 	CMPARSE_AddCommand("device adc chavrratio get", 	prvCONTROL_GetAveragingratio);
-	CMPARSE_AddCommand("device adc stime set", 			prvCONTROL_SetSamplingtime);
-	CMPARSE_AddCommand("device adc stime get", 			prvCONTROL_GetSamplingtime);
-	CMPARSE_AddCommand("device voffset set", 			prvCONTROL_SetVoltageoffset);
-	CMPARSE_AddCommand("device voffset get", 			prvCONTROL_GetVoltageoffset);
-	CMPARSE_AddCommand("device coffset set", 			prvCONTROL_SetCurrentoffset);
-	CMPARSE_AddCommand("device coffset get", 			prvCONTROL_GetCurrentoffset);
-	CMPARSE_AddCommand("device stream create", 			prvCONTROL_StreamCreate);
+	CMPARSE_AddCommand("device adc speriod set", 		prvCONTROL_SetSamplingtime);
+	CMPARSE_AddCommand("device adc speriod get", 		prvCONTROL_GetSamplingtime);
+	CMPARSE_AddCommand("device adc voffset set", 		prvCONTROL_SetVoltageoffset);
+	CMPARSE_AddCommand("device adc voffset get", 		prvCONTROL_GetVoltageoffset);
+	CMPARSE_AddCommand("device adc coffset set", 		prvCONTROL_SetCurrentoffset);
+	CMPARSE_AddCommand("device adc coffset get", 		prvCONTROL_GetCurrentoffset);
+	CMPARSE_AddCommand("device adc clk get", 			prvCONTROL_GetADCInputClk);
 
 	return CONTROL_STATUS_OK;
 }

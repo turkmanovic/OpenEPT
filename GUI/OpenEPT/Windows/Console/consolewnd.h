@@ -1,6 +1,5 @@
 #ifndef CONSOLEWND_H
 #define CONSOLEWND_H
-
 #include <QWidget>
 #include "Utility/log.h"
 
@@ -27,6 +26,13 @@ private slots:
 private:
     Ui::ConsoleWnd *ui;
     Log             logUtil;
+
+    QStringList     entries;
+    int             lastIndex;
+
+protected:
+    void keyPressEvent(QKeyEvent *event);
+
 
 };
 

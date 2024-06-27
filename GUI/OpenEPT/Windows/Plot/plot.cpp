@@ -1,3 +1,4 @@
+#include <QtOpenGL>
 #include "plot.h"
 
 #define BUTTONS_SIZE 30
@@ -13,6 +14,7 @@ Plot::Plot(int mw, int mh, QWidget *parent)
     plot->setOpenGl(true);
     plot->setMinimumSize(mw, mh);
     plot->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    plot->setAntialiasedElements(QCP::aeAll);
 
     plot->addGraph(); // blue line
     plot->graph(0)->setPen(QPen(QColor(40, 110, 255)));
@@ -48,21 +50,21 @@ Plot::Plot(int mw, int mh, QWidget *parent)
     QIcon zoomExpandIcon(zoomExpandPng);
     zoomExpand->setIcon(zoomExpandIcon);
     zoomExpand->setIconSize(QSize(15,15));
-    zoomExpand->setToolTip("Zoom out");
+    zoomExpand->setToolTip("Fit to full data");
     zoomExpand->setFixedSize(BUTTONS_SIZE, BUTTONS_SIZE);
 
     QPixmap zoomAreaPng(":/images/NewSet/zoom_area.png");
     QIcon zoomAreaIcon(zoomAreaPng);
     zoomArea->setIcon(zoomAreaIcon);
     zoomArea->setIconSize(QSize(15,15));
-    zoomArea->setToolTip("Zoom out");
+    zoomArea->setToolTip("Zoom area");
     zoomArea->setFixedSize(BUTTONS_SIZE, BUTTONS_SIZE);
 
     QPixmap moveGraphPng(":/images/NewSet/moveGraph.png");
     QIcon moveGraphIcon(moveGraphPng);
     moveGraph->setIcon(moveGraphIcon);
     moveGraph->setIconSize(QSize(15,15));
-    moveGraph->setToolTip("Zoom out");
+    moveGraph->setToolTip("Move graph");
     moveGraph->setFixedSize(BUTTONS_SIZE, BUTTONS_SIZE);
 
     QPixmap trackGraphPng(":/images/NewSet/tracking_graph.png");
@@ -90,10 +92,11 @@ Plot::Plot(int mw, int mh, QWidget *parent)
     plotLayout->setSpacing(3);
 
     plot->plotLayout()->insertRow(0);
-    title = new QCPTextElement(plot, "NN", QFont("Times", 17, QFont::Bold));
+    title = new QCPTextElement(plot, "NN", QFont("Helvetica", 16));
     plot->plotLayout()->addElement(0, 0, title);
 
-    enableTracking = false;
+    enableTracking      = true;
+    replotActive        = true;
 
     connect(zoomIn, SIGNAL(pressed()), this, SLOT(onZoomIn()));
     connect(zoomOut, SIGNAL(pressed()), this, SLOT(onZoomOut()));
@@ -101,33 +104,39 @@ Plot::Plot(int mw, int mh, QWidget *parent)
     connect(zoomArea, SIGNAL(pressed()), this, SLOT(onZoomArea()));
     connect(moveGraph, SIGNAL(pressed()), this, SLOT(onMoveGraph()));
     connect(trackGraph, SIGNAL(pressed()), this, SLOT(onTrackGraph()));
+    setButtonStyle();
 }
 void        Plot::setData(QVector<double> data, QVector<double> keys)
 {
-    plot->graph(0)->setData(keys, data, true);
-    if(enableTracking){
+    xData = keys;
+    yData = data;
+    if(replotActive)
+    {
+        plot->graph(0)->setData(xData, yData, true);
         plot->rescaleAxes(true);
-        plot->yAxis->rescale(true);
-        plot->xAxis->rescale(true);
+        plot->replot();
     }
-    plot->replot();
 }
 void        Plot::appendData(QVector<double> data, QVector<double> keys)
 {
-    plot->graph(0)->addData(keys, data);
-    if(enableTracking){
-        plot->rescaleAxes(true);
-        plot->yAxis->rescale(true);
-        plot->xAxis->rescale(true);
+    //plot->graph(0)->addData(keys, data);
+    xData.append(keys);
+    yData.append(data);
+    if(xData.size() > 10000000)
+    {
+        xData.remove(0,data.size());
+        yData.remove(0,data.size());
     }
-    else{
+    if(replotActive)
+    {
         double minxValue = keys.at(keys.size()-1) - 10000 ;
         if(minxValue < 0) minxValue = 0;
         double maxxValue = keys.at(keys.size()-1);
+        plot->graph(0)->setData(xData, yData, true);
         plot->xAxis->setRange(minxValue, maxxValue);
         plot->yAxis->rescale(true);
+        plot->replot();
     }
-    plot->replot();
 
 }
 void        Plot::setYRange(double min, double max)
@@ -159,6 +168,8 @@ void        Plot::clear()
 {
     plot->graph(0)->data()->clear();
     plot->replot();
+    xData.clear();
+    yData.clear();
 
 }
 void        Plot::onZoomIn()
@@ -168,6 +179,7 @@ void        Plot::onZoomIn()
     plot->xAxis->scaleRange(.85, plot->xAxis->range().center());
     plot->yAxis->scaleRange(.85, plot->yAxis->range().center());
     plot->replot();
+    setButtonStyle();
 }
 void        Plot::onZoomOut()
 {
@@ -176,6 +188,7 @@ void        Plot::onZoomOut()
     plot->xAxis->scaleRange(1.25, plot->xAxis->range().center());
     plot->yAxis->scaleRange(1.25, plot->yAxis->range().center());
     plot->replot();
+    setButtonStyle();
 }
 void        Plot::onZoomExpand()
 {
@@ -184,6 +197,7 @@ void        Plot::onZoomExpand()
     plot->rescaleAxes(true);
     plot->setSelectionRectMode(QCP::srmZoom);
     plot->replot();
+    setButtonStyle();
 }
 void        Plot::onZoomArea()
 {
@@ -193,6 +207,7 @@ void        Plot::onZoomArea()
     plot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
     plot->setSelectionRectMode(QCP::srmZoom);
     plot->replot();
+    setButtonStyle();
 }
 void        Plot::onMoveGraph()
 {
@@ -201,8 +216,34 @@ void        Plot::onMoveGraph()
     plot->setInteraction(QCP::iSelectPlottables, true);
     plot->setSelectionRectMode(QCP::srmNone);
     plot->replot();
+    setButtonStyle();
 }
 void       Plot::onTrackGraph()
 {
     enableTracking = enableTracking == false? true : false;
+    replotActive = enableTracking;
+    setButtonStyle();
+}
+
+void Plot::setButtonStyle()
+{
+    if(enableTracking)
+    {
+        trackGraph->setStyleSheet("background-color:  rgb(255,197,172);");
+        zoomIn->setEnabled(false);
+        zoomOut->setEnabled(false);
+        moveGraph->setEnabled(false);
+        zoomExpand->setEnabled(false);
+        zoomArea->setEnabled(false);
+    }
+    else
+    {
+        trackGraph->setStyleSheet("background-color:  rgb(255,255,255);");
+        zoomIn->setEnabled(true);
+        zoomOut->setEnabled(true);
+        moveGraph->setEnabled(true);
+        zoomExpand->setEnabled(true);
+        zoomArea->setEnabled(true);
+    }
+
 }

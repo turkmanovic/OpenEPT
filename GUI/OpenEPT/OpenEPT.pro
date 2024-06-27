@@ -1,11 +1,12 @@
-QT       += core gui uitools
+QT       += core gui uitools opengl
 QT       += network
 LIBS     += -lws2_32
+#LIBS     += -lws2_32 -lOpenGL32
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 CONFIG += c++17
-
+#DEFINES += QCUSTOMPLOT_USE_OPENGL
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
@@ -14,6 +15,9 @@ SOURCES += \
     Chart/qcustomplot.cpp \
     Links/controllink.cpp \
     Links/statuslink.cpp \
+    Links/streamlink.cpp \
+    Processing/dataprocessing.cpp \
+    Processing/fileprocessing.cpp \
     Utility/log.cpp \
     Windows/AddDevice/adddevicewnd.cpp \
     Windows/Console/consolewnd.cpp \
@@ -29,6 +33,9 @@ HEADERS += \
     Chart/qcustomplot.h \
     Links/controllink.h \
     Links/statuslink.h \
+    Links/streamlink.h \
+    Processing/dataprocessing.h \
+    Processing/fileprocessing.h \
     Utility/log.h \
     Windows/AddDevice/adddevicewnd.h \
     Windows/Console/consolewnd.h \

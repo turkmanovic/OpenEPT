@@ -36,7 +36,10 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../../resource.qrc">
-    <normaloff>:/images/console.png</normaloff>:/images/console.png</iconset>
+    <normaloff>:/images/NewSet/console.png</normaloff>:/images/NewSet/console.png</iconset>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
@@ -67,28 +70,79 @@
         <enum>QLayout::SetMaximumSize</enum>
        </property>
        <item>
-        <widget class="QPushButton" name="controPlaceholder2">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="loadScriptPusb">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="minimumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Load script</string>
+         </property>
          <property name="text">
-          <string>controPlaceholder1</string>
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../resource.qrc">
+           <normaloff>:/images/NewSet/load.png</normaloff>:/images/NewSet/load.png</iconset>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="controPlaceholder1">
+        <widget class="QPushButton" name="saveLogPusb">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="minimumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Save log</string>
+         </property>
          <property name="text">
-          <string>controPlaceholder2</string>
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../resource.qrc">
+           <normaloff>:/images/NewSet/save.png</normaloff>:/images/NewSet/save.png</iconset>
          </property>
         </widget>
        </item>

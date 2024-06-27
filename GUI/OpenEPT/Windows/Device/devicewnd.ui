@@ -97,9 +97,9 @@
               </widget>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="deviceVerlSamplingTimeHorl">
+              <layout class="QHBoxLayout" name="deviceVerlSamplingPeriodHorl">
                <item>
-                <widget class="QLabel" name="samplingTimeLabe">
+                <widget class="QLabel" name="samplingPeriodLabe">
                  <property name="minimumSize">
                   <size>
                    <width>120</width>
@@ -113,12 +113,12 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>Sampling Time</string>
+                  <string>Sampling Period [us]</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="samplingTimeLine">
+                <widget class="QLineEdit" name="samplingPeriodLine">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -532,9 +532,9 @@
               </layout>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="systemVerlAcquisitionTypeConAverHorl">
+              <layout class="QHBoxLayout" name="systemVerlConsumptionTypeConAverHorl">
                <item>
-                <widget class="QLabel" name="acquisitionTypeLabe">
+                <widget class="QLabel" name="consumptionTypeLabe">
                  <property name="minimumSize">
                   <size>
                    <width>120</width>
@@ -548,14 +548,14 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>Acquisiton type</string>
+                  <string>Consumption type</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <layout class="QVBoxLayout" name="acquisitionTypeConAverHorlConAverVerl">
+                <layout class="QVBoxLayout" name="consumptionTypeConAverHorlConAverVerl">
                  <item>
-                  <widget class="QRadioButton" name="continousRadb">
+                  <widget class="QRadioButton" name="cumulativeRadb">
                    <property name="minimumSize">
                     <size>
                      <width>80</width>
@@ -569,12 +569,12 @@
                     </size>
                    </property>
                    <property name="text">
-                    <string>Contionus</string>
+                    <string>Cumulative</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QRadioButton" name="averagingRadb">
+                  <widget class="QRadioButton" name="currentRadb">
                    <property name="minimumSize">
                     <size>
                      <width>80</width>
@@ -588,14 +588,14 @@
                     </size>
                    </property>
                    <property name="text">
-                    <string>Averaging</string>
+                    <string>Current</string>
                    </property>
                   </widget>
                  </item>
                 </layout>
                </item>
                <item>
-                <spacer name="acquisitionTypeHors">
+                <spacer name="consumptionTypeHors">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -1063,7 +1063,7 @@
                  </property>
                  <property name="icon">
                   <iconset resource="../../resource.qrc">
-                   <normaloff>:/images/console.png</normaloff>:/images/console.png</iconset>
+                   <normaloff>:/images/NewSet/console.png</normaloff>:/images/NewSet/console.png</iconset>
                  </property>
                  <property name="iconSize">
                   <size>
@@ -1346,7 +1346,14 @@
               </size>
              </property>
              <property name="text">
-              <string>Drop rate %</string>
+              <string>Drop rate</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="statisticsDropRateNoLabe">
+             <property name="text">
+              <string>TextLabel</string>
              </property>
             </widget>
            </item>
@@ -1434,7 +1441,7 @@
               </size>
              </property>
              <property name="text">
-              <string>Sampling time[ms]:</string>
+              <string>Sampling time [ms]:</string>
              </property>
             </widget>
            </item>
@@ -1454,6 +1461,82 @@
              </property>
              <property name="text">
               <string>0.02848</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="statisticsSamplingPeriodLabe">
+             <property name="minimumSize">
+              <size>
+               <width>120</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>120</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Sampling period [us]</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="statisticsSamplingPeriodLabe2">
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>0</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="statisticsAcquisitionDurationLabe">
+             <property name="minimumSize">
+              <size>
+               <width>120</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>120</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Acquisition Duration</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="statisticsAcquisitionDurationValueLabe">
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>0</string>
              </property>
             </widget>
            </item>
