@@ -29,7 +29,7 @@
 #include "network.h"
 #include "control.h"
 #include "sstream.h"
-
+#include "energy_debugger.h"
 
 
 typedef  struct
@@ -84,6 +84,12 @@ static void prvSYSTEM_Task()
 				break;
 			}
 			LOGGING_Write("System", LOGGING_MSG_TYPE_INFO, "Logging service successfully initialized\r\n");
+			if(ENERGY_DEBUGGER_Init(2000) != ENERGY_DEBUGGER_STATUS_OK)
+						{
+							prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
+							break;
+						}
+			LOGGING_Write("System", LOGGING_MSG_TYPE_INFO, "Energy debugger service successfully initialized\r\n");
 			if(NETWORK_Init(2000) != NETWORK_STATUS_OK)
 			{
 				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;

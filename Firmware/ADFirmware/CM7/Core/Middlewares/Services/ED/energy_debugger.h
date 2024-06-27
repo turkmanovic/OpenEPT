@@ -16,6 +16,8 @@
 #define ENERGY_DEBUGGER_TASK_PRIO			CONF_ENERGY_DEBUGGER_TASK_PRIO
 #define ENERGY_DEBUGGER_STACK_SIZE			CONF_ENERGY_DEBUGGER_STACK_SIZE
 
+//prvo ovde staviti pa se referencirati iz config fajla
+
 typedef enum
 {
 	ENERGY_DEBUGGER_STATE_INIT,
@@ -30,4 +32,6 @@ typedef enum
 }energy_debugger_status_t;
 
 energy_debugger_status_t ENERGY_DEBUGGER_Init(uint32_t timeout);
+void ButtonPressedCallback(uint16_t GPIO_Pin);
+
 #endif /* CORE_MIDDLEWARES_SERVICES_ED_ENERGY_DEBUGGER_H_ */

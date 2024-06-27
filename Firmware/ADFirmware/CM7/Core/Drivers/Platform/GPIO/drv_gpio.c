@@ -9,6 +9,7 @@
  */
 #include "drv_gpio.h"
 #include "main.h"
+#include <string.h>
 
 
 static drv_gpio_port_handle_t 		prvDRV_GPIO_PORTS[DRV_GPIO_PORT_MAX_NUMBER];
@@ -59,6 +60,7 @@ static uint32_t	prvDRV_GPIO_Pin_GetModeCode(drv_gpio_pin_mode_t mode)
 	case	DRV_GPIO_PIN_MODE_EVT_RISING_FALLING:
 		return GPIO_MODE_EVT_RISING_FALLING;
 	}
+	return 0;
 }
 
 drv_gpio_status_t DRV_GPIO_Init()
@@ -238,3 +240,27 @@ drv_gpio_status_t DRV_GPIO_Pin_EnableInt(drv_gpio_port_t port, drv_gpio_pin pin,
 	return DRV_GPIO_STATUS_OK;
 }
 
+drv_gpio_status_t DRV_GPIO_RegisterCallback(drv_gpio_port_t port, drv_gpio_pin pin, drv_gpio_pin_isr_callback callback, uint32_t priority)
+{
+    // Ensure the port is initialized
+    if(prvDRV_GPIO_PORTS[port].initState != DRV_GPIO_PORT_INIT_STATUS_INITIALIZED || prvDRV_GPIO_PORTS[port].lock == NULL)
+        return DRV_GPIO_STATUS_ERROR;
+
+    // Ensure the pin number is valid
+    if(pin > DRV_GPIO_PIN_MAX_NUMBER || pin > DRV_GPIO_INTERRUPTS_MAX_NUMBER)
+        return DRV_GPIO_STATUS_ERROR;
+
+    // Store the callback
+    prvDRV_GPIO_PINS_INTERRUPTS[pin] = callback;
+
+    // Enable the interrupt for the specified pin
+    drv_gpio_status_t status = DRV_GPIO_Pin_EnableInt(port, pin, priority, callback);
+
+    return status;
+}
+
+void DRV_GPIO_ClearInterruptFlag(uint16_t GPIO_Pin)
+{
+    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_Pin);
+
+}

@@ -48,7 +48,7 @@
 	<variableList>
 		<variable>
 			<name>PROJECT_ROOT</name>
-			<value>file:/D:/Dokumenti/Hari_Projekat/repo/OpenEPT/Firmware/ADFirmware</value>
+			<value>file:/D:/prof_Hari/OpenEPT/Firmware/ADFirmware</value>
 		</variable>
 	</variableList>
 </projectDescription>

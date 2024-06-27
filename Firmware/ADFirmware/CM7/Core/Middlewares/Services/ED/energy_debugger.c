@@ -25,6 +25,24 @@ typedef struct energy_debugger_data {
 
 static energy_debugger_data prvENERGY_DEBUGGER_DATA;
 
+
+static void prvEDEBUGGING_ButtonPressedCallback(uint16_t GPIO_Pin)
+{
+	DRV_GPIO_ClearInterruptFlag(GPIO_Pin);
+
+    // Increment the button click counter
+    prvENERGY_DEBUGGER_DATA.button_click_counter++;
+
+    // Log the button press
+    //LOGGING_Write("Energy Debugger", LOGGING_MSG_TYPE_INFO, "Button pressed! Count: %d\r\n", prvENERGY_DEBUGGER_DATA.button_click_counter);
+
+    // Change state if needed
+    if (prvENERGY_DEBUGGER_DATA.state == ENERGY_DEBUGGER_STATE_INIT)
+    {
+        prvENERGY_DEBUGGER_DATA.state = ENERGY_DEBUGGER_STATE_SERVICE;
+    }
+}
+
 static void prvENERGY_DEBUGGER_Task()
 {
 		LOGGING_Write("Energy Debugger", LOGGING_MSG_TYPE_INFO, "Energy Debugger service started\r\n");
@@ -33,11 +51,40 @@ static void prvENERGY_DEBUGGER_Task()
 			switch(prvENERGY_DEBUGGER_DATA.state)
 			{
 			case ENERGY_DEBUGGER_STATE_INIT:
+			    // Initialize the GPIO driver
+			    if (DRV_GPIO_Init() != DRV_GPIO_STATUS_OK)
+			    	prvENERGY_DEBUGGER_DATA.state = ENERGY_DEBUGGER_STATE_ERROR;
 
-				prvENERGY_DEBUGGER_DATA.state = ENERGY_DEBUGGER_STATE_SERVICE;
+			    // Initialize the GPIO port (assuming the button is on port A)
+			    if (DRV_GPIO_Port_Init(DRV_GPIO_PORT_C) != DRV_GPIO_STATUS_OK)
+			    	prvENERGY_DEBUGGER_DATA.state = ENERGY_DEBUGGER_STATE_ERROR;
+
+			    // Configure the pin for the button (assuming the button is on pin 0)
+			    drv_gpio_pin_init_conf_t button_pin_conf;
+			    button_pin_conf.mode = DRV_GPIO_PIN_MODE_IT_RISING;
+			    button_pin_conf.pullState = DRV_GPIO_PIN_PULL_NOPULL;
+			    //Definisati pin preko makroa
+			    if (DRV_GPIO_Pin_Init(DRV_GPIO_PORT_C, 13, &button_pin_conf) != DRV_GPIO_STATUS_OK)
+			    {
+			    	prvENERGY_DEBUGGER_DATA.state = ENERGY_DEBUGGER_STATE_ERROR;
+			    	break;
+			    }
+
+			    // Register the button press callback
+			    // Koristiti vec definisani makro za pin i izvesti priproitet na isti nacin kao sto je uradjeno za pin
+			    if (DRV_GPIO_RegisterCallback(DRV_GPIO_PORT_C, 13, prvEDEBUGGING_ButtonPressedCallback, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY) != DRV_GPIO_STATUS_OK)
+			    {
+			    	prvENERGY_DEBUGGER_DATA.state = ENERGY_DEBUGGER_STATE_ERROR;
+			    	break;
+			    }
+			    prvENERGY_DEBUGGER_DATA.state = ENERGY_DEBUGGER_STATE_SERVICE;
 				break;
 			case ENERGY_DEBUGGER_STATE_SERVICE:
-
+				if (prvENERGY_DEBUGGER_DATA.button_click_counter > 0)
+				{
+					prvENERGY_DEBUGGER_DATA.button_click_counter = 0;
+					DRV_AIN_Stream_SetCapture();
+				}
 				break;
 			case ENERGY_DEBUGGER_STATE_ERROR:
 				SYSTEM_ReportError(SYSTEM_ERROR_LEVEL_LOW);
@@ -50,12 +97,14 @@ static void prvENERGY_DEBUGGER_Task()
 
 energy_debugger_status_t ENERGY_DEBUGGER_Init(uint32_t timeout)
 {
-	if(xTaskCreate(prvENERGY_DEBUGGER_Task,
-			ENERGY_DEBUGGER_TASK_NAME,
-			ENERGY_DEBUGGER_STACK_SIZE,
-			NULL,
-			ENERGY_DEBUGGER_TASK_PRIO,
-			&prvENERGY_DEBUGGER_TASK_HANDLE) != pdTRUE) return ENERGY_DEBUGGER_STATUS_ERROR;
+    // Create the task
+    if(xTaskCreate(prvENERGY_DEBUGGER_Task,
+            ENERGY_DEBUGGER_TASK_NAME,
+            ENERGY_DEBUGGER_STACK_SIZE,
+            NULL,
+            ENERGY_DEBUGGER_TASK_PRIO,
+            &prvENERGY_DEBUGGER_TASK_HANDLE) != pdTRUE) return ENERGY_DEBUGGER_STATUS_ERROR;
 
-	return ENERGY_DEBUGGER_STATUS_OK;
+    return ENERGY_DEBUGGER_STATUS_OK;
 }
+

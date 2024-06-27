@@ -18,6 +18,8 @@
 
 #include "globalConfig.h"
 
+#include "stm32h7xx_hal.h"
+
 #define DRV_GPIO_PORT_MAX_NUMBER		CONF_GPIO_PORT_MAX_NUMBER
 #define DRV_GPIO_PIN_MAX_NUMBER			CONF_GPIO_PIN_MAX_NUMBER
 #define DRV_GPIO_INTERRUPTS_MAX_NUMBER	CONF_GPIO_INTERRUPTS_MAX_NUMBER
@@ -90,7 +92,7 @@ typedef enum
 typedef enum
 {
 	DRV_GPIO_PIN_PULL_NOPULL 	= 0,
-	DRV_GPIO_PIN_PuLL_DOWN		= 1,
+	DRV_GPIO_PIN_PULL_DOWN		= 1,
 	DRV_GPIO_PIN_PULL_UP		= 2
 }drv_gpio_pin_pull_t;
 
@@ -110,7 +112,7 @@ drv_gpio_status_t DRV_GPIO_Pin_Init(drv_gpio_port_t port, drv_gpio_pin pin, drv_
 drv_gpio_status_t DRV_GPIO_Pin_SetState(drv_gpio_port_t port, drv_gpio_pin pin, drv_gpio_pin_state_t state);
 drv_gpio_status_t DRV_GPIO_Pin_ToogleFromISR(drv_gpio_port_t port, drv_gpio_pin pin);
 drv_gpio_status_t DRV_GPIO_Pin_EnableInt(drv_gpio_port_t port, drv_gpio_pin pin, uint32_t pri, drv_gpio_pin_isr_callback callback);
-
-
+drv_gpio_status_t DRV_GPIO_RegisterCallback(drv_gpio_port_t port, drv_gpio_pin pin, drv_gpio_pin_isr_callback callback, uint32_t priority);
+void DRV_GPIO_ClearInterruptFlag(uint16_t GPIO_Pin);
 
 #endif /* CORE_DRIVERS_PLATFORM_GPIO_GPIO_H_ */

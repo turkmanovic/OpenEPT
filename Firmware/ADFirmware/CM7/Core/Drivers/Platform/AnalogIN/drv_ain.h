@@ -15,8 +15,9 @@
 #include "globalConfig.h"
 
 
-#define DRV_AIN_ADC_BUFFER_MAX_SIZE	CONF_AIN_MAX_BUFFER_SIZE
-#define DRV_AIN_ADC_BUFFER_NO		CONF_AIN_MAX_BUFFER_NO
+#define DRV_AIN_ADC_BUFFER_MAX_SIZE				CONF_AIN_MAX_BUFFER_SIZE
+#define DRV_AIN_ADC_BUFFER_NO					CONF_AIN_MAX_BUFFER_NO
+#define DRV_AIN_ADC_BUTTON_ISR_COMPLETED_BIT	5
 
 typedef enum
 {
@@ -115,5 +116,6 @@ drv_ain_status 						DRV_AIN_GetADCClk(drv_ain_adc_t adc, uint32_t *clk);
 drv_ain_status 						DRV_AIN_Stream_Enable(drv_ain_adc_t adc, uint32_t sampleSize); // Enable DMA
 drv_ain_status 						DRV_AIN_Stream_RegisterCallback(drv_ain_adc_t adc, drv_ain_adc_stream_callback cbfunction);
 drv_ain_status 						DRV_AIN_Stream_SubmitAddr(drv_ain_adc_t adc, uint32_t addr);
+drv_ain_status 						DRV_AIN_Stream_SetCapture(void);
 
 #endif /* CORE_DRIVERS_PLATFORM_ANALOGIN_AIN_H_ */

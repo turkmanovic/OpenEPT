@@ -497,3 +497,9 @@ drv_ain_status 						DRV_AIN_Stream_SubmitAddr(drv_ain_adc_t adc, uint32_t addr)
 	return DRV_AIN_STATUS_OK;
 }
 
+drv_ain_status 						DRV_AIN_Stream_SetCapture(void)
+{
+	prvDRV_AIN_ADC_DATA_SAMPLES[0][1] |= (1 << DRV_AIN_ADC_BUTTON_ISR_COMPLETED_BIT);
+	prvDRV_AIN_ADC_DATA_SAMPLES[1][1] |= (1 << DRV_AIN_ADC_BUTTON_ISR_COMPLETED_BIT);
+	return DRV_AIN_STATUS_OK;
+}
