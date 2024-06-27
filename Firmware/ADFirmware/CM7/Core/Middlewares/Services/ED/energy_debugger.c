@@ -55,24 +55,23 @@ static void prvENERGY_DEBUGGER_Task()
 			    if (DRV_GPIO_Init() != DRV_GPIO_STATUS_OK)
 			    	prvENERGY_DEBUGGER_DATA.state = ENERGY_DEBUGGER_STATE_ERROR;
 
-			    // Initialize the GPIO port (assuming the button is on port A)
+			    // Initialize the GPIO port
 			    if (DRV_GPIO_Port_Init(DRV_GPIO_PORT_C) != DRV_GPIO_STATUS_OK)
 			    	prvENERGY_DEBUGGER_DATA.state = ENERGY_DEBUGGER_STATE_ERROR;
 
-			    // Configure the pin for the button (assuming the button is on pin 0)
+			    // Configure the pin for the button
 			    drv_gpio_pin_init_conf_t button_pin_conf;
 			    button_pin_conf.mode = DRV_GPIO_PIN_MODE_IT_RISING;
 			    button_pin_conf.pullState = DRV_GPIO_PIN_PULL_NOPULL;
 			    //Definisati pin preko makroa
-			    if (DRV_GPIO_Pin_Init(DRV_GPIO_PORT_C, 13, &button_pin_conf) != DRV_GPIO_STATUS_OK)
+			    if (DRV_GPIO_Pin_Init(DRV_GPIO_PORT_C, ENERGY_DEBUGGER_BUTTON_PIN, &button_pin_conf) != DRV_GPIO_STATUS_OK)
 			    {
 			    	prvENERGY_DEBUGGER_DATA.state = ENERGY_DEBUGGER_STATE_ERROR;
 			    	break;
 			    }
 
 			    // Register the button press callback
-			    // Koristiti vec definisani makro za pin i izvesti priproitet na isti nacin kao sto je uradjeno za pin
-			    if (DRV_GPIO_RegisterCallback(DRV_GPIO_PORT_C, 13, prvEDEBUGGING_ButtonPressedCallback, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY) != DRV_GPIO_STATUS_OK)
+			    if (DRV_GPIO_RegisterCallback(DRV_GPIO_PORT_C, ENERGY_DEBUGGER_BUTTON_PIN, prvEDEBUGGING_ButtonPressedCallback, ENERGY_DEBUGGER_BUTTON_ISR_PRIO) != DRV_GPIO_STATUS_OK)
 			    {
 			    	prvENERGY_DEBUGGER_DATA.state = ENERGY_DEBUGGER_STATE_ERROR;
 			    	break;
