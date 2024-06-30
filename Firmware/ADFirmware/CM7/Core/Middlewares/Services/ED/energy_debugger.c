@@ -18,12 +18,12 @@
 
 static 	TaskHandle_t 			prvENERGY_DEBUGGER_TASK_HANDLE;
 
-typedef struct energy_debugger_data {
+typedef struct energy_debugger_data_t {
 	uint8_t button_click_counter;
 	energy_debugger_state_t state;
-} energy_debugger_data;
+} energy_debugger_data_t;
 
-static energy_debugger_data prvENERGY_DEBUGGER_DATA;
+static energy_debugger_data_t prvENERGY_DEBUGGER_DATA;
 
 
 static void prvEDEBUGGING_ButtonPressedCallback(uint16_t GPIO_Pin)
