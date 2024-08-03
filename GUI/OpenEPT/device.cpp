@@ -96,7 +96,7 @@ bool Device::createStreamLink(QString ip, quint16 port, int* id)
     connect(dataProcessing, SIGNAL(sigNewConsumptionDataReceived(QVector<double>,QVector<double>,dataprocessing_consumption_mode_t)),
             this, SLOT(onNewConsumptionDataReceived(QVector<double>,QVector<double>,dataprocessing_consumption_mode_t)));
 
-    connect(dataProcessing, SIGNAL(sigSamplesBufferReceiveStatistics(double,uint,uint,uint)), this, SLOT(onNewSamplesBuffersProcessingStatistics(double,uint,uint,uint)));
+    connect(dataProcessing, SIGNAL(sigSamplesBufferReceiveStatistics(double,uint,uint,uint,unsigned short)), this, SLOT(onNewSamplesBuffersProcessingStatistics(double,uint,uint,uint,unsigned short)));
     /*  */
     if(!controlLink->executeCommand(command, &response, 1000)) return false;
     streamID = response.toInt();
@@ -706,9 +706,9 @@ void Device::onNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector
     emit sigVoltageCurrentSamplesReceived(voltage, current, voltageKeys, currentKeys);
 }
 
-void Device::onNewSamplesBuffersProcessingStatistics(double dropRate,  unsigned int dropPacketsNo, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID)
+void Device::onNewSamplesBuffersProcessingStatistics(double dropRate,  unsigned int dropPacketsNo, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID, unsigned short ebp)
 {
-    emit sigNewSamplesBuffersProcessingStatistics(dropRate, dropPacketsNo, fullReceivedBuffersNo, lastBufferID);
+    emit sigNewSamplesBuffersProcessingStatistics(dropRate, dropPacketsNo, fullReceivedBuffersNo, lastBufferID, ebp);
 }
 
 void Device::onNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t mode)

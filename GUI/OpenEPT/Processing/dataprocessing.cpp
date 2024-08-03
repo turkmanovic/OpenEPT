@@ -1,3 +1,4 @@
+#include <QDebug>
 #include "qmath.h"
 #include "dataprocessing.h"
 
@@ -85,6 +86,7 @@ bool DataProcessing::setAcquisitionStatus(dataprocessing_acquisition_status_t aA
     dropPacketsNo               = 0;
     firstPacketReceived         = false;
     receivedPacketCounter       = 0;
+    ebpNo                       = 0;
     lastCumulativeCurrentConsumptionValue = 0;
     initBuffers();
 
@@ -97,6 +99,16 @@ void DataProcessing::onNewSampleBufferReceived(QVector<double> rawData, int pack
     double          dropRate = 0;
     unsigned int    i = 0;
     unsigned int    j = 0;
+    unsigned short  ebp = (unsigned short)(magic >> 16);
+
+    if(ebp != 0)
+    {
+        qDebug() << "EBP detected";
+        ebpNo += 1;
+    }
+
+    /*set ebp flags*/
+    ebpFlags[currentNumberOfBuffers] = ebp;
 
     /* Calculate packet statistics */
     if(firstPacketReceived)
@@ -144,11 +156,13 @@ void DataProcessing::onNewSampleBufferReceived(QVector<double> rawData, int pack
         j +=1;
     }
 
+
+
     currentNumberOfBuffers += 1;
     if(currentNumberOfBuffers == maxNumberOfBuffers)
     {
         emit sigNewVoltageCurrentSamplesReceived(voltageDataCollected, currentDataCollected, voltageKeysDataCollected, currentKeysDataCollected);
-        emit sigSamplesBufferReceiveStatistics(dropRate, dropPacketsNo, receivedPacketCounter, lastReceivedPacketID);
+        emit sigSamplesBufferReceiveStatistics(dropRate, dropPacketsNo, receivedPacketCounter, lastReceivedPacketID, ebpNo);
         switch(consumptionMode)
         {
         case DATAPROCESSING_CONSUMPTION_MODE_CURRENT:
@@ -168,6 +182,7 @@ void DataProcessing::initBuffers()
     initCurrentBuffer();
     initConsumptionBuffer();
     initKeyBuffer();
+    initEBPBuffer();
 }
 
 void DataProcessing::initVoltageBuffer()
@@ -205,4 +220,10 @@ void DataProcessing::initKeyBuffer()
     consumptionKeysDataCollected.fill(0);
     currentNumberOfBuffers = 0;
     lastBufferUsedPositionIndex = 0;
+}
+
+void DataProcessing::initEBPBuffer()
+{
+    ebpFlags.resize(maxNumberOfBuffers*samplesBufferSize);
+    ebpFlags.fill(0);
 }
