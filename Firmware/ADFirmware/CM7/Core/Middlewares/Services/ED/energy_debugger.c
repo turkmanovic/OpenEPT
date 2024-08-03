@@ -28,6 +28,7 @@ static energy_debugger_data_t prvENERGY_DEBUGGER_DATA;
 
 static void prvEDEBUGGING_ButtonPressedCallback(uint16_t GPIO_Pin)
 {
+	BaseType_t *pxHigherPriorityTaskWoken = pdFALSE;
 	DRV_GPIO_ClearInterruptFlag(GPIO_Pin);
 
     // Increment the button click counter
@@ -41,13 +42,15 @@ static void prvEDEBUGGING_ButtonPressedCallback(uint16_t GPIO_Pin)
     {
         prvENERGY_DEBUGGER_DATA.state = ENERGY_DEBUGGER_STATE_SERVICE;
     }
-    /*TODO: Currently this is located here for testing purposes*/
-    DRV_AIN_Stream_SetCapture();
+    xTaskNotifyFromISR(prvENERGY_DEBUGGER_TASK_HANDLE, 0x01, eSetBits, pxHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(pxHigherPriorityTaskWoken);
+
 }
 
 static void prvENERGY_DEBUGGER_Task()
 {
 		LOGGING_Write("Energy Debugger", LOGGING_MSG_TYPE_INFO, "Energy Debugger service started\r\n");
+		uint32_t notifyValue;
 		for(;;)
 		{
 			switch(prvENERGY_DEBUGGER_DATA.state)
@@ -79,15 +82,10 @@ static void prvENERGY_DEBUGGER_Task()
 			    	break;
 			    }
 			    prvENERGY_DEBUGGER_DATA.state = ENERGY_DEBUGGER_STATE_SERVICE;
-			    /*TODO: Remove this*/
-				vTaskDelay(portMAX_DELAY);
 				break;
 			case ENERGY_DEBUGGER_STATE_SERVICE:
-				if (prvENERGY_DEBUGGER_DATA.button_click_counter > 0)
-				{
-					prvENERGY_DEBUGGER_DATA.button_click_counter = 0;
-					//DRV_AIN_Stream_SetCapture();
-				}
+				xTaskNotifyWait(0x0, 0xFFFFFFFF, &notifyValue, portMAX_DELAY);
+				DRV_AIN_Stream_SetCapture();
 				break;
 			case ENERGY_DEBUGGER_STATE_ERROR:
 				SYSTEM_ReportError(SYSTEM_ERROR_LEVEL_LOW);

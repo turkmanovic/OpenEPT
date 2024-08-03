@@ -103,7 +103,7 @@ void DataProcessing::onNewSampleBufferReceived(QVector<double> rawData, int pack
 
     if(ebp != 0)
     {
-        qDebug() << "EBP detected";
+        qDebug() << "EBP detected: " + ebpNo;
         ebpNo += 1;
     }
 
