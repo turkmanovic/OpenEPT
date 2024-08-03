@@ -29,6 +29,8 @@ static uint8_t							prvDRV_AIN_ADC_DATA_SAMPLES_ACTIVE[CONF_AIN_MAX_BUFFER_NO];
 static uint8_t							prvDRV_AIN_ADC_ACTIVE_BUFFER;
 static uint32_t							prvDRV_AIN_ADC_BUFFER_COUNTER;
 
+static uint8_t							prvDRV_AIN_CAPTURE_EVENT;
+
 
 /**
   * @brief This function handles ADC3 global interrupt.
@@ -207,14 +209,23 @@ static void							prvDRV_AIN_DMAHalfComplitedCallback(DMA_HandleTypeDef *_hdma)
 
 
 	/* Set buffer marker */
-	prvDRV_AIN_ADC_DATA_SAMPLES[prvDRV_AIN_ADC_ACTIVE_BUFFER][2] = DRV_AIN_ADC_BUFFER_MARKER >> 16;
-	prvDRV_AIN_ADC_DATA_SAMPLES[prvDRV_AIN_ADC_ACTIVE_BUFFER][3] = (uint16_t)DRV_AIN_ADC_BUFFER_MARKER;
+	prvDRV_AIN_ADC_DATA_SAMPLES[prvDRV_AIN_ADC_ACTIVE_BUFFER][2] = DRV_AIN_ADC_BUFFER_MARKER;
 
+	if(prvDRV_AIN_CAPTURE_EVENT == 1)
+	{
+		prvDRV_AIN_ADC_DATA_SAMPLES[prvDRV_AIN_ADC_ACTIVE_BUFFER][3] = 1;
+		prvDRV_AIN_CAPTURE_EVENT = 0;
+	}
+	else
+	{
+		prvDRV_AIN_ADC_DATA_SAMPLES[prvDRV_AIN_ADC_ACTIVE_BUFFER][3] = 0;
+	}
 
 	if(prvDRV_AIN_ADC_CALLBACK != 0)
 	{
 		prvDRV_AIN_ADC_CALLBACK((uint32_t)&prvDRV_AIN_ADC_DATA_SAMPLES[prvDRV_AIN_ADC_ACTIVE_BUFFER][0], prvDRV_AIN_ADC_ACTIVE_BUFFER);
 	}
+
 	/*Buffer is under processing*/
 	prvDRV_AIN_ADC_DATA_SAMPLES_ACTIVE[prvDRV_AIN_ADC_ACTIVE_BUFFER] = 1;
 
@@ -335,6 +346,7 @@ drv_ain_status 						DRV_AIN_Init(drv_ain_adc_t adc, drv_ain_adc_config_t* confi
 	prvDRV_AIN_ADC_CALLBACK		  	= 0;
 	prvDRV_AIN_ADC_ACTIVE_BUFFER	= 0;
 	prvDRV_AIN_ADC_BUFFER_COUNTER	= 0;
+	prvDRV_AIN_CAPTURE_EVENT		= 0;
 
 //	/* Start ADC */
 //	DRV_AIN_Start(DRV_AIN_ADC_3);
@@ -660,7 +672,7 @@ drv_ain_status 						DRV_AIN_Stream_SubmitAddr(drv_ain_adc_t adc, uint32_t addr,
 
 drv_ain_status 						DRV_AIN_Stream_SetCapture(void)
 {
-	prvDRV_AIN_ADC_DATA_SAMPLES[0][1] |= (1 << DRV_AIN_ADC_BUTTON_ISR_COMPLETED_BIT);
-	prvDRV_AIN_ADC_DATA_SAMPLES[1][1] |= (1 << DRV_AIN_ADC_BUTTON_ISR_COMPLETED_BIT);
+	//TODO: Should be protected
+	prvDRV_AIN_CAPTURE_EVENT = 1;
 	return DRV_AIN_STATUS_OK;
 }

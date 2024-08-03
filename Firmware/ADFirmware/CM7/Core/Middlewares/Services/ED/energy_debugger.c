@@ -41,6 +41,8 @@ static void prvEDEBUGGING_ButtonPressedCallback(uint16_t GPIO_Pin)
     {
         prvENERGY_DEBUGGER_DATA.state = ENERGY_DEBUGGER_STATE_SERVICE;
     }
+    /*TODO: Currently this is located here for testing purposes*/
+    DRV_AIN_Stream_SetCapture();
 }
 
 static void prvENERGY_DEBUGGER_Task()
@@ -77,12 +79,14 @@ static void prvENERGY_DEBUGGER_Task()
 			    	break;
 			    }
 			    prvENERGY_DEBUGGER_DATA.state = ENERGY_DEBUGGER_STATE_SERVICE;
+			    /*TODO: Remove this*/
+				vTaskDelay(portMAX_DELAY);
 				break;
 			case ENERGY_DEBUGGER_STATE_SERVICE:
 				if (prvENERGY_DEBUGGER_DATA.button_click_counter > 0)
 				{
 					prvENERGY_DEBUGGER_DATA.button_click_counter = 0;
-					DRV_AIN_Stream_SetCapture();
+					//DRV_AIN_Stream_SetCapture();
 				}
 				break;
 			case ENERGY_DEBUGGER_STATE_ERROR:
