@@ -106,6 +106,21 @@ Plot::Plot(int mw, int mh, QWidget *parent)
     connect(trackGraph, SIGNAL(pressed()), this, SLOT(onTrackGraph()));
     setButtonStyle();
 }
+
+void        Plot::scatterAddGraph()
+{
+    plot->addGraph();
+
+    plot->graph(1)->setLineStyle(QCPGraph::lsNone);  // No line
+    plot->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::red, 10));  // Red circle marker, size 10
+
+}
+
+void Plot::scatterAddData(QVector<double> data, QVector<double> keys)
+{
+    plot->graph(1)->setData(keys, data);
+    plot->replot();
+}
 void        Plot::setData(QVector<double> data, QVector<double> keys)
 {
     xData = keys;

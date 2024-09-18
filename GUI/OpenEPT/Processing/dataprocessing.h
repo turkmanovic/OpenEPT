@@ -42,7 +42,7 @@ signals:
     void                                sigNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys);
     void                                sigNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t consumptionMode);
     void                                sigSamplesBufferReceiveStatistics(double dropRate, unsigned int dopPacketsNo, unsigned int fullPacketCounter, unsigned int lastPacketID, unsigned short ebp);
-
+    void                                sigEBP(QVector<double> ebpValues, QVector<double> ebpKeys);
 
 public slots:
     void                                onNewSampleBufferReceived(QVector<double> rawData, int packetID,int magic);
@@ -87,6 +87,8 @@ private:
     QVector<double>                     currentKeysDataCollected;
     QVector<double>                     consumptionKeysDataCollected;
     QVector<bool>                       ebpFlags;
+    QVector<double>                     ebpValue;
+    QVector<double>                     ebpValueKey;
 
 
     /**/

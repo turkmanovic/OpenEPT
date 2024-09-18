@@ -124,6 +124,7 @@ signals:
     void        sigVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys);
     void        sigNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t mode);
     void        sigNewSamplesBuffersProcessingStatistics(double dropRate,  unsigned int dropPacketsNo, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID, unsigned short ebp);
+    void        sigNewEBP(QVector<double> ebpValues, QVector<double> ebpKeys);
     void        sigAcqusitionStarted();
     void        sigAcqusitionStopped();
 public slots:
@@ -136,7 +137,7 @@ private slots:
     void        onNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys);
     void        onNewSamplesBuffersProcessingStatistics(double dropRate,  unsigned int dropPacketsNo, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID, unsigned short ebp);
     void        onNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t mode);
-
+    void        onNewEBP(QVector<double> ebpValues, QVector<double> ebpKeys);
 private:
     QString                         deviceName;
     double                          samplingPeriod;                //ms

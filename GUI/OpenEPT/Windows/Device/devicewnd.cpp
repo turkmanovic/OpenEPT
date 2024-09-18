@@ -122,6 +122,8 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     consumptionChart->setYLabel("[mAh]");
     consumptionChart->setXLabel("[ms]");
 
+    consumptionChart->scatterAddGraph();
+
     ui->maxNumOfPacketsLine->setText(QString::number(DEVICEWND_DEFAULT_MAX_NUMBER_OF_BUFFERS));
     ui->statisticsPacketCounterLabe2->setText(QString::number(0));
     ui->statisticsDropRateProb->setValue(0);
@@ -533,5 +535,14 @@ bool DeviceWnd::plotSetCurrentValues(QVector<double> values, QVector<double> key
 bool DeviceWnd::plotAppendConsumptionValues(QVector<double> values, QVector<double> keys)
 {
     consumptionChart->appendData(values, keys);
+    return true;
+}
+
+bool DeviceWnd::plotAppendConsumptionEBP(QVector<double> values, QVector<double> keys)
+{
+    if(values.size() > 0)
+    {
+        consumptionChart->scatterAddData(values, keys);
+    }
     return true;
 }

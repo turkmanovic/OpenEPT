@@ -57,6 +57,7 @@ public:
     bool            plotSetVoltageValues(QVector<double> values, QVector<double> keys);
     bool            plotSetCurrentValues(QVector<double> values, QVector<double> keys);
     bool            plotAppendConsumptionValues(QVector<double> values, QVector<double> keys);
+    bool            plotAppendConsumptionEBP(QVector<double> values, QVector<double> keys);
 
 
     QStringList*    getChSamplingTimeOptions();

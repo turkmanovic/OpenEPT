@@ -140,6 +140,11 @@ void DataProcessing::onNewSampleBufferReceived(QVector<double> rawData, int pack
             voltageKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue;
             currentKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + samplingTime;
             consumptionKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + samplingTime;
+            if(ebp != 0 && ebpNo > 0)
+            {
+                ebpValue.append(lastCumulativeCurrentConsumptionValue);
+                ebpValueKey.append(keyStartValue);
+            }
         }
         else
         {
@@ -163,6 +168,7 @@ void DataProcessing::onNewSampleBufferReceived(QVector<double> rawData, int pack
     {
         emit sigNewVoltageCurrentSamplesReceived(voltageDataCollected, currentDataCollected, voltageKeysDataCollected, currentKeysDataCollected);
         emit sigSamplesBufferReceiveStatistics(dropRate, dropPacketsNo, receivedPacketCounter, lastReceivedPacketID, ebpNo);
+        emit sigEBP(ebpValue, ebpValueKey);
         switch(consumptionMode)
         {
         case DATAPROCESSING_CONSUMPTION_MODE_CURRENT:
@@ -224,6 +230,9 @@ void DataProcessing::initKeyBuffer()
 
 void DataProcessing::initEBPBuffer()
 {
-    ebpFlags.resize(maxNumberOfBuffers*samplesBufferSize);
+    ebpFlags.resize(maxNumberOfBuffers);
+//    ebpValue.resize(maxNumberOfBuffers);
+//    ebpValueKey.resize(maxNumberOfBuffers);
     ebpFlags.fill(0);
+    ebpNo = 0;
 }
