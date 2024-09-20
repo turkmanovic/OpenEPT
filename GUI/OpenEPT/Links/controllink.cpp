@@ -1,6 +1,7 @@
 #include "controllink.h"
 #include "Ws2tcpip.h"
 #include "WinSock2.h"
+#include <QHostAddress>
 
 ControlLink::ControlLink(QObject *parent)
     : QObject{parent}

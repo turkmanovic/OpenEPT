@@ -11,7 +11,6 @@ Plot::Plot(int mw, int mh, QWidget *parent)
 
     /* Create plot*/
     plot = new QCustomPlot();
-    plot->setOpenGl(true);
     plot->setMinimumSize(mw, mh);
     plot->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     plot->setAntialiasedElements(QCP::aeAll);
@@ -119,6 +118,22 @@ void        Plot::scatterAddGraph()
 void Plot::scatterAddData(QVector<double> data, QVector<double> keys)
 {
     plot->graph(1)->setData(keys, data);
+
+    for(int i = 0; i < data.size(); i++)
+    {
+        QCPItemText *textLabel = new QCPItemText(plot);
+
+        // Set text label position above each point
+        textLabel->setPositionAlignment(Qt::AlignHCenter | Qt::AlignBottom);
+        textLabel->position->setType(QCPItemPosition::ptPlotCoords);  // Position in plot coordinates
+        textLabel->position->setCoords(keys[i], data[i] + 0.5);  // Set position slightly above the point
+
+        // Set text style and content
+        textLabel->setText(QString::number(i));  // Set the text (label)
+        textLabel->setFont(QFont("Arial", 10));  // Set font and size
+        textLabel->setColor(Qt::blue);  // Set text color
+    }
+
     plot->replot();
 }
 void        Plot::setData(QVector<double> data, QVector<double> keys)
