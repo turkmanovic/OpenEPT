@@ -14,9 +14,11 @@ CONFIG += c++17
 SOURCES += \
     Chart/qcustomplot.cpp \
     Links/controllink.cpp \
+    Links/eplink.cpp \
     Links/statuslink.cpp \
     Links/streamlink.cpp \
     Processing/dataprocessing.cpp \
+    Processing/epprocessing.cpp \
     Processing/fileprocessing.cpp \
     Utility/log.cpp \
     Windows/AddDevice/adddevicewnd.cpp \
@@ -32,9 +34,11 @@ SOURCES += \
 HEADERS += \
     Chart/qcustomplot.h \
     Links/controllink.h \
+    Links/eplink.h \
     Links/statuslink.h \
     Links/streamlink.h \
     Processing/dataprocessing.h \
+    Processing/epprocessing.h \
     Processing/fileprocessing.h \
     Utility/log.h \
     Windows/AddDevice/adddevicewnd.h \

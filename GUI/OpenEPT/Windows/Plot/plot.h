@@ -12,6 +12,7 @@ public:
     explicit    Plot(int mw, int mh, QWidget *parent = nullptr);
     void        scatterAddGraph();
     void        scatterAddData(QVector<double> data, QVector<double> keys);
+    void        scatterAddDataWithName(double value, double keys, QString name);
     void        setData(QVector<double> data, QVector<double> keys);
     void        appendData(QVector<double> data, QVector<double> keys);
     void        setYRange(double min, double max);

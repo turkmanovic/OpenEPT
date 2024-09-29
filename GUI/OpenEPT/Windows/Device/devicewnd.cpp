@@ -546,3 +546,9 @@ bool DeviceWnd::plotAppendConsumptionEBP(QVector<double> values, QVector<double>
     }
     return true;
 }
+
+bool DeviceWnd::plotAppendConsumptionEBPWithName(double value, double key, QString name)
+{
+    consumptionChart->scatterAddDataWithName(value, key, name);
+    return true;
+}

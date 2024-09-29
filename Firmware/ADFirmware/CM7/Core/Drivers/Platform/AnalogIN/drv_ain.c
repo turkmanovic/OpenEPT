@@ -670,9 +670,12 @@ drv_ain_status 						DRV_AIN_Stream_SubmitAddr(drv_ain_adc_t adc, uint32_t addr,
 	return DRV_AIN_STATUS_OK;
 }
 
-drv_ain_status 						DRV_AIN_Stream_SetCapture(void)
+drv_ain_status 						DRV_AIN_Stream_SetCapture(uint32_t* packetCounter)
 {
 	//TODO: Should be protected
 	prvDRV_AIN_CAPTURE_EVENT = 1;
+
+	*packetCounter = prvDRV_AIN_ADC_BUFFER_COUNTER;
+
 	return DRV_AIN_STATUS_OK;
 }

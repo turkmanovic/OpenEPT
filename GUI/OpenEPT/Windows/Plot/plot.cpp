@@ -136,6 +136,24 @@ void Plot::scatterAddData(QVector<double> data, QVector<double> keys)
 
     plot->replot();
 }
+
+void Plot::scatterAddDataWithName(double value, double keys, QString name)
+{
+    plot->graph(1)->addData(keys, value);
+    QCPItemText *textLabel = new QCPItemText(plot);
+
+    // Set text label position above each point
+    textLabel->setPositionAlignment(Qt::AlignHCenter | Qt::AlignBottom);
+    textLabel->position->setType(QCPItemPosition::ptPlotCoords);  // Position in plot coordinates
+    textLabel->position->setCoords(keys, value + 0.5);  // Set position slightly above the point
+
+    // Set text style and content
+    textLabel->setText(name);  // Set the text (label)
+    textLabel->setFont(QFont("Times", 10));  // Set font and size
+    textLabel->setColor(Qt::blue);  // Set text color
+
+    plot->replot();
+}
 void        Plot::setData(QVector<double> data, QVector<double> keys)
 {
     xData = keys;

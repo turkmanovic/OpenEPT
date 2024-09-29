@@ -29,6 +29,7 @@
 #include "logging.h"
 #include "system.h"
 #include "sstream.h"
+#include "energy_debugger.h"
 #include "CMParse/cmparse.h"
 
 
@@ -865,6 +866,48 @@ static void prvCONTROL_GetADCInputClk(const char* arguments, uint16_t argumentsL
 	prvCONTROL_PrepareOkResponse(response, responseSize, adcClkString, adcClkStringLength);
 }
 
+static void prvCONTROL_EPLinkCreate(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	cmparse_value_t						value;
+	energy_debugger_connection_info		connectionInfo = {0};
+	char								streamIDString[5];
+	uint32_t							streamIDStringLength = 0;
+	ip_addr_t							ip = {0};
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "ip", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain ip address\r\n");
+		return;
+	}
+	//sscanf(value.value, "%hhu.%hhu.%hhu.%hhu", &connectionInfo.serverIp[0], &connectionInfo.serverIp[1], &connectionInfo.serverIp[2], &connectionInfo.serverIp[3]);
+	ipaddr_aton(value.value, &ip);
+	connectionInfo.serverIp[0] = (uint8_t)ip.addr;
+	connectionInfo.serverIp[1] = (uint8_t)(ip.addr>>8);
+	connectionInfo.serverIp[2] = (uint8_t)(ip.addr>>16);
+	connectionInfo.serverIp[3] = (uint8_t)(ip.addr>>24);
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "port", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain port number\r\n");
+		return;
+	}
+	sscanf(value.value, "%hu", &connectionInfo.serverport);
+
+	if(ENERGY_DEBUGGER_CreateLink(&connectionInfo, 2000) != ENERGY_DEBUGGER_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to create eplink channel\r\n");
+		return;
+	}
+	streamIDStringLength = sprintf(streamIDString, "%lu", connectionInfo.id);
+	prvCONTROL_PrepareOkResponse(response, responseSize, streamIDString, streamIDStringLength);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "EP Link successfully created\r\n");
+}
+
 static void prvCONTROL_StreamCreate(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
 {
 	cmparse_value_t				value;
@@ -1304,6 +1347,7 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	CMPARSE_AddCommand("device setname", 				prvCONTROL_SetDeviceName);
 	CMPARSE_AddCommand("device slink create", 			prvCONTROL_CreateStatusLink);
 	CMPARSE_AddCommand("device slink send", 			prvCONTROL_StatusLinkSendMessage);
+	CMPARSE_AddCommand("device eplink create", 			prvCONTROL_EPLinkCreate);
 	CMPARSE_AddCommand("device stream create", 			prvCONTROL_StreamCreate);
 	CMPARSE_AddCommand("device stream start", 			prvCONTROL_StreamStart);
 	CMPARSE_AddCommand("device stream stop", 			prvCONTROL_StreamStop);

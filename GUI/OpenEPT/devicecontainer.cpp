@@ -60,9 +60,11 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(device,     SIGNAL(sigNewConsumptionDataReceived(QVector<double>,QVector<double>, dataprocessing_consumption_mode_t)),
             this, SLOT(onDeviceNewConsumptionDataReceived(QVector<double>,QVector<double>, dataprocessing_consumption_mode_t)));
     connect(device,     SIGNAL(sigNewEBP(QVector<double>,QVector<double>)), this, SLOT(onDeviceNewEBP(QVector<double>,QVector<double>)));
+    connect(device,     SIGNAL(sigNewEBPFull(double,double,QString)), this, SLOT(onDeviceNewEBPFull(double,double,QString)));
 
     log->printLogMessage("Device container successfully created", LOG_MESSAGE_TYPE_INFO);
     device->statusLinkCreate();
+    device->epLinkServerCreate();
 
 }
 
@@ -235,6 +237,14 @@ void DeviceContainer::onDeviceWndInterfaceChanged(QString interfaceIp)
     else
     {
         log->printLogMessage("Stream link ( sid="+ QString::number(streamID) + " ) sucessfully created: ", LOG_MESSAGE_TYPE_INFO);
+        if(!device->establishEPLink(interfaceIp))
+        {
+            log->printLogMessage("Unable to create ep link: ", LOG_MESSAGE_TYPE_ERROR);
+        }
+        else
+        {
+            log->printLogMessage("Ep link ( port="+ QString::number(8000) + " ) sucessfully created: ", LOG_MESSAGE_TYPE_INFO);
+        }
         deviceWnd->setDeviceInterfaceSelectionState(DEVICE_INTERFACE_SELECTION_STATE_SELECTED);
         device->acquireDeviceConfiguration();
     }
@@ -588,7 +598,13 @@ void DeviceContainer::onDeviceNewSamplesBuffersProcessingStatistics(double dropR
 
 void DeviceContainer::onDeviceNewEBP(QVector<double> ebpValues, QVector<double> keys)
 {
-    deviceWnd->plotAppendConsumptionEBP(ebpValues, keys);
+    //deviceWnd->plotAppendConsumptionEBP(ebpValues, keys);
+}
+
+void DeviceContainer::onDeviceNewEBPFull(double value, double key, QString name)
+{
+    deviceWnd->plotAppendConsumptionEBPWithName(value, key, name);
+    log->printLogMessage("New Energy point received", LOG_MESSAGE_TYPE_INFO);
 }
 
 device_adc_resolution_t DeviceContainer::getAdcResolutionFromString(QString resolution)

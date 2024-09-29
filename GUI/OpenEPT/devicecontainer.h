@@ -63,6 +63,7 @@ public slots:
     void    onDeviceNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t mode);
     void    onDeviceNewSamplesBuffersProcessingStatistics(double dropRate, unsigned int dropPacketsNo, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID, unsigned short ebp);
     void    onDeviceNewEBP(QVector<double> ebpValues, QVector<double> keys);
+    void    onDeviceNewEBPFull(double value, double key, QString name);
 
 
 private:

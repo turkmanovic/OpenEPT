@@ -58,6 +58,7 @@ public:
     bool            plotSetCurrentValues(QVector<double> values, QVector<double> keys);
     bool            plotAppendConsumptionValues(QVector<double> values, QVector<double> keys);
     bool            plotAppendConsumptionEBP(QVector<double> values, QVector<double> keys);
+    bool            plotAppendConsumptionEBPWithName(double value, double key, QString name);
 
 
     QStringList*    getChSamplingTimeOptions();

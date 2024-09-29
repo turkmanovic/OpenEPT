@@ -26,6 +26,8 @@ typedef enum
 {
 	DRV_UART_INSTANCE_1	= 0,
 	DRV_UART_INSTANCE_3	= 1,
+	DRV_UART_INSTANCE_7	= 2,
+	DRV_UART_INSTANCE_6	= 3,
 }drv_uart_instance_t;
 
 typedef enum
@@ -55,9 +57,15 @@ typedef struct
 	drv_uart_stopbit_t	parityEnable;
 }drv_uart_config_t;
 
+
+
+typedef void (*drv_uart_rx_isr_callback)(uint8_t data);
+
+
 drv_uart_status_t	DRV_UART_Init();
 drv_uart_status_t	DRV_UART_Instance_Init(drv_uart_instance_t instance, drv_uart_config_t* config);
 drv_uart_status_t	DRV_UART_Instance_TransferData(drv_uart_instance_t instance, uint8_t* buffer, uint8_t size, uint32_t timeout);
+drv_uart_status_t	DRV_UART_Instance_RegisterRxCallback(drv_uart_instance_t instance, drv_uart_rx_isr_callback rxcb);
 
 
 #endif /* CORE_DRIVERS_PLATFORM_UART_UART_H_ */

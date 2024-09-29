@@ -13,7 +13,9 @@ Device::Device(QObject *parent)
     samplingPeriod          = (double)DEVICE_ADC_DEFAULT_SAMPLING_PERIOD;
     controlLink             = NULL;
     streamLink              = NULL;
+    energyPointLink         = NULL;
     dataProcessing          = new DataProcessing();
+    energyPointProcessing   = new EPProcessing();
 }
 
 Device::~Device()
@@ -108,6 +110,29 @@ bool Device::createStreamLink(QString ip, quint16 port, int* id)
     return true;
 }
 
+
+bool  Device::establishEPLink(QString ip)
+{
+    QString response;
+    if(energyPointLink == NULL) return false;
+
+    QString command = "device eplink create -ip=" + ip +  " -port=" + QString::number(energyPointLink->getPort());
+
+    if(controlLink == NULL) return false;
+
+    if(!controlLink->executeCommand(command, &response, 1000)) return false;
+
+    return true;
+}
+void Device::epLinkServerCreate()
+{
+    energyPointLink  = new EPLink();
+    energyPointLink->startServer();
+    connect(energyPointLink, SIGNAL(sigNewEPNameReceived(uint,QString)), energyPointProcessing, SLOT(onNewEPNameReceived(uint,QString)), Qt::QueuedConnection);
+    connect(dataProcessing, SIGNAL(sigEBPValue(uint,double,double)), energyPointProcessing, SLOT(onNewEPValueReceived(uint,double,double)), Qt::QueuedConnection);
+    connect(energyPointProcessing, SIGNAL(sigEPProcessed(double,double,QString)), this, SLOT(onNewEBPFull(double,double,QString)), Qt::QueuedConnection);
+}
+
 void Device::statusLinkCreate()
 {
     statusLink  = new StatusLink();
@@ -115,6 +140,8 @@ void Device::statusLinkCreate()
     connect(statusLink, SIGNAL(sigNewClientConnected(QString)), this, SLOT(onStatusLinkNewDeviceAdded(QString)));
     connect(statusLink, SIGNAL(sigNewStatusMessageReceived(QString,QString)), this, SLOT(onStatusLinkNewMessageReceived(QString,QString)));
 }
+
+
 
 void Device::controlLinkReconnect()
 {
@@ -704,6 +731,16 @@ void Device::onStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage)
     emit sigStatusLinkNewMessageReceived(aDeviceIP, aMessage);
 }
 
+void Device::onEPLinkNewDeviceAdded(QString aDeviceIP)
+{
+
+}
+
+void Device::onEPLinkNewMessageReceived(QString aDeviceIP, QString aMessage)
+{
+
+}
+
 void Device::onNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys)
 {
     emit sigVoltageCurrentSamplesReceived(voltage, current, voltageKeys, currentKeys);
@@ -722,4 +759,9 @@ void Device::onNewConsumptionDataReceived(QVector<double> consumption, QVector<d
 void Device::onNewEBP(QVector<double> ebpValues, QVector<double> ebpKeys)
 {
     emit sigNewEBP(ebpValues, ebpKeys);
+}
+
+void Device::onNewEBPFull(double value, double key, QString name)
+{
+    emit sigNewEBPFull(value, key, name);
 }

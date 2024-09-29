@@ -7,6 +7,8 @@
 #include "Links/statuslink.h"
 #include "Links/streamlink.h"
 #include "Processing/dataprocessing.h"
+#include "Links/eplink.h"
+#include "Processing/epprocessing.h"
 
 /* Resolution sample time offset based on STM32H755ZI offset */
 #define     DEVICE_ADC_RESOLUTION_16BIT_STIME_OFFSET    8.5
@@ -83,6 +85,8 @@ public:
     bool        createStreamLink(QString ip, quint16 port, int* id);
     void        statusLinkCreate();
     void        controlLinkReconnect();
+    void        epLinkServerCreate();
+    bool        establishEPLink(QString ip);
     void        sendControlMsg(QString msg);
     bool        setResolution(device_adc_resolution_t resolution);
     bool        getResolution(device_adc_resolution_t* resolution = NULL);
@@ -125,6 +129,7 @@ signals:
     void        sigNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t mode);
     void        sigNewSamplesBuffersProcessingStatistics(double dropRate,  unsigned int dropPacketsNo, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID, unsigned short ebp);
     void        sigNewEBP(QVector<double> ebpValues, QVector<double> ebpKeys);
+    void        sigNewEBPFull(double value, double key, QString name);
     void        sigAcqusitionStarted();
     void        sigAcqusitionStopped();
 public slots:
@@ -134,10 +139,13 @@ public slots:
 private slots:
     void        onStatusLinkNewDeviceAdded(QString aDeviceIP);
     void        onStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
+    void        onEPLinkNewDeviceAdded(QString aDeviceIP);
+    void        onEPLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
     void        onNewVoltageCurrentSamplesReceived(QVector<double> voltage, QVector<double> current, QVector<double> voltageKeys, QVector<double> currentKeys);
     void        onNewSamplesBuffersProcessingStatistics(double dropRate,  unsigned int dropPacketsNo, unsigned int fullReceivedBuffersNo, unsigned int lastBufferID, unsigned short ebp);
     void        onNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t mode);
     void        onNewEBP(QVector<double> ebpValues, QVector<double> ebpKeys);
+    void        onNewEBPFull(double value, double key, QString name);
 private:
     QString                         deviceName;
     double                          samplingPeriod;                //ms
@@ -154,7 +162,9 @@ private:
     ControlLink*                    controlLink;
     StatusLink*                     statusLink;
     StreamLink*                     streamLink;
+    EPLink*                         energyPointLink;
     DataProcessing*                 dataProcessing;
+    EPProcessing*                   energyPointProcessing;
     QString                         voltageOffset;
     QString                         currentOffset;
     QString                         adcInputClk;

@@ -144,6 +144,7 @@ void DataProcessing::onNewSampleBufferReceived(QVector<double> rawData, int pack
             {
                 ebpValue.append(lastCumulativeCurrentConsumptionValue);
                 ebpValueKey.append(keyStartValue);
+                emit sigEBPValue(packetID, lastCumulativeCurrentConsumptionValue, keyStartValue);
             }
         }
         else
@@ -158,7 +159,7 @@ void DataProcessing::onNewSampleBufferReceived(QVector<double> rawData, int pack
         cumulativeConsumptionDataCollected[lastBufferUsedPositionIndex] = lastCumulativeCurrentConsumptionValue;
         i                           += 2;
         lastBufferUsedPositionIndex += 1;
-        j +=1;
+        j += 1;
     }
 
 

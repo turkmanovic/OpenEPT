@@ -142,6 +142,6 @@ drv_ain_status 						DRV_AIN_GetADCClk(drv_ain_adc_t adc, uint32_t *clk);
 drv_ain_status 						DRV_AIN_Stream_Enable(drv_ain_adc_t adc, uint32_t sampleSize); // Enable DMA
 drv_ain_status 						DRV_AIN_Stream_RegisterCallback(drv_ain_adc_t adc, drv_ain_adc_stream_callback cbfunction);
 drv_ain_status 						DRV_AIN_Stream_SubmitAddr(drv_ain_adc_t adc, uint32_t addr, uint8_t bufferID);
-drv_ain_status 						DRV_AIN_Stream_SetCapture(void);
+drv_ain_status 						DRV_AIN_Stream_SetCapture(uint32_t* packetCounter);
 
 #endif /* CORE_DRIVERS_PLATFORM_ANALOGIN_AIN_H_ */

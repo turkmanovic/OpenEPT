@@ -43,6 +43,7 @@ signals:
     void                                sigNewConsumptionDataReceived(QVector<double> consumption, QVector<double> keys, dataprocessing_consumption_mode_t consumptionMode);
     void                                sigSamplesBufferReceiveStatistics(double dropRate, unsigned int dopPacketsNo, unsigned int fullPacketCounter, unsigned int lastPacketID, unsigned short ebp);
     void                                sigEBP(QVector<double> ebpValues, QVector<double> ebpKeys);
+    void                                sigEBPValue(unsigned int ebpID, double ebpValues, double ebpKeys);
 
 public slots:
     void                                onNewSampleBufferReceived(QVector<double> rawData, int packetID,int magic);
