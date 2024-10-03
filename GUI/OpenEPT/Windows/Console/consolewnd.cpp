@@ -7,6 +7,11 @@ ConsoleWnd::ConsoleWnd(QWidget *parent) :
     ui(new Ui::ConsoleWnd)
 {
     ui->setupUi(this);
+
+    QFont appFont = this->font();  // Get the default font
+    appFont.setPointSize(10);    // Set font size to 14 (or any desired size)
+    this->setFont(appFont);
+
     connect(ui->controlSendPusb, SIGNAL(clicked(bool)), this, SLOT(onSendControlMsgClicked()));
     connect(ui->controlSendLine, SIGNAL(returnPressed()), this, SLOT(onSendControlMsgClicked()));
     logUtil.assignLogWidget(ui->controlSendRecievePlte);
@@ -47,9 +52,7 @@ ConsoleWnd::ConsoleWnd(QWidget *parent) :
 
     ui->controlSendLine->setCompleter(completer);
 
-    QFont appFont = this->font();  // Get the default font
-    appFont.setPointSize(10);    // Set font size to 14 (or any desired size)
-    this->setFont(appFont);
+
 }
 
 ConsoleWnd::~ConsoleWnd()

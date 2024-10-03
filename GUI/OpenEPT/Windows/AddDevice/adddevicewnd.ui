@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>208</width>
-    <height>102</height>
+    <width>308</width>
+    <height>164</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,14 +25,14 @@
         <widget class="QLabel" name="ipAddressLabe">
          <property name="minimumSize">
           <size>
-           <width>80</width>
-           <height>20</height>
+           <width>150</width>
+           <height>30</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>80</width>
-           <height>20</height>
+           <width>150</width>
+           <height>30</height>
           </size>
          </property>
          <property name="text">
@@ -50,20 +50,33 @@
          </property>
          <property name="minimumSize">
           <size>
-           <width>100</width>
-           <height>20</height>
+           <width>150</width>
+           <height>30</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>100</width>
-           <height>20</height>
+           <width>150</width>
+           <height>30</height>
           </size>
          </property>
          <property name="text">
           <string>192.168.8.110</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </item>
@@ -73,14 +86,14 @@
         <widget class="QLabel" name="portNumberLabe">
          <property name="minimumSize">
           <size>
-           <width>80</width>
-           <height>20</height>
+           <width>150</width>
+           <height>30</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>80</width>
-           <height>20</height>
+           <width>150</width>
+           <height>30</height>
           </size>
          </property>
          <property name="text">
@@ -98,20 +111,33 @@
          </property>
          <property name="minimumSize">
           <size>
-           <width>100</width>
-           <height>20</height>
+           <width>150</width>
+           <height>30</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>100</width>
-           <height>20</height>
+           <width>150</width>
+           <height>30</height>
           </size>
          </property>
          <property name="text">
           <string>5000</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </item>
@@ -127,14 +153,14 @@
          </property>
          <property name="minimumSize">
           <size>
-           <width>80</width>
-           <height>20</height>
+           <width>120</width>
+           <height>30</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>80</width>
-           <height>20</height>
+           <width>120</width>
+           <height>30</height>
           </size>
          </property>
          <property name="text">
@@ -152,14 +178,14 @@
          </property>
          <property name="minimumSize">
           <size>
-           <width>80</width>
-           <height>20</height>
+           <width>120</width>
+           <height>30</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>80</width>
-           <height>20</height>
+           <width>120</width>
+           <height>30</height>
           </size>
          </property>
          <property name="text">

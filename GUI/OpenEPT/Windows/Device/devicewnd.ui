@@ -59,15 +59,22 @@
               <widget class="Line" name="deviceHoli">
                <property name="minimumSize">
                 <size>
-                 <width>225</width>
+                 <width>315</width>
                  <height>2</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>225</width>
+                 <width>315</width>
                  <height>2</height>
                 </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Arial</family>
+                 <pointsize>10</pointsize>
+                 <bold>false</bold>
+                </font>
                </property>
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
@@ -78,15 +85,22 @@
               <widget class="QLabel" name="deviceLabe">
                <property name="minimumSize">
                 <size>
-                 <width>200</width>
-                 <height>10</height>
+                 <width>300</width>
+                 <height>30</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>200</width>
-                 <height>10</height>
+                 <width>300</width>
+                 <height>50</height>
                 </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Arial</family>
+                 <pointsize>10</pointsize>
+                 <bold>true</bold>
+                </font>
                </property>
                <property name="text">
                 <string>Device</string>
@@ -102,15 +116,22 @@
                 <widget class="QLabel" name="samplingPeriodLabe">
                  <property name="minimumSize">
                   <size>
-                   <width>120</width>
-                   <height>10</height>
+                   <width>220</width>
+                   <height>30</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>120</width>
+                   <width>220</width>
                    <height>50</height>
                   </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
                  </property>
                  <property name="text">
                   <string>Sampling Period [us]</string>
@@ -137,10 +158,24 @@
                    <height>50</height>
                   </size>
                  </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                 </widget>
                </item>
                <item>
                 <spacer name="horizontalSpacer_2">
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -163,15 +198,22 @@
                 <widget class="QLabel" name="resolutionLabe">
                  <property name="minimumSize">
                   <size>
-                   <width>120</width>
-                   <height>10</height>
+                   <width>220</width>
+                   <height>30</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>120</width>
+                   <width>220</width>
                    <height>50</height>
                   </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
                  </property>
                  <property name="text">
                   <string>ADC Resolution</string>
@@ -198,10 +240,24 @@
                    <height>50</height>
                   </size>
                  </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                 </widget>
                </item>
                <item>
                 <spacer name="resolutionHors">
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -224,15 +280,22 @@
                 <widget class="QLabel" name="sampleTimeLabe">
                  <property name="minimumSize">
                   <size>
-                   <width>120</width>
-                   <height>10</height>
+                   <width>220</width>
+                   <height>30</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>120</width>
+                   <width>220</width>
                    <height>50</height>
                   </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
                  </property>
                  <property name="text">
                   <string>ADC Sample time</string>
@@ -259,10 +322,24 @@
                    <height>50</height>
                   </size>
                  </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                 </widget>
                </item>
                <item>
                 <spacer name="sampleTimeHors">
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -285,15 +362,22 @@
                 <widget class="QLabel" name="clockDivLabe">
                  <property name="minimumSize">
                   <size>
-                   <width>120</width>
-                   <height>10</height>
+                   <width>220</width>
+                   <height>30</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>120</width>
+                   <width>220</width>
                    <height>50</height>
                   </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
                  </property>
                  <property name="text">
                   <string>ADC Clock div</string>
@@ -314,10 +398,24 @@
                    <height>50</height>
                   </size>
                  </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                 </widget>
                </item>
                <item>
                 <spacer name="clockDivHors">
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -341,14 +439,21 @@
                  <property name="minimumSize">
                   <size>
                    <width>170</width>
-                   <height>10</height>
+                   <height>30</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>170</width>
+                   <width>270</width>
                    <height>50</height>
                   </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
                  </property>
                  <property name="text">
                   <string>Advance options</string>
@@ -375,6 +480,13 @@
                    <height>50</height>
                   </size>
                  </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="text">
                   <string/>
                  </property>
@@ -386,6 +498,13 @@
                </item>
                <item>
                 <spacer name="advanceOptionHors">
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -410,15 +529,22 @@
               <widget class="Line" name="systemHoli">
                <property name="minimumSize">
                 <size>
-                 <width>225</width>
+                 <width>315</width>
                  <height>0</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>225</width>
+                 <width>315</width>
                  <height>2</height>
                 </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Arial</family>
+                 <pointsize>10</pointsize>
+                 <bold>false</bold>
+                </font>
                </property>
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
@@ -429,15 +555,22 @@
               <widget class="QLabel" name="systemLabe">
                <property name="minimumSize">
                 <size>
-                 <width>200</width>
-                 <height>10</height>
+                 <width>300</width>
+                 <height>30</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>200</width>
-                 <height>10</height>
+                 <width>300</width>
+                 <height>50</height>
                 </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Arial</family>
+                 <pointsize>10</pointsize>
+                 <bold>true</bold>
+                </font>
                </property>
                <property name="text">
                 <string>System</string>
@@ -469,15 +602,22 @@
                      </property>
                      <property name="minimumSize">
                       <size>
-                       <width>200</width>
-                       <height>10</height>
+                       <width>300</width>
+                       <height>30</height>
                       </size>
                      </property>
                      <property name="maximumSize">
                       <size>
-                       <width>200</width>
+                       <width>300</width>
                        <height>50</height>
                       </size>
+                     </property>
+                     <property name="font">
+                      <font>
+                       <family>Arial</family>
+                       <pointsize>10</pointsize>
+                       <bold>false</bold>
+                      </font>
                      </property>
                      <property name="text">
                       <string>Samples stream server interface</string>
@@ -494,15 +634,22 @@
                      </property>
                      <property name="minimumSize">
                       <size>
-                       <width>200</width>
-                       <height>20</height>
+                       <width>300</width>
+                       <height>30</height>
                       </size>
                      </property>
                      <property name="maximumSize">
                       <size>
-                       <width>200</width>
+                       <width>300</width>
                        <height>50</height>
                       </size>
+                     </property>
+                     <property name="font">
+                      <font>
+                       <family>Arial</family>
+                       <pointsize>10</pointsize>
+                       <bold>false</bold>
+                      </font>
                      </property>
                      <property name="mouseTracking">
                       <bool>true</bool>
@@ -513,6 +660,13 @@
                  </item>
                  <item>
                   <spacer name="interfaceSelectSpac">
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -537,15 +691,22 @@
                 <widget class="QLabel" name="consumptionTypeLabe">
                  <property name="minimumSize">
                   <size>
-                   <width>120</width>
+                   <width>150</width>
                    <height>30</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>120</width>
+                   <width>150</width>
                    <height>50</height>
                   </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
                  </property>
                  <property name="text">
                   <string>Consumption type</string>
@@ -558,15 +719,22 @@
                   <widget class="QRadioButton" name="cumulativeRadb">
                    <property name="minimumSize">
                     <size>
-                     <width>80</width>
-                     <height>15</height>
+                     <width>150</width>
+                     <height>20</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>80</width>
+                     <width>150</width>
                      <height>50</height>
                     </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
                    </property>
                    <property name="text">
                     <string>Cumulative</string>
@@ -577,15 +745,22 @@
                   <widget class="QRadioButton" name="currentRadb">
                    <property name="minimumSize">
                     <size>
-                     <width>80</width>
-                     <height>15</height>
+                     <width>150</width>
+                     <height>20</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>80</width>
+                     <width>150</width>
                      <height>10</height>
                     </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
                    </property>
                    <property name="text">
                     <string>Current</string>
@@ -596,6 +771,13 @@
                </item>
                <item>
                 <spacer name="consumptionTypeHors">
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -618,15 +800,22 @@
                 <widget class="QLabel" name="measurementTypeLabe">
                  <property name="minimumSize">
                   <size>
-                   <width>120</width>
+                   <width>150</width>
                    <height>30</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>120</width>
+                   <width>150</width>
                    <height>50</height>
                   </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
                  </property>
                  <property name="text">
                   <string>Measurement type</string>
@@ -639,15 +828,22 @@
                   <widget class="QRadioButton" name="measurementTypeVoltageRadb">
                    <property name="minimumSize">
                     <size>
-                     <width>80</width>
-                     <height>15</height>
+                     <width>150</width>
+                     <height>20</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>80</width>
+                     <width>150</width>
                      <height>50</height>
                     </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
                    </property>
                    <property name="text">
                     <string>Voltage</string>
@@ -658,15 +854,22 @@
                   <widget class="QRadioButton" name="measurementTypeCurrentRadb">
                    <property name="minimumSize">
                     <size>
-                     <width>80</width>
-                     <height>15</height>
+                     <width>150</width>
+                     <height>20</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>80</width>
+                     <width>150</width>
                      <height>50</height>
                     </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
                    </property>
                    <property name="text">
                     <string>Current</string>
@@ -677,6 +880,13 @@
                </item>
                <item>
                 <spacer name="measurementTypeHorlHors">
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -699,15 +909,22 @@
                 <widget class="QLabel" name="maxNumOfPacketsLabe">
                  <property name="minimumSize">
                   <size>
-                   <width>120</width>
-                   <height>10</height>
+                   <width>220</width>
+                   <height>30</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>120</width>
+                   <width>220</width>
                    <height>50</height>
                   </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
                  </property>
                  <property name="text">
                   <string>Max Num of Packets</string>
@@ -734,10 +951,24 @@
                    <height>50</height>
                   </size>
                  </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                 </widget>
                </item>
                <item>
                 <spacer name="maxNumOfPacketsHors">
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -760,15 +991,22 @@
                 <widget class="QLabel" name="saveToFileLabe">
                  <property name="minimumSize">
                   <size>
-                   <width>120</width>
-                   <height>10</height>
+                   <width>220</width>
+                   <height>30</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>120</width>
+                   <width>220</width>
                    <height>50</height>
                   </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
                  </property>
                  <property name="text">
                   <string>Save to file</string>
@@ -789,6 +1027,13 @@
                    <height>50</height>
                   </size>
                  </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="text">
                   <string/>
                  </property>
@@ -796,6 +1041,13 @@
                </item>
                <item>
                 <spacer name="saveToFileHors">
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -820,15 +1072,22 @@
                   <widget class="QLabel" name="pathLab">
                    <property name="minimumSize">
                     <size>
-                     <width>180</width>
-                     <height>10</height>
+                     <width>270</width>
+                     <height>30</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>180</width>
+                     <width>270</width>
                      <height>50</height>
                     </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
                    </property>
                    <property name="text">
                     <string>Path</string>
@@ -852,6 +1111,13 @@
                      <height>30</height>
                     </size>
                    </property>
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
+                   </property>
                    <property name="text">
                     <string/>
                    </property>
@@ -869,6 +1135,13 @@
                  </item>
                  <item>
                   <spacer name="pathTopHors">
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -900,20 +1173,34 @@
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>225</width>
+                     <width>300</width>
                      <height>20</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>225</width>
+                     <width>300</width>
                      <height>20</height>
                     </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
                    </property>
                   </widget>
                  </item>
                  <item>
                   <spacer name="pathBottomHors">
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -938,15 +1225,22 @@
                 <widget class="QLabel" name="dischargeControlLabe">
                  <property name="minimumSize">
                   <size>
-                   <width>140</width>
-                   <height>10</height>
+                   <width>235</width>
+                   <height>30</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>140</width>
+                   <width>235</width>
                    <height>50</height>
                   </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
                  </property>
                  <property name="text">
                   <string>Discharge control</string>
@@ -966,6 +1260,13 @@
                    <width>30</width>
                    <height>30</height>
                   </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
                  </property>
                  <property name="text">
                   <string/>
@@ -996,6 +1297,13 @@
                    <height>30</height>
                   </size>
                  </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="text">
                   <string/>
                  </property>
@@ -1013,6 +1321,13 @@
                </item>
                <item>
                 <spacer name="dischargeControlHors">
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -1033,11 +1348,24 @@
               <layout class="QHBoxLayout" name="systemVerlConsole">
                <item>
                 <widget class="QLabel" name="ConsoleLabe">
+                 <property name="minimumSize">
+                  <size>
+                   <width>270</width>
+                   <height>30</height>
+                  </size>
+                 </property>
                  <property name="maximumSize">
                   <size>
-                   <width>184</width>
-                   <height>10</height>
+                   <width>180</width>
+                   <height>50</height>
                   </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
                  </property>
                  <property name="text">
                   <string>Console</string>
@@ -1058,6 +1386,13 @@
                    <height>30</height>
                   </size>
                  </property>
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="text">
                   <string/>
                  </property>
@@ -1075,6 +1410,13 @@
                </item>
                <item>
                 <spacer name="horizontalSpacer">
+                 <property name="font">
+                  <font>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -1093,6 +1435,13 @@
              </item>
              <item>
               <spacer name="systemVers">
+               <property name="font">
+                <font>
+                 <family>Arial</family>
+                 <pointsize>10</pointsize>
+                 <bold>false</bold>
+                </font>
+               </property>
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
                </property>
@@ -1110,6 +1459,13 @@
                 <layout class="QHBoxLayout" name="playStopConnVerlPlayStopHorl">
                  <item>
                   <spacer name="playStopHors1">
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -1137,6 +1493,13 @@
                      <width>30</width>
                      <height>30</height>
                     </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
                    </property>
                    <property name="text">
                     <string/>
@@ -1170,6 +1533,13 @@
                      <height>30</height>
                     </size>
                    </property>
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
+                   </property>
                    <property name="text">
                     <string/>
                    </property>
@@ -1198,6 +1568,13 @@
                      <width>30</width>
                      <height>30</height>
                     </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
                    </property>
                    <property name="text">
                     <string/>
@@ -1228,6 +1605,13 @@
                      <height>30</height>
                     </size>
                    </property>
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
+                   </property>
                    <property name="text">
                     <string/>
                    </property>
@@ -1245,6 +1629,13 @@
                  </item>
                  <item>
                   <spacer name="playStopHors2">
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -1265,6 +1656,13 @@
                 <layout class="QHBoxLayout" name="playStopConnVerlDeviceConnectedHorl">
                  <item>
                   <spacer name="deviceConnectedHors1">
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -1293,6 +1691,13 @@
                      <height>20</height>
                     </size>
                    </property>
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
+                   </property>
                    <property name="text">
                     <string>TextLabel</string>
                    </property>
@@ -1300,6 +1705,13 @@
                  </item>
                  <item>
                   <spacer name="deviceConnectedHors2">
+                   <property name="font">
+                    <font>
+                     <family>Arial</family>
+                     <pointsize>10</pointsize>
+                     <bold>false</bold>
+                    </font>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -1345,6 +1757,13 @@
                <height>80</height>
               </size>
              </property>
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>10</pointsize>
+               <bold>false</bold>
+              </font>
+             </property>
              <property name="text">
               <string>Drop rate</string>
              </property>
@@ -1352,6 +1771,13 @@
            </item>
            <item>
             <widget class="QLabel" name="statisticsDropRateNoLabe">
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>10</pointsize>
+               <bold>false</bold>
+              </font>
+             </property>
              <property name="text">
               <string>TextLabel</string>
              </property>
@@ -1377,6 +1803,13 @@
                <height>20</height>
               </size>
              </property>
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>10</pointsize>
+               <bold>false</bold>
+              </font>
+             </property>
              <property name="value">
               <number>24</number>
              </property>
@@ -1395,6 +1828,13 @@
                <width>140</width>
                <height>20</height>
               </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>10</pointsize>
+               <bold>false</bold>
+              </font>
              </property>
              <property name="text">
               <string>Recieved packet counter:</string>
@@ -1421,6 +1861,13 @@
                <height>20</height>
               </size>
              </property>
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>10</pointsize>
+               <bold>false</bold>
+              </font>
+             </property>
              <property name="text">
               <string>665000</string>
              </property>
@@ -1439,6 +1886,13 @@
                <width>100</width>
                <height>20</height>
               </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>10</pointsize>
+               <bold>false</bold>
+              </font>
              </property>
              <property name="text">
               <string>Sampling time [ms]:</string>
@@ -1459,6 +1913,13 @@
                <height>20</height>
               </size>
              </property>
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>10</pointsize>
+               <bold>false</bold>
+              </font>
+             </property>
              <property name="text">
               <string>0.02848</string>
              </property>
@@ -1477,6 +1938,13 @@
                <width>120</width>
                <height>20</height>
               </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>10</pointsize>
+               <bold>false</bold>
+              </font>
              </property>
              <property name="text">
               <string>Sampling period [us]</string>
@@ -1497,6 +1965,13 @@
                <height>20</height>
               </size>
              </property>
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>10</pointsize>
+               <bold>false</bold>
+              </font>
+             </property>
              <property name="text">
               <string>0</string>
              </property>
@@ -1515,6 +1990,13 @@
                <width>120</width>
                <height>20</height>
               </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>10</pointsize>
+               <bold>false</bold>
+              </font>
              </property>
              <property name="text">
               <string>Acquisition Duration</string>
@@ -1535,6 +2017,13 @@
                <height>20</height>
               </size>
              </property>
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>10</pointsize>
+               <bold>false</bold>
+              </font>
+             </property>
              <property name="text">
               <string>0</string>
              </property>
@@ -1542,6 +2031,13 @@
            </item>
            <item>
             <spacer name="statisticsSpacer1">
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>10</pointsize>
+               <bold>false</bold>
+              </font>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -1577,6 +2073,13 @@
              <width>1800</width>
              <height>80</height>
             </size>
+           </property>
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>10</pointsize>
+             <bold>false</bold>
+            </font>
            </property>
           </widget>
          </item>

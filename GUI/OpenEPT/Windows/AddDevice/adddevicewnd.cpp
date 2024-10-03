@@ -11,6 +11,10 @@ AddDeviceWnd::AddDeviceWnd(QWidget *parent) :
 
     connect(ui->closePusb, SIGNAL(pressed()), this, SLOT(onClosePusbPressed()));
     connect(ui->addDevicePusb, SIGNAL(pressed()), this, SLOT(onAddDevicePusbPressed()));
+
+    QFont appFont = this->font();  // Get the default font
+    appFont.setPointSize(10);    // Set font size to 14 (or any desired size)
+    this->setFont(appFont);
 }
 
 AddDeviceWnd::~AddDeviceWnd()
