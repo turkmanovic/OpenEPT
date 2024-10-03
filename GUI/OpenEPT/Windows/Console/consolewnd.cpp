@@ -17,9 +17,16 @@ ConsoleWnd::~ConsoleWnd()
     delete ui;
 }
 
-void ConsoleWnd::printMessage(QString msg)
+void ConsoleWnd::printMessage(QString msg, bool exeStatus)
 {
-    logUtil.printLogMessage(" Response: " + msg, LOG_MESSAGE_TYPE_INFO, LOG_MESSAGE_DEVICE_TYPE_DEVICE);
+    if(exeStatus)
+    {
+        logUtil.printLogMessage(" Response: " + msg, LOG_MESSAGE_TYPE_INFO, LOG_MESSAGE_DEVICE_TYPE_DEVICE);
+    }
+    else
+    {
+        logUtil.printLogMessage(" Response: " + msg, LOG_MESSAGE_TYPE_ERROR, LOG_MESSAGE_DEVICE_TYPE_DEVICE);
+    }
 }
 
 void ConsoleWnd::onSendControlMsgClicked() {

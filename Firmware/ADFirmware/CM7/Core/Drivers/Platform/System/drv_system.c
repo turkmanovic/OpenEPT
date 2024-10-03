@@ -12,10 +12,15 @@
 #include "drv_gpio.h"
 #include "drv_uart.h"
 #include "drv_ain.h"
+#include "drv_timer.h"
+#include "drv_aout.h"
 
 #ifndef HSEM_ID_0
 #define HSEM_ID_0 (0U) /* HW semaphore 0*/
 #endif
+
+
+static TIM_HandleTypeDef htim1;
 
 /* Wait until CPU2 boots and enters in stop mode or timeout*/
 static drv_system_status_t prvDRV_SYSTEM_CPU2_Wait(uint32_t timeout)
@@ -185,5 +190,10 @@ drv_system_status_t	DRV_SYSTEM_InitDrivers()
 	if(DRV_GPIO_Init() != DRV_GPIO_STATUS_OK) return DRV_SYSTEM_STATUS_ERROR;
 	if(DRV_UART_Init() != DRV_UART_STATUS_OK) return DRV_SYSTEM_STATUS_ERROR;
 	if(DRV_AIN_Init(DRV_AIN_ADC_3, NULL) != DRV_AIN_STATUS_OK) return DRV_SYSTEM_STATUS_ERROR;
+
+	if(DRV_Timer_Init() != DRV_TIMER_STATUS_OK) return DRV_SYSTEM_STATUS_ERROR;
+	if(DRV_AOUT_Init() != DRV_AOUT_STATUS_OK) return DRV_SYSTEM_STATUS_ERROR;
+
+
 	return DRV_SYSTEM_STATUS_OK;
 }

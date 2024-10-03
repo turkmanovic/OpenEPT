@@ -14,7 +14,7 @@ class ConsoleWnd : public QWidget
 public:
     explicit ConsoleWnd(QWidget *parent = nullptr);
     ~ConsoleWnd();
-    void     printMessage(QString msg);
+    void     printMessage(QString msg, bool exeStatus);
 
 
 signals:

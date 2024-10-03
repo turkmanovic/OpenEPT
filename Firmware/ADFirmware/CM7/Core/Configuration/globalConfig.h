@@ -17,6 +17,9 @@
 #define CONF_AIN_MAX_BUFFER_NO				2
 #define CONF_DRV_AIN_ADC_TIM_INPUT_CLK		200000000 //HZ
 
+/* Timer configuration*/
+#define CONF_DRV_TIMER_MAX_NUMBER_OF_TIMERS 	3
+#define CONF_DRV_TIMER_MAX_NUMBER_OF_CHANNELS 	3
 
 /* GPIO configuration*/
 #define CONF_GPIO_PORT_MAX_NUMBER			10

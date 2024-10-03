@@ -31,6 +31,8 @@ static uint32_t							prvDRV_AIN_ADC_BUFFER_COUNTER;
 
 static uint8_t							prvDRV_AIN_CAPTURE_EVENT;
 
+static uint8_t							prvDRV_AIN_CAPTURE_SINGLE_BUFFER;
+
 
 /**
   * @brief This function handles ADC3 global interrupt.
@@ -70,37 +72,9 @@ void DMA1_Stream0_IRQHandler(void)
 	//ITM_SendChar('a');
 }
 
-/**
-* @brief TIM_Base MSP Initialization
-* This function configures the hardware resources used in this example
-* @param htim_base: TIM_Base handle pointer
-* @retval None
-*/
-void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
-{
-	if(htim_base->Instance==TIM1)
-	{
-	__HAL_RCC_TIM1_CLK_ENABLE();
-//    HAL_NVIC_SetPriority(TIM1_UP_IRQn, 5, 0);
-//    HAL_NVIC_EnableIRQ(TIM1_UP_IRQn);
-//    HAL_NVIC_SetPriority(TIM1_CC_IRQn, 5, 0);
-//    HAL_NVIC_EnableIRQ(TIM1_CC_IRQn);
-	}
-}
 
-/**
-* @brief TIM_Base MSP De-Initialization
-* This function freeze the hardware resources used in this example
-* @param htim_base: TIM_Base handle pointer
-* @retval None
-*/
-void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
-{
-	if(htim_base->Instance==TIM1)
-	{
-	__HAL_RCC_TIM1_CLK_DISABLE();
-	}
-}
+
+
 
 /**
 * @brief ADC MSP Initialization
@@ -144,23 +118,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
 		/* ADC3 interrupt Init */
 //	    HAL_NVIC_SetPriority(ADC3_IRQn, 5, 0);
 //	    HAL_NVIC_EnableIRQ(ADC3_IRQn);
-		/* ADC3 DMA Init */
-		/* ADC3 Init */
-		prvDRV_AIN_DEVICE_DMA_HANDLER.Instance = DMA1_Stream0;
-		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.Request = DMA_REQUEST_ADC3;
-		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.Direction = DMA_PERIPH_TO_MEMORY;
-		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.PeriphInc = DMA_PINC_DISABLE;
-		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.MemInc = DMA_MINC_ENABLE;
-		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
-		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
-		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.Mode = DMA_DOUBLE_BUFFER_M0;
-		prvDRV_AIN_DEVICE_DMA_HANDLER.Init.Priority = DMA_PRIORITY_HIGH;
-		if (HAL_DMA_Init(&prvDRV_AIN_DEVICE_DMA_HANDLER) != HAL_OK)
-		{
-		  Error_Handler();
-		}
 
-		__HAL_LINKDMA(hadc, DMA_Handle, prvDRV_AIN_DEVICE_DMA_HANDLER);
 	}
 
 }
@@ -172,6 +130,24 @@ static void prvDRV_AIN_InitDMA(void)
 
 	/* DMA controller clock enable */
 	__HAL_RCC_BDMA_CLK_ENABLE();
+
+	/* ADC3 DMA Init */
+	/* ADC3 Init */
+	prvDRV_AIN_DEVICE_DMA_HANDLER.Instance = DMA1_Stream0;
+	prvDRV_AIN_DEVICE_DMA_HANDLER.Init.Request = DMA_REQUEST_ADC3;
+	prvDRV_AIN_DEVICE_DMA_HANDLER.Init.Direction = DMA_PERIPH_TO_MEMORY;
+	prvDRV_AIN_DEVICE_DMA_HANDLER.Init.PeriphInc = DMA_PINC_DISABLE;
+	prvDRV_AIN_DEVICE_DMA_HANDLER.Init.MemInc = DMA_MINC_ENABLE;
+	prvDRV_AIN_DEVICE_DMA_HANDLER.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+	prvDRV_AIN_DEVICE_DMA_HANDLER.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+	prvDRV_AIN_DEVICE_DMA_HANDLER.Init.Mode = DMA_DOUBLE_BUFFER_M0;
+	prvDRV_AIN_DEVICE_DMA_HANDLER.Init.Priority = DMA_PRIORITY_HIGH;
+	if (HAL_DMA_Init(&prvDRV_AIN_DEVICE_DMA_HANDLER) != HAL_OK)
+	{
+	  Error_Handler();
+	}
+
+	__HAL_LINKDMA(&prvDRV_AIN_DEVICE_ADC_HANDLER, DMA_Handle, prvDRV_AIN_DEVICE_DMA_HANDLER);
 
 	/* DMA interrupt init */
 	/* BDMA_Channel0_IRQn interrupt configuration */
@@ -221,11 +197,15 @@ static void							prvDRV_AIN_DMAHalfComplitedCallback(DMA_HandleTypeDef *_hdma)
 		prvDRV_AIN_ADC_DATA_SAMPLES[prvDRV_AIN_ADC_ACTIVE_BUFFER][3] = 0;
 	}
 
-	if(prvDRV_AIN_ADC_CALLBACK != 0)
+	if(prvDRV_AIN_ADC_CALLBACK != 0 && prvDRV_AIN_CAPTURE_SINGLE_BUFFER != 1)
 	{
 		prvDRV_AIN_ADC_CALLBACK((uint32_t)&prvDRV_AIN_ADC_DATA_SAMPLES[prvDRV_AIN_ADC_ACTIVE_BUFFER][0], prvDRV_AIN_ADC_ACTIVE_BUFFER);
 	}
 
+	if(prvDRV_AIN_CAPTURE_SINGLE_BUFFER == 1)
+	{
+		prvDRV_AIN_CAPTURE_SINGLE_BUFFER = 2;
+	}
 	/*Buffer is under processing*/
 	prvDRV_AIN_ADC_DATA_SAMPLES_ACTIVE[prvDRV_AIN_ADC_ACTIVE_BUFFER] = 1;
 
@@ -241,7 +221,7 @@ static drv_ain_status				prvDRV_AIN_InitDeviceTimer()
 	TIM_ClockConfigTypeDef  sClockSourceConfig = {0};
 	TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-	prvDRV_AIN_DEVICE_TIMER_HANDLER.Instance = TIM1;
+	prvDRV_AIN_DEVICE_TIMER_HANDLER.Instance = TIM2;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Prescaler = 49999;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.CounterMode = TIM_COUNTERMODE_UP;
 	prvDRV_AIN_DEVICE_TIMER_HANDLER.Init.Period = 3999; // 1us * 1000 = 1000ns / timPeriod [ns]
@@ -274,7 +254,7 @@ static drv_ain_status				prvDRV_AIN_InitDeviceADC()
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ContinuousConvMode 		= DISABLE;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.NbrOfConversion 			= 2;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.DiscontinuousConvMode 	= DISABLE;
-	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ExternalTrigConv 		= ADC_EXTERNALTRIG_T1_TRGO;
+	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ExternalTrigConv 		= ADC_EXTERNALTRIG_T2_TRGO;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ExternalTrigConvEdge 	= ADC_EXTERNALTRIGCONVEDGE_RISINGFALLING;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DMA_CIRCULAR;
 	prvDRV_AIN_DEVICE_ADC_HANDLER.Init.Overrun 					= ADC_OVR_DATA_PRESERVED;
@@ -347,6 +327,7 @@ drv_ain_status 						DRV_AIN_Init(drv_ain_adc_t adc, drv_ain_adc_config_t* confi
 	prvDRV_AIN_ADC_ACTIVE_BUFFER	= 0;
 	prvDRV_AIN_ADC_BUFFER_COUNTER	= 0;
 	prvDRV_AIN_CAPTURE_EVENT		= 0;
+	prvDRV_AIN_CAPTURE_SINGLE_BUFFER = 0;
 
 //	/* Start ADC */
 //	DRV_AIN_Start(DRV_AIN_ADC_3);
@@ -366,9 +347,52 @@ drv_ain_status 						DRV_AIN_Start(drv_ain_adc_t adc)
 	if(HAL_ADC_Start_DMA(&prvDRV_AIN_DEVICE_ADC_HANDLER,
 			(uint32_t*)(&prvDRV_AIN_ADC_DATA_SAMPLES[0][DRV_AIN_ADC_BUFFER_OFFSET]),
 			(uint32_t*)(&prvDRV_AIN_ADC_DATA_SAMPLES[DRV_AIN_ADC_BUFFER_NO-1][DRV_AIN_ADC_BUFFER_OFFSET]),
-			DRV_AIN_ADC_BUFFER_MAX_SIZE)) return DRV_AIN_STATUS_ERROR;
+			DRV_AIN_ADC_BUFFER_MAX_SIZE)!= HAL_OK) return DRV_AIN_STATUS_ERROR;
 
 	prvDRV_AIN_ACQUISITION_STATUS = DRV_AIN_ADC_ACQUISITION_STATUS_ACTIVE;
+	return DRV_AIN_STATUS_OK;
+}
+drv_ain_status						DRV_AIN_GetADCValue(drv_ain_adc_t adc, drv_ain_adc_channel_t channel, uint32_t* value)
+{
+	prvDRV_AIN_CAPTURE_SINGLE_BUFFER = 1;
+	uint32_t value1[2];
+	uint32_t tmpValue1[2];
+	prvDRV_AIN_InitDMA();
+	DRV_AIN_Start(adc);
+	while(prvDRV_AIN_CAPTURE_SINGLE_BUFFER != 2);
+	DRV_AIN_Stop(adc);
+	/*find active buffer*/
+	uint8_t activeBufferNo = 0;
+
+	while(activeBufferNo < DRV_AIN_ADC_BUFFER_NO)
+	{
+		if(prvDRV_AIN_ADC_DATA_SAMPLES_ACTIVE[activeBufferNo] == 1) break;
+		activeBufferNo += 1;
+	}
+	DRV_AIN_Stream_SubmitAddr(adc, 0, activeBufferNo);
+
+	if(activeBufferNo == DRV_AIN_ADC_BUFFER_NO) return DRV_AIN_STATUS_ERROR;
+	tmpValue1[0] = 0;
+	tmpValue1[1] = 0;
+	for(uint32_t i = CONF_AIN_ADC_BUFFER_OFFSET; i < DRV_AIN_ADC_BUFFER_MAX_SIZE + CONF_AIN_ADC_BUFFER_OFFSET; i+=2)
+	{
+		tmpValue1[0] += prvDRV_AIN_ADC_DATA_SAMPLES[activeBufferNo][i];
+		tmpValue1[1] += prvDRV_AIN_ADC_DATA_SAMPLES[activeBufferNo][i+1];
+	}
+	value1[0] = tmpValue1[0] / (DRV_AIN_ADC_BUFFER_MAX_SIZE/2);
+	value1[1] = tmpValue1[1] / (DRV_AIN_ADC_BUFFER_MAX_SIZE/2);
+	//value1[i] = HAL_ADC_GetValue(&prvDRV_AIN_DEVICE_ADC_HANDLER);
+	switch(channel)
+	{
+	case 1:
+		*value = value1[0];
+		break;
+	case 2:
+		*value = value1[1];
+		break;
+	default:
+		return DRV_AIN_STATUS_ERROR;
+	}
 	return DRV_AIN_STATUS_OK;
 }
 drv_ain_status 						DRV_AIN_Stop(drv_ain_adc_t adc)
@@ -379,6 +403,7 @@ drv_ain_status 						DRV_AIN_Stop(drv_ain_adc_t adc)
 	if(HAL_ADC_Stop_DMA(&prvDRV_AIN_DEVICE_ADC_HANDLER)) return DRV_AIN_STATUS_ERROR;
 
 	prvDRV_AIN_ACQUISITION_STATUS = DRV_AIN_ADC_ACQUISITION_STATUS_INACTIVE;
+	prvDRV_AIN_CAPTURE_SINGLE_BUFFER = 0;
 	return DRV_AIN_STATUS_OK;
 }
 drv_ain_adc_acquisition_status_t 	DRV_AIN_GetAcquisitonStatus(drv_ain_adc_t adc)

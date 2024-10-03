@@ -151,10 +151,10 @@ void Device::controlLinkReconnect()
 void Device::sendControlMsg(QString msg)
 {
     /* call controLink execute Commnad to communicate with FW -> */
-    QString response;
-    if(!controlLink->executeCommand(msg, &response, 1000))return;
+    QString response="";
+    bool exeStatus = controlLink->executeCommand(msg, &response, 1000);
     /* emit Response to deviceContainer <- */
-    emit sigNewResponseReceived(response);
+    emit sigNewResponseReceived(response, exeStatus);
 }
 
 bool Device::setResolution(device_adc_resolution_t resolution)

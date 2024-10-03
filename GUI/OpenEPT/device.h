@@ -114,7 +114,7 @@ signals:
     void        sigControlLinkDisconnected();
     void        sigStatusLinkNewDeviceAdded(QString aDeviceIP);
     void        sigStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
-    void        sigNewResponseReceived(QString response);
+    void        sigNewResponseReceived(QString response, bool executionStatus);
 
     void        sigResolutionObtained(QString resolution);
     void        sigChSampleTimeObtained(QString chstime);

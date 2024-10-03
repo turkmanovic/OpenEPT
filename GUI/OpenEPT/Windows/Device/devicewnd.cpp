@@ -369,10 +369,10 @@ void DeviceWnd::setDeviceState(device_state_t aDeviceState)
     }
 }
 
-void DeviceWnd::printConsoleMsg(QString msg)
+void DeviceWnd::printConsoleMsg(QString msg, bool exeStatus)
 {
     /* call consoleWnd print Message to display recieved msg form FW <- */
-    consoleWnd->printMessage(msg);
+    consoleWnd->printMessage(msg, exeStatus);
 }
 
 void DeviceWnd::setDeviceInterfaceSelectionState(device_interface_selection_state_t selectionState)

@@ -31,6 +31,7 @@
 #include "sstream.h"
 #include "energy_debugger.h"
 #include "CMParse/cmparse.h"
+#include "dpcontrol.h"
 
 
 /**
@@ -205,6 +206,61 @@ static void prvCONTROL_SetDeviceName(const char* arguments, uint16_t argumentsLe
 }
 
 /**
+ * @brief	Set RGB color
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_SetRGBColor(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	cmparse_value_t	value;
+	uint32_t		intValue;
+	system_rgb_value_t rgbValue;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "r", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+	sscanf(value.value, "%lu", &intValue);
+
+	rgbValue.red = (uint8_t)intValue;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "g", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+	sscanf(value.value, "%lu", &intValue);
+
+	rgbValue.green = (uint8_t)intValue;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "b", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+	sscanf(value.value, "%lu", &intValue);
+
+	rgbValue.blue = (uint8_t)intValue;
+
+	if(SYSTEM_SetRGB(rgbValue) != SYSTEM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+
+	prvCONTROL_PrepareOkResponse(response, responseSize, "", 0);
+	LOGGING_Write("Control Service", LOGGING_MSG_TYPE_INFO, "RGB Color sucessfully set\r\n");
+}
+
+/**
  * @brief	Set device resolution by utilizing system service
  * @param	arguments: arguments defined within control message
  * @param	argumentsLength: arguments message length
@@ -288,6 +344,132 @@ static void prvCONTROL_GetResolution(const char* arguments, uint16_t argumentsLe
 	adcResolution = SSTREAM_GetResolution(connectionInfo, 1000);
 	adcResolutionStringLength = sprintf(adcResolutionString, "%d", adcResolution);
 	prvCONTROL_PrepareOkResponse(response, responseSize, adcResolutionString, adcResolutionStringLength);
+}
+
+/**
+ * @brief	Get ADC value
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_GetADCValue(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	cmparse_value_t				value;
+	uint32_t					channel;
+	uint32_t 					adcValue;
+	sstream_connection_info*  	connectionInfo;
+	char						adcValueString[5];
+	uint32_t					adcValueStringLength = 0;
+	uint32_t					streamID;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "sid", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &streamID);
+
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "ch", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain stream ID\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &channel);
+
+	memset(adcValueString, 0, 5);
+	if(SSTREAM_GetConnectionByID(&connectionInfo, streamID) != SSTREAM_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		return;
+	}
+	if(SSTREAM_GetAdcValue(connectionInfo, channel,&adcValue, 1000) == SSTREAM_STATUS_OK)
+	{
+		adcValueStringLength = sprintf(adcValueString, "%d", adcValue);
+		prvCONTROL_PrepareOkResponse(response, responseSize, adcValueString, adcValueStringLength);
+	}
+	else
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to read adc\r\n", value);
+		return;
+	}
+
+}
+/**
+ * @brief	Enable or disable DAC
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_SetDACActiveStatus(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	cmparse_value_t				value;
+	uint32_t					enableStatus;
+
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "value", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain enable value\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &enableStatus);
+
+
+	if(DPCONTROL_SetActivestatus(enableStatus, 1000) == DPCONTROL_STATUS_OK)
+	{
+		prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Active status successfully set\r\n");
+	}
+	else
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to set active status\r\n");
+		return;
+	}
+
+}
+/**
+ * @brief	Set DAC value
+ * @param	arguments: arguments defined within control message
+ * @param	argumentsLength: arguments message length
+ * @param	response: response message content
+ * @param	argumentsLength: length of response message
+ * @retval	void
+ */
+static void prvCONTROL_SetDACValue(const char* arguments, uint16_t argumentsLength, char* response, uint16_t* responseSize)
+{
+	cmparse_value_t				value;
+	uint32_t					dacValue;
+	memset(&value, 0, sizeof(cmparse_value_t));
+	if(CMPARSE_GetArgValue(arguments, argumentsLength, "value", &value) != CMPARSE_STATUS_OK)
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to obtain enable value\r\n");
+		return;
+	}
+	sscanf(value.value, "%lu", &dacValue);
+
+	if(DPCONTROL_SetValue(dacValue, 1000) == DPCONTROL_STATUS_OK)
+	{
+		prvCONTROL_PrepareOkResponse(response, responseSize, "OK", 2);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "DAC value %d set\r\n", dacValue);
+	}
+	else
+	{
+		prvCONTROL_PrepareErrorResponse(response, responseSize);
+		LOGGING_Write("Control Service", LOGGING_MSG_TYPE_ERROR, "Unable to set DAC value\r\n");
+		return;
+	}
 }
 
 /**
@@ -1367,6 +1549,14 @@ control_status_t 	CONTROL_Init(uint32_t initTimeout){
 	CMPARSE_AddCommand("device adc coffset set", 		prvCONTROL_SetCurrentoffset);
 	CMPARSE_AddCommand("device adc coffset get", 		prvCONTROL_GetCurrentoffset);
 	CMPARSE_AddCommand("device adc clk get", 			prvCONTROL_GetADCInputClk);
+	CMPARSE_AddCommand("device adc value get", 			prvCONTROL_GetADCValue);
+
+	CMPARSE_AddCommand("device dac enable set", 		prvCONTROL_SetDACActiveStatus);
+	CMPARSE_AddCommand("device dac value set", 			prvCONTROL_SetDACValue);
+
+
+	CMPARSE_AddCommand("device rgb setcolor",     		prvCONTROL_SetRGBColor);
+
 
 	return CONTROL_STATUS_OK;
 }

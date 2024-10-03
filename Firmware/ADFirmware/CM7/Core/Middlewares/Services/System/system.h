@@ -50,6 +50,13 @@ typedef enum
 	SYSTEM_LINK_STATUS_DOWN
 }system_link_status_t;
 
+typedef struct
+{
+	uint8_t red;
+	uint8_t green;
+	uint8_t blue;
+}system_rgb_value_t;
+
 
 system_status_t SYSTEM_Init();
 system_status_t SYSTEM_Start();
@@ -57,5 +64,6 @@ system_status_t SYSTEM_ReportError(system_error_level_t errorLevel);
 system_status_t SYSTEM_SetLinkStatus(system_link_status_t linkStatus);
 system_status_t SYSTEM_SetDeviceName(const char* deviceName);
 system_status_t SYSTEM_GetDeviceName(char* deviceName, uint32_t* deviceNameSize);
+system_status_t SYSTEM_SetRGB(system_rgb_value_t value);
 
 #endif /* CORE_MIDDLEWARES_SERVICES_SYSTEM_SYSTEM_H_ */

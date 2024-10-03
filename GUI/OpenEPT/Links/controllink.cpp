@@ -57,18 +57,34 @@ bool                    ControlLink::executeCommand(QString command, QString* re
     QByteArray  dataToSend(command.toUtf8());
     QString     receivedResponse = "";
     receivedData.clear();
-    if(linkStatus != CONTROL_LINK_STATUS_ESTABLISHED) return false;
+    if(linkStatus != CONTROL_LINK_STATUS_ESTABLISHED)
+    {
+        *response = QString("Control link not established");
+        return false;
+    }
     tcpSocket->flush();
     tcpSocket->write(dataToSend);
     tcpSocket->waitForBytesWritten();
-    if(tcpSocket->waitForReadyRead(timeout) != true) return false;
+    if(tcpSocket->waitForReadyRead(timeout) != true)
+    {
+        *response = QString("Unable to read data");
+        return false;
+    }
     receivedData = tcpSocket->readAll();
     QString responseAsString(receivedData);
     /* Check did we receive "\r\n" */
-    if(!responseAsString.contains("\r\n")) return false;
+    if(!responseAsString.contains("\r\n"))
+    {
+        *response = QString("End of command not detected");
+        return false;
+    }
     /* Split response to identify OK*/
     QStringList responseParts = responseAsString.split(" ");
-    if(responseParts[0] != "OK") return false;
+    if(responseParts[0] != "OK")
+    {
+        *response = QString("ERROR");
+        return false;
+    }
     for(int i = 1; i < responseParts.size(); i++)
     {
         *response += responseParts[i];

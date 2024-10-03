@@ -39,6 +39,8 @@
 #define  	SSTREAM_TASK_SET_ADC_CH2_OFFSET_BIT			0x00000200
 #define  	SSTREAM_TASK_SET_ADC_CH1_AVERAGING_RATIO	0x00000400
 #define  	SSTREAM_TASK_SET_ADC_CH2_AVERAGING_RATIO	0x00000800
+#define  	SSTREAM_TASK_GET_ADC_CH1_VALUE				0x00001000
+#define  	SSTREAM_TASK_GET_ADC_CH2_VALUE				0x00002000
 
 
 
@@ -61,6 +63,8 @@ typedef struct
 	sstream_state_t				state;
 	sstream_connection_info		connectionInfo;
 	uint32_t					id;
+	uint32_t					ch1Value;
+	uint32_t					ch2Value;
 }sstream_stream_data_t;
 
 typedef struct
@@ -491,6 +495,54 @@ static void prvSSTREAM_ControlTaskFunc(void* pvParam)
 					break;
 				}
 			}
+			if(notifyValue & SSTREAM_TASK_GET_ADC_CH1_VALUE)
+			{
+				/* Try to read ADC channel 1 value */
+				uint32_t value;
+				if(DRV_AIN_GetADCValue(DRV_AIN_ADC_3, 1, &value) == DRV_AIN_STATUS_OK)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Channel 1 successfully read value %d\r\n", value);
+				}
+				else
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "Unable read channel 1 \r\n");
+				}
+
+				xSemaphoreTake(prvSSTREAM_DATA.streamInfo[connectionData->id].guard, portMAX_DELAY);
+				prvSSTREAM_DATA.streamInfo[connectionData->id].ch1Value = value;
+				xSemaphoreGive(prvSSTREAM_DATA.streamInfo[connectionData->id].guard);
+
+				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release init semaphore\r\n");
+					connectionData->state = SSTREAM_STATE_ERROR;
+					break;
+				}
+			}
+			if(notifyValue & SSTREAM_TASK_GET_ADC_CH2_VALUE)
+			{
+				/* Try to read ADC channel 2 value */
+				uint32_t value;
+				if(DRV_AIN_GetADCValue(DRV_AIN_ADC_3, 2, &value) == DRV_AIN_STATUS_OK)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_INFO,  "Channel 2 successfully read value %d\r\n", value);
+				}
+				else
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "Unable read channel 2 \r\n");
+				}
+
+				xSemaphoreTake(prvSSTREAM_DATA.streamInfo[connectionData->id].guard, portMAX_DELAY);
+				prvSSTREAM_DATA.streamInfo[connectionData->id].ch2Value = value;
+				xSemaphoreGive(prvSSTREAM_DATA.streamInfo[connectionData->id].guard);
+
+				if(xSemaphoreGive(connectionData->initSig) != pdTRUE)
+				{
+					LOGGING_Write("SStream service", LOGGING_MSG_TYPE_ERROR,  "There is a problem to release init semaphore\r\n");
+					connectionData->state = SSTREAM_STATE_ERROR;
+					break;
+				}
+			}
 			connectionData->ainConfig.samplingTime = (double)1.0/(double)DRV_AIN_ADC_TIM_INPUT_CLK*
 									((double)connectionData->ainConfig.prescaler + 1.0)*((double)connectionData->ainConfig.period + 1.0)*
 									(double)connectionData->ainConfig.ch1.avgRatio*1000000;
@@ -875,6 +927,42 @@ uint32_t						SSTREAM_GetAdcInputClk(sstream_connection_info* connectionHandler,
 	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
 
 	return inputClk;
+}
+
+sstream_status_t				SSTREAM_GetAdcValue(sstream_connection_info* connectionHandler, uint32_t channel, uint32_t* value, uint32_t timeout)
+{
+	/* Send request to read AIN*/
+	if(channel == 1)
+	{
+		if(xTaskNotify(prvSSTREAM_DATA.controlInfo[connectionHandler->id].controlTaskHandle,
+				SSTREAM_TASK_GET_ADC_CH1_VALUE,
+				eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
+	}
+	if(channel == 2)
+	{
+		if(xTaskNotify(prvSSTREAM_DATA.controlInfo[connectionHandler->id].controlTaskHandle,
+				SSTREAM_TASK_GET_ADC_CH2_VALUE,
+				eSetBits) != pdPASS) return SSTREAM_STATUS_ERROR;
+	}
+
+	/* Wait until channels are read*/
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].initSig,
+			pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
+	if(xSemaphoreTake(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard, pdMS_TO_TICKS(timeout)) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
+	if(channel == 1)
+	{
+		*value = prvSSTREAM_DATA.streamInfo[connectionHandler->id].ch1Value;
+	}
+	if(channel == 2)
+	{
+		*value = prvSSTREAM_DATA.streamInfo[connectionHandler->id].ch2Value;
+	}
+
+	if(xSemaphoreGive(prvSSTREAM_DATA.controlInfo[connectionHandler->id].guard) != pdTRUE) return SSTREAM_STATUS_ERROR;
+
+	return SSTREAM_STATUS_OK;
 }
 
 

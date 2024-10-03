@@ -22,6 +22,7 @@
 
 #include "drv_system.h"
 #include "drv_gpio.h"
+#include "drv_timer.h"
 
 
 #include "system.h"
@@ -30,13 +31,18 @@
 #include "control.h"
 #include "sstream.h"
 #include "energy_debugger.h"
+#include "dpcontrol.h"
 
+#define  SYSTEM_MASK_RGB_SET_COLOR	0x00000001
 
 typedef  struct
 {
-	system_state_t 		state;
-	SemaphoreHandle_t 	initSig;
-	char				deviceName[CONF_SYSTEM_DEFAULT_DEVICE_NAME_MAX];
+	system_state_t 			state;
+	SemaphoreHandle_t 		initSig;
+	system_link_status_t	linkStatus;
+	system_rgb_value_t		rgbValue;
+	SemaphoreHandle_t		guard;
+	char					deviceName[CONF_SYSTEM_DEFAULT_DEVICE_NAME_MAX];
 }system_data_t;
 
 static system_data_t prvSYSTEM_DATA;
@@ -44,16 +50,30 @@ static system_data_t prvSYSTEM_DATA;
 
 static TaskHandle_t  prvSYSTEM_TASK_HANDLE;
 
-
-
 static void	prvBUTTON_Callback(drv_gpio_pin pin)
 {
 
 }
 
+static system_status_t prvSYSTEM_SetRGBState(red, blue, green)
+{
+	if(DRV_Timer_Channel_PWM_Start(DRV_TIMER_1, DRV_TIMER_CHANNEL_2, red, portMAX_DELAY) != DRV_TIMER_STATUS_OK) return SYSTEM_STATUS_OK;
+	if(DRV_Timer_Channel_PWM_Start(DRV_TIMER_1, DRV_TIMER_CHANNEL_3, green, portMAX_DELAY) != DRV_TIMER_STATUS_OK) return SYSTEM_STATUS_OK;
+	if(DRV_Timer_Channel_PWM_Start(DRV_TIMER_1, DRV_TIMER_CHANNEL_4, blue, portMAX_DELAY) != DRV_TIMER_STATUS_OK) return SYSTEM_STATUS_OK;
+	return SYSTEM_STATUS_ERROR;
+}
+
 static void prvSYSTEM_Task()
 {
-	drv_gpio_pin_init_conf_t userLedConf;
+	drv_gpio_pin_init_conf_t 	userLedConf;
+	drv_timer_channel_config_t 	pwmTimerChConfig;
+	drv_timer_config_t			pwmTimerConfig;
+	uint32_t					notifyValue;
+
+	prvSYSTEM_DATA.linkStatus    = SYSTEM_LINK_STATUS_DOWN;
+	prvSYSTEM_DATA.rgbValue.red = 0;
+	prvSYSTEM_DATA.rgbValue.green = 255;
+	prvSYSTEM_DATA.rgbValue.blue = 0;
 
 	for(;;)
 	{
@@ -63,6 +83,7 @@ static void prvSYSTEM_Task()
 			userLedConf.mode = DRV_GPIO_PIN_MODE_OUTPUT_PP;
 			userLedConf.pullState = DRV_GPIO_PIN_PULL_NOPULL;
 			uint32_t	state = 0x01;
+			notifyValue = 0;
 
 			if(DRV_SYSTEM_InitDrivers() != DRV_SYSTEM_STATUS_OK)
 			{
@@ -77,6 +98,33 @@ static void prvSYSTEM_Task()
 
 			memset(prvSYSTEM_DATA.deviceName, 0, CONF_SYSTEM_DEFAULT_DEVICE_NAME_MAX);
 			memcpy(prvSYSTEM_DATA.deviceName, CONF_SYSTEM_DEFAULT_DEVICE_NAME, strlen(CONF_SYSTEM_DEFAULT_DEVICE_NAME));
+
+			pwmTimerConfig.mode 		= DRV_TIMER_COUNTER_MODE_UP;
+			pwmTimerConfig.prescaler 	= 2000;
+			pwmTimerConfig.preload		= DRV_TIMER_PRELOAD_DISABLE;
+			pwmTimerConfig.div			= DRV_TIMER_DIV_1;
+			pwmTimerConfig.period		= 256;
+			if(DRV_Timer_Init_Instance(DRV_TIMER_1, &pwmTimerConfig) != DRV_TIMER_STATUS_OK)
+			{
+				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
+				break;
+			}
+			pwmTimerChConfig.mode = DRV_TIMER_CHANNEL_MODE_PWM1;
+			if(DRV_Timer_Channel_Init(DRV_TIMER_1, DRV_TIMER_CHANNEL_2, &pwmTimerChConfig) != DRV_TIMER_STATUS_OK)
+			{
+				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
+				break;
+			}
+			if(DRV_Timer_Channel_Init(DRV_TIMER_1, DRV_TIMER_CHANNEL_3, &pwmTimerChConfig) != DRV_TIMER_STATUS_OK)
+			{
+				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
+				break;
+			}
+			if(DRV_Timer_Channel_Init(DRV_TIMER_1, DRV_TIMER_CHANNEL_4, &pwmTimerChConfig) != DRV_TIMER_STATUS_OK)
+			{
+				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
+				break;
+			}
 
 			if(LOGGING_Init(2000) != LOGGING_STATUS_OK)
 			{
@@ -108,12 +156,26 @@ static void prvSYSTEM_Task()
 				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
 				break;
 			}
+			LOGGING_Write("System", LOGGING_MSG_TYPE_INFO, "Samples Stream service successfully initialized\r\n");
+
+			if(DPCONTROL_Init(2000) != DPCONTROL_STATUS_OK)
+			{
+				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
+				break;
+			}
+			LOGGING_Write("System", LOGGING_MSG_TYPE_INFO, "Discharge Profile Control service successfully initialized\r\n");
+
 			xSemaphoreGive(prvSYSTEM_DATA.initSig);
+			prvSYSTEM_SetRGBState(prvSYSTEM_DATA.rgbValue.red, prvSYSTEM_DATA.rgbValue.green, prvSYSTEM_DATA.rgbValue.blue);
 			prvSYSTEM_DATA.state = SYSTEM_STATE_SERVICE;
 			break;
 		case SYSTEM_STATE_SERVICE:
 			/*Main application logic goes here*/
-			vTaskDelay(pdMS_TO_TICKS(portMAX_DELAY));
+			xTaskNotifyWait(0x0, 0xffffffff, &notifyValue, portMAX_DELAY);
+			if((notifyValue & SYSTEM_MASK_RGB_SET_COLOR) != 0)
+			{
+				prvSYSTEM_SetRGBState(prvSYSTEM_DATA.rgbValue.red, prvSYSTEM_DATA.rgbValue.green, prvSYSTEM_DATA.rgbValue.blue);
+			}
 			break;
 		case SYSTEM_STATE_ERROR:
 			SYSTEM_ReportError(SYSTEM_ERROR_LEVEL_LOW);
@@ -127,6 +189,7 @@ static void prvSYSTEM_Task()
 
 system_status_t SYSTEM_Init()
 {
+	prvSYSTEM_DATA.state = SYSTEM_STATE_INIT;
 
 	if(xTaskCreate(prvSYSTEM_Task,
 			SYSTEM_TASK_NAME,
@@ -139,7 +202,10 @@ system_status_t SYSTEM_Init()
 
 	if(prvSYSTEM_DATA.initSig == NULL) return SYSTEM_STATUS_ERROR;
 
-	prvSYSTEM_DATA.state = SYSTEM_STATE_INIT;
+	prvSYSTEM_DATA.guard = xSemaphoreCreateMutex();
+
+	if(prvSYSTEM_DATA.guard == NULL) return SYSTEM_STATUS_ERROR;
+
 
 	return SYSTEM_STATUS_OK;
 }
@@ -172,29 +238,62 @@ system_status_t SYSTEM_ReportError(system_error_level_t errorLevel)
 
 system_status_t SYSTEM_SetLinkStatus(system_link_status_t linkStatus)
 {
+	system_status_t returnValue = SYSTEM_STATUS_OK;
+	if(xSemaphoreTake(prvSYSTEM_DATA.guard, portMAX_DELAY) != pdTRUE) return SYSTEM_STATUS_ERROR;
+
+	prvSYSTEM_DATA.linkStatus = linkStatus;
+
 	if(linkStatus == SYSTEM_LINK_STATUS_UP)
 	{
-		if(DRV_GPIO_Pin_SetState(SYSTEM_LINK_STATUS_DIODE_PORT, SYSTEM_LINK_STATUS_DIODE_PIN, DRV_GPIO_PIN_STATE_SET) != DRV_GPIO_STATUS_OK) return SYSTEM_STATUS_ERROR;
+		if(DRV_GPIO_Pin_SetState(SYSTEM_LINK_STATUS_DIODE_PORT, SYSTEM_LINK_STATUS_DIODE_PIN, DRV_GPIO_PIN_STATE_SET) != DRV_GPIO_STATUS_OK) returnValue = SYSTEM_STATUS_ERROR;
 	}
 	else
 	{
-		if(DRV_GPIO_Pin_SetState(SYSTEM_LINK_STATUS_DIODE_PORT, SYSTEM_LINK_STATUS_DIODE_PIN, DRV_GPIO_PIN_STATE_RESET) != DRV_GPIO_STATUS_OK) return SYSTEM_STATUS_ERROR;
+		if(DRV_GPIO_Pin_SetState(SYSTEM_LINK_STATUS_DIODE_PORT, SYSTEM_LINK_STATUS_DIODE_PIN, DRV_GPIO_PIN_STATE_RESET) != DRV_GPIO_STATUS_OK) returnValue = SYSTEM_STATUS_ERROR;
 	}
-	return SYSTEM_STATUS_OK;
+
+	if(xSemaphoreGive(prvSYSTEM_DATA.guard) != pdTRUE) return SYSTEM_STATUS_ERROR;
+
+	return returnValue;
 }
 
 system_status_t SYSTEM_SetDeviceName(const char* deviceName)
 {
 	if(strlen(deviceName) > CONF_SYSTEM_DEFAULT_DEVICE_NAME_MAX) return SYSTEM_STATE_ERROR;
+
+	if(xSemaphoreTake(prvSYSTEM_DATA.guard, portMAX_DELAY) != pdTRUE) return SYSTEM_STATUS_ERROR;
+
 	memset(prvSYSTEM_DATA.deviceName, 0, CONF_SYSTEM_DEFAULT_DEVICE_NAME_MAX);
 	memcpy(prvSYSTEM_DATA.deviceName, deviceName, strlen(deviceName));
+
+	if(xSemaphoreGive(prvSYSTEM_DATA.guard) != pdTRUE) return SYSTEM_STATUS_ERROR;
 	return SYSTEM_STATUS_OK;
 }
 
 system_status_t SYSTEM_GetDeviceName(char* deviceName, uint32_t* deviceNameSize)
 {
+	if(xSemaphoreTake(prvSYSTEM_DATA.guard, portMAX_DELAY) != pdTRUE) return SYSTEM_STATUS_ERROR;
+
 	memcpy(deviceName, prvSYSTEM_DATA.deviceName, strlen(prvSYSTEM_DATA.deviceName));
 	*deviceNameSize = strlen(prvSYSTEM_DATA.deviceName);
+
+	if(xSemaphoreGive(prvSYSTEM_DATA.guard) != pdTRUE) return SYSTEM_STATUS_ERROR;
+
+	return SYSTEM_STATUS_OK;
+}
+
+system_status_t SYSTEM_SetRGB(system_rgb_value_t value)
+{
+	if(xSemaphoreTake(prvSYSTEM_DATA.guard, portMAX_DELAY) != pdTRUE) return SYSTEM_STATUS_ERROR;
+
+	prvSYSTEM_DATA.rgbValue.red = value.red;
+	prvSYSTEM_DATA.rgbValue.blue = value.blue;
+	prvSYSTEM_DATA.rgbValue.green = value.green;
+
+	if(xSemaphoreGive(prvSYSTEM_DATA.guard) != pdTRUE) return SYSTEM_STATUS_ERROR;
+
+	if(xTaskNotify(prvSYSTEM_TASK_HANDLE, SYSTEM_MASK_RGB_SET_COLOR, eSetBits) != pdTRUE) return SYSTEM_STATUS_ERROR;
+
 	return SYSTEM_STATUS_OK;
 }
 

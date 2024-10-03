@@ -41,7 +41,7 @@ DeviceContainer::DeviceContainer(QObject *parent,  DeviceWnd* aDeviceWnd, Device
     connect(device,     SIGNAL(sigControlLinkDisconnected()),                       this, SLOT(onDeviceControlLinkDisconnected()));
     connect(device,     SIGNAL(sigStatusLinkNewDeviceAdded(QString)),               this, SLOT(onDeviceStatusLinkNewDeviceAdded(QString)));
     connect(device,     SIGNAL(sigStatusLinkNewMessageReceived(QString,QString)),   this, SLOT(onDeviceStatusLinkNewMessageReceived(QString,QString)));
-    connect(device,     SIGNAL(sigNewResponseReceived(QString)),                    this, SLOT(onDeviceHandleControlMsgResponse(QString)));
+    connect(device,     SIGNAL(sigNewResponseReceived(QString, bool)),              this, SLOT(onDeviceHandleControlMsgResponse(QString, bool)));
     connect(device,     SIGNAL(sigResolutionObtained(QString)),                     this, SLOT(onDeviceResolutionObtained(QString)));
     connect(device,     SIGNAL(sigChSampleTimeObtained(QString)),                   this, SLOT(onDeviceChSampleTimeObtained(QString)));
     connect(device,     SIGNAL(sigClockDivObtained(QString)),                       this, SLOT(onDeviceClkDivObtained(QString)));
@@ -149,10 +149,10 @@ void DeviceContainer::onConsoleWndMessageRcvd(QString msg)
     device->sendControlMsg(msg);
 }
 
-void DeviceContainer::onDeviceHandleControlMsgResponse(QString msg)
+void DeviceContainer::onDeviceHandleControlMsgResponse(QString msg, bool exeStatus)
 {
     /* call deviceWnd function with recieved msg from FW <- */
-    deviceWnd->printConsoleMsg(msg);
+    deviceWnd->printConsoleMsg(msg, exeStatus);
 }
 
 void DeviceContainer::onDeviceWndResolutionChanged(QString resolution)

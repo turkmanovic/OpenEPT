@@ -39,7 +39,7 @@ public:
 
     QPlainTextEdit* getLogWidget();
     void            setDeviceState(device_state_t aDeviceState);
-    void            printConsoleMsg(QString msg);
+    void            printConsoleMsg(QString msg, bool exeStatus);
     void            setDeviceInterfaceSelectionState(device_interface_selection_state_t selectionState=DEVICE_INTERFACE_SELECTION_STATE_UNDEFINED);
     bool            setChSamplingTime(QString sTime);
     bool            setChAvgRatio(QString avgRatio);

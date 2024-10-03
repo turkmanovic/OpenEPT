@@ -43,7 +43,7 @@ public slots:
     void    onDeviceControlLinkConnected();
     void    onDeviceStatusLinkNewDeviceAdded(QString aDeviceIP);
     void    onDeviceStatusLinkNewMessageReceived(QString aDeviceIP, QString aMessage);
-    void    onDeviceHandleControlMsgResponse(QString msg);
+    void    onDeviceHandleControlMsgResponse(QString msg, bool exeStatus);
     void    onDeviceResolutionObtained(QString resolution);
     void    onDeviceClkDivObtained(QString clkDiv);
     void    onDeviceChSampleTimeObtained(QString stime);
