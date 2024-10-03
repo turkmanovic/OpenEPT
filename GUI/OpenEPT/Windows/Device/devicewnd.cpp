@@ -14,6 +14,10 @@ DeviceWnd::DeviceWnd(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::DeviceWnd)
 {
+
+    QFont appFont = this->font();  // Get the default font
+    appFont.setPointSize(10);    // Set font size to 14 (or any desired size)
+    this->setFont(appFont);
     ui->setupUi(this);
     resolutionOptions = new QStringList();
     *resolutionOptions

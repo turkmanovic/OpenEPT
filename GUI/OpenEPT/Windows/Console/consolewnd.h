@@ -1,6 +1,7 @@
 #ifndef CONSOLEWND_H
 #define CONSOLEWND_H
 #include <QWidget>
+#include <QCompleter>
 #include "Utility/log.h"
 
 namespace Ui {
@@ -32,6 +33,9 @@ private:
 
 protected:
     void keyPressEvent(QKeyEvent *event);
+
+private:
+    QCompleter *completer;
 
 
 };

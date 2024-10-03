@@ -1,3 +1,4 @@
+
 #include "consolewnd.h"
 #include "ui_consolewnd.h"
 
@@ -10,6 +11,41 @@ ConsoleWnd::ConsoleWnd(QWidget *parent) :
     connect(ui->controlSendLine, SIGNAL(returnPressed()), this, SLOT(onSendControlMsgClicked()));
     logUtil.assignLogWidget(ui->controlSendRecievePlte);
     lastIndex = 0;
+    QStringList commandList = {
+        "",
+        "device hello",
+        "device setname",
+        "device slink create",
+        "device slink send",
+        "device eplink create",
+        "device stream create",
+        "device stream start",
+        "device stream stop",
+        "device adc chresolution set",
+        "device adc chresolution get",
+        "device adc chclkdiv set",
+        "device adc chclkdiv get",
+        "device adc chstime set",
+        "device adc chstime get",
+        "device adc chavrratio set",
+        "device adc chavrratio get",
+        "device adc speriod set",
+        "device adc speriod get",
+        "device adc voffset set",
+        "device adc voffset get",
+        "device adc coffset set",
+        "device adc coffset get",
+        "device adc clk get",
+        "device adc value get",
+        "device dac enable set",
+        "device dac value set",
+        "device rgb setcolor"
+    };
+
+    completer = new QCompleter(commandList);
+    ui->controlSendLine->setPlaceholderText("Ented command");
+
+    ui->controlSendLine->setCompleter(completer);
 }
 
 ConsoleWnd::~ConsoleWnd()
