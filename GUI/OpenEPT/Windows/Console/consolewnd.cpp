@@ -46,6 +46,10 @@ ConsoleWnd::ConsoleWnd(QWidget *parent) :
     ui->controlSendLine->setPlaceholderText("Ented command");
 
     ui->controlSendLine->setCompleter(completer);
+
+    QFont appFont = this->font();  // Get the default font
+    appFont.setPointSize(10);    // Set font size to 14 (or any desired size)
+    this->setFont(appFont);
 }
 
 ConsoleWnd::~ConsoleWnd()
