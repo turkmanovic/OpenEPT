@@ -44,6 +44,10 @@ ConsoleWnd::ConsoleWnd(QWidget *parent) :
         "device adc value get",
         "device dac enable set",
         "device dac value set",
+        "device load enable",
+        "device load disable",
+        "device bat enable",
+        "device bat disable",
         "device rgb setcolor"
     };
 
