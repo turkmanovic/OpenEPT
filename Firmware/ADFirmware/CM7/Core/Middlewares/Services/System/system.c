@@ -91,7 +91,7 @@ static void prvSYSTEM_Task()
 				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
 				break;
 			}
-			ADS9224R_Init();
+			ADS9224R_Init(NULL, 1000);
 			while(1);
 			DRV_GPIO_Port_Init(SYSTEM_LINK_STATUS_DIODE_PORT);
 			DRV_GPIO_Port_Init(SYSTEM_ERROR_STATUS_DIODE_PORT);

@@ -11,22 +11,223 @@
 #include "stm32h7xx_hal_conf.h"
 
 
-TIM_HandleTypeDef 	htim8;
-TIM_HandleTypeDef 	htim4;
-TIM_HandleTypeDef 	htim5;
+typedef struct
+{
+	ads9224r_init_state_t 	init;
+	ads9224r_config_t		*config;
+	ads9224r_acq_state_t    acqState;
+	bufferReceiveCallback	callback;
+	ads9224r_op_state_t     opState;
+}ads9224r_handle_t;
+
+static TIM_HandleTypeDef 	prvADS9224R_TIMER_SCLK_HANDLER;
+static TIM_HandleTypeDef 	prvADS9224R_TIMER_CS_HANDLER;
+static TIM_HandleTypeDef 	prvADS9224R_TIMER_CONVST_HANDLER;
 
 
-extern SPI_HandleTypeDef hspi4;
-extern SPI_HandleTypeDef hspi5;
+static ads9224r_handle_t	prvADS9224R_DATA;
 
 
+
+extern SPI_HandleTypeDef 	hspi4;
+extern SPI_HandleTypeDef 	hspi5;
+
+
+static ads9224r_status_t prvADS9224R_PowerUp(uint32_t timeout)
+{
+
+	uint32_t curTick;
+
+	/*CS Config*/
+	drv_gpio_pin_init_conf_t 	outPinConfig;
+	outPinConfig.mode = DRV_GPIO_PIN_MODE_OUTPUT_PP;
+	outPinConfig.pullState = DRV_GPIO_PIN_PULL_NOPULL;
+
+	drv_gpio_pin_init_conf_t 	inPinCOnfig;
+	inPinCOnfig.mode = DRV_GPIO_PIN_MODE_INPUT;
+	inPinCOnfig.pullState = DRV_GPIO_PIN_PULL_NOPULL;
+
+
+	/*Ready pin configuration*/
+	DRV_GPIO_Port_Init(ADS9224R_READY_STROBE_PORT);
+	DRV_GPIO_Pin_Init(ADS9224R_READY_STROBE_PORT, ADS9224R_READY_STROBE_PIN, &inPinCOnfig);
+
+	/*Power down/ RST Config*/
+	DRV_GPIO_Port_Init(ADS9224R_RESET_PD_PORT);
+	DRV_GPIO_Pin_Init(ADS9224R_RESET_PD_PORT, ADS9224R_RESET_PD_PIN, 	&outPinConfig);
+
+
+	/*Set high to power up device */
+	DRV_GPIO_Pin_SetState(ADS9224R_RESET_PD_PORT, ADS9224R_RESET_PD_PIN, DRV_GPIO_PIN_STATE_SET);
+
+	/*Ready first go high and than go down*/
+	curTick = HAL_GetTick();
+	while(DRV_GPIO_Pin_ReadState(ADS9224R_READY_STROBE_PORT, ADS9224R_READY_STROBE_PIN) != DRV_GPIO_PIN_STATE_SET)
+	{
+		if((HAL_GetTick() - curTick) > timeout ) return ADS9224R_STATUS_ERROR;
+	}
+	curTick = HAL_GetTick();
+	while(DRV_GPIO_Pin_ReadState(ADS9224R_READY_STROBE_PORT, ADS9224R_READY_STROBE_PIN) != DRV_GPIO_PIN_STATE_RESET)
+	{
+		if((HAL_GetTick() - curTick) > timeout ) return ADS9224R_STATUS_ERROR;
+	}
+	prvADS9224R_DATA.opState = ADS9224R_OP_STATE_UP;
+	return ADS9224R_STATUS_OK;
+}
+
+
+static ads9224r_status_t prvADS9224R_CONF_SPI_Master_Init()
+{
+	if(prvADS9224R_DATA.opState == ADS9224R_OP_STATE_DOWN ||
+		((prvADS9224R_DATA.opState == ADS9224R_OP_STATE_ACQ) && (prvADS9224R_DATA.acqState == ADS9224R_ACQ_STATE_ACTIVE)))return ADS9224R_STATUS_ERROR;
+
+	drv_spi_config_t 			config;
+	drv_gpio_pin_init_conf_t 	csCOnfig;
+
+	config.mode 		= DRV_SPI_MODE_MASTER;
+	config.phase		= DRV_SPI_PHASE_1EDGE;
+	config.polarity 	= DRV_SPI_POLARITY_LOW;
+
+	if(DRV_SPI_Instance_Init(DRV_SPI_INSTANCE3, &config) != DRV_SPI_STATUS_OK) return ADS9224R_STATUS_ERROR;
+
+
+	csCOnfig.mode = DRV_GPIO_PIN_MODE_OUTPUT_PP;
+	csCOnfig.pullState = DRV_GPIO_PIN_PULL_NOPULL;
+
+	/*Initialize CS*/
+	DRV_GPIO_Port_Init(ADS9224R_CS_PORT);
+	DRV_GPIO_Pin_Init(ADS9224R_CS_PORT, ADS9224R_CS_PIN, &csCOnfig);
+
+	/*Set it to inactive state "1" */
+	DRV_GPIO_Pin_SetState(ADS9224R_CS_PORT, ADS9224R_CS_PIN, DRV_GPIO_PIN_STATE_SET);
+
+	return ADS9224R_STATUS_OK;
+}
+
+static ads9224r_status_t prvADS9224R_CONF_SPI_Master_DeInit()
+{
+	if(prvADS9224R_DATA.opState == ADS9224R_OP_STATE_DOWN ||
+			((prvADS9224R_DATA.opState == ADS9224R_OP_STATE_ACQ) && (prvADS9224R_DATA.acqState == ADS9224R_ACQ_STATE_ACTIVE)))return ADS9224R_STATUS_ERROR;
+
+	if(DRV_SPI_Instance_DeInit(DRV_SPI_INSTANCE3) != DRV_SPI_STATUS_OK) return ADS9224R_STATUS_ERROR;
+
+	if(DRV_GPIO_Pin_DeInit(ADS9224R_CS_PORT, ADS9224R_CS_PIN) != DRV_GPIO_STATUS_OK)  return ADS9224R_STATUS_ERROR;
+
+	return ADS9224R_STATUS_OK;
+}
+
+static ads9224r_status_t prvADS9224R_CONF_SetState()
+{
+	if(prvADS9224R_DATA.opState == ADS9224R_OP_STATE_DOWN ||
+			((prvADS9224R_DATA.opState == ADS9224R_OP_STATE_ACQ) && (prvADS9224R_DATA.acqState == ADS9224R_ACQ_STATE_ACTIVE)))return ADS9224R_STATUS_ERROR;
+
+	if(prvADS9224R_DATA.opState == ADS9224R_OP_STATE_DOWN) 	return ADS9224R_STATUS_OK;
+
+	/*CONVST Config*/
+	drv_gpio_pin_init_conf_t 	outPinConfig;
+	outPinConfig.mode = DRV_GPIO_PIN_MODE_OUTPUT_PP;
+	outPinConfig.pullState = DRV_GPIO_PIN_PULL_NOPULL;
+
+	drv_gpio_pin_init_conf_t 	inPinCOnfig;
+	inPinCOnfig.mode = DRV_GPIO_PIN_MODE_INPUT;
+	inPinCOnfig.pullState = DRV_GPIO_PIN_PULL_NOPULL;
+
+	/*CONVST pin configuration*/
+	DRV_GPIO_Port_Init(ADS9224R_CONVST_PORT);
+	DRV_GPIO_Pin_Init(ADS9224R_CONVST_PORT, ADS9224R_CONVST_PIN, 	&outPinConfig);
+
+	/*Ready pin configuration*/
+	DRV_GPIO_Port_Init(ADS9224R_READY_STROBE_PORT);
+	DRV_GPIO_Pin_Init(ADS9224R_READY_STROBE_PORT, ADS9224R_READY_STROBE_PIN, &inPinCOnfig);
+
+	/* When ADS is operational, configure it*/
+	/* Initialize SPI for configuration */
+	if(prvADS9224R_CONF_SPI_Master_Init() != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
+
+	/* If read or write is performed from configuration or status registers, CONVST must be high */
+	DRV_GPIO_Pin_SetState(ADS9224R_CONVST_PORT, ADS9224R_CONVST_PIN, DRV_GPIO_PIN_STATE_SET);
+
+	prvADS9224R_DATA.opState = ADS9224R_OP_STATE_CONFIG;
+	return ADS9224R_STATUS_OK;
+}
+
+static ads9224r_status_t prvADS9224R_CONF_UnsetState()
+{
+	if(prvADS9224R_DATA.opState == ADS9224R_OP_STATE_DOWN ||
+			((prvADS9224R_DATA.opState == ADS9224R_OP_STATE_ACQ) && (prvADS9224R_DATA.acqState == ADS9224R_ACQ_STATE_ACTIVE)))return ADS9224R_STATUS_ERROR;
+
+	DRV_GPIO_Pin_DeInit(ADS9224R_CONVST_PORT, ADS9224R_CONVST_PIN);
+
+	/*Ready pin configuration*/
+	DRV_GPIO_Pin_DeInit(ADS9224R_READY_STROBE_PORT, ADS9224R_READY_STROBE_PIN);
+
+	/* When ADS is operational, configure it*/
+	/* Initialize SPI for configuration */
+	if(prvADS9224R_CONF_SPI_Master_DeInit() != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
+
+	prvADS9224R_DATA.opState = ADS9224R_OP_STATE_UP;
+
+	return ADS9224R_STATUS_OK;
+}
+
+static ads9224r_status_t prvADS9224R_CONF_SPI_Master_ReadReg(uint8_t reg, uint8_t* data, uint32_t timeout)
+{
+	uint8_t txData[2];
+
+	/* Prepare data */
+	txData[0] = 0x20 | (reg & 0x0F);
+	txData[1] = 0x00;
+
+	/*CS go low*/
+	DRV_GPIO_Pin_SetState(ADS9224R_CS_PORT, ADS9224R_CS_PIN, DRV_GPIO_PIN_STATE_RESET);
+
+	/*Transmit command*/
+	if(DRV_SPI_TransmitData(txData, 2, timeout) != DRV_SPI_STATUS_OK) return DRV_SPI_STATUS_ERROR;
+
+	/*CS go high*/
+	DRV_GPIO_Pin_SetState(ADS9224R_CS_PORT, ADS9224R_CS_PIN, DRV_GPIO_PIN_STATE_SET);
+
+	/* Wait for ready signal */
+	while(DRV_GPIO_Pin_ReadState(ADS9224R_READY_STROBE_PORT, ADS9224R_READY_STROBE_PIN) != DRV_GPIO_PIN_STATE_SET);
+
+	/* CS go low */
+	DRV_GPIO_Pin_SetState(ADS9224R_CS_PORT, ADS9224R_CS_PIN, DRV_GPIO_PIN_STATE_RESET);
+
+	/*Receive data*/
+	if(DRV_SPI_ReceiveData(data, 1, timeout) != DRV_SPI_STATUS_OK) return DRV_SPI_STATUS_ERROR;
+
+	/*CS go high*/
+	DRV_GPIO_Pin_SetState(ADS9224R_CS_PORT, ADS9224R_CS_PIN, DRV_GPIO_PIN_STATE_SET);
+
+	return ADS9224R_STATUS_OK;
+}
+
+static ads9224r_status_t prvADS9224R_CONF_SPI_Master_WriteReg(uint8_t reg, uint8_t data, uint32_t timeout)
+{
+	uint8_t txData[2];
+
+	/* Prepare data */
+	txData[0] = 0x10 | (reg & 0x0F);
+	txData[1] = data;
+
+	/*CS go low*/
+	DRV_GPIO_Pin_SetState(ADS9224R_CS_PORT, ADS9224R_CS_PIN, DRV_GPIO_PIN_STATE_RESET);
+
+	/*Transmit command*/
+	if(DRV_SPI_TransmitData(txData, 2, timeout) != DRV_SPI_STATUS_OK) return DRV_SPI_STATUS_ERROR;
+
+	/*CS go high*/
+	DRV_GPIO_Pin_SetState(ADS9224R_CS_PORT, ADS9224R_CS_PIN, DRV_GPIO_PIN_STATE_SET);
+
+	return ADS9224R_STATUS_OK;
+}
 
 /**
   * @brief TIM3 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_TIM3_Init(void)
+static ads9224r_status_t prvADS9224R_TIMER_SCLK_Init(void)
 {
 
 	TIM_ClockConfigTypeDef sClockSourceConfig = {0};
@@ -35,56 +236,40 @@ static void MX_TIM3_Init(void)
 	TIM_OC_InitTypeDef sConfigOC = {0};
 	TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
 
-	htim8.Instance = TIM8;
-	htim8.Init.Prescaler = 2-1;
-	htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim8.Init.Period = 10-1;
-	htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	htim8.Init.RepetitionCounter = 15;
-	htim8.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-	if (HAL_TIM_Base_Init(&htim8) != HAL_OK)
-	{
-	Error_Handler();
-	}
+	prvADS9224R_TIMER_SCLK_HANDLER.Instance = TIM8;
+	prvADS9224R_TIMER_SCLK_HANDLER.Init.Prescaler = 2-1;
+	prvADS9224R_TIMER_SCLK_HANDLER.Init.CounterMode = TIM_COUNTERMODE_UP;
+	prvADS9224R_TIMER_SCLK_HANDLER.Init.Period = 10-1;
+	prvADS9224R_TIMER_SCLK_HANDLER.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	prvADS9224R_TIMER_SCLK_HANDLER.Init.RepetitionCounter = 15;
+	prvADS9224R_TIMER_SCLK_HANDLER.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+	if (HAL_TIM_Base_Init(&prvADS9224R_TIMER_SCLK_HANDLER) != HAL_OK) return ADS9224R_STATUS_ERROR;
+
 	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-	if (HAL_TIM_ConfigClockSource(&htim8, &sClockSourceConfig) != HAL_OK)
-	{
-	Error_Handler();
-	}
-	if (HAL_TIM_PWM_Init(&htim8) != HAL_OK)
-	{
-	Error_Handler();
-	}
-	if (HAL_TIM_OnePulse_Init(&htim8, TIM_OPMODE_SINGLE) != HAL_OK)
-	{
-	Error_Handler();
-	}
+	if (HAL_TIM_ConfigClockSource(&prvADS9224R_TIMER_SCLK_HANDLER, &sClockSourceConfig) != HAL_OK) return ADS9224R_STATUS_ERROR;
+	if (HAL_TIM_PWM_Init(&prvADS9224R_TIMER_SCLK_HANDLER) != HAL_OK) return ADS9224R_STATUS_ERROR;
+	if (HAL_TIM_OnePulse_Init(&prvADS9224R_TIMER_SCLK_HANDLER, TIM_OPMODE_SINGLE) != HAL_OK) return ADS9224R_STATUS_ERROR;
+
 	sSlaveConfig.SlaveMode = TIM_SLAVEMODE_COMBINED_RESETTRIGGER;
 	sSlaveConfig.InputTrigger = TIM_TS_ETRF;
 	sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_INVERTED;
 	sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1;
 	sSlaveConfig.TriggerFilter = 0;
-	if (HAL_TIM_SlaveConfigSynchro(&htim8, &sSlaveConfig) != HAL_OK)
-	{
-	Error_Handler();
-	}
+	if (HAL_TIM_SlaveConfigSynchro(&prvADS9224R_TIMER_SCLK_HANDLER, &sSlaveConfig) != HAL_OK) return ADS9224R_STATUS_ERROR;
+
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
 	sMasterConfig.MasterOutputTrigger2 = TIM_TRGO2_UPDATE;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-	if (HAL_TIMEx_MasterConfigSynchronization(&htim8, &sMasterConfig) != HAL_OK)
-	{
-	Error_Handler();
-	}
-	sConfigOC.OCMode = TIM_OCMODE_PWM1;
-	sConfigOC.Pulse = 5;
-	sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
-	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-	sConfigOC.OCIdleState = TIM_OCIDLESTATE_SET;
-	sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_SET;
-	if (HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
-	{
-	Error_Handler();
-	}
+	if (HAL_TIMEx_MasterConfigSynchronization(&prvADS9224R_TIMER_SCLK_HANDLER, &sMasterConfig) != HAL_OK) return ADS9224R_STATUS_ERROR;
+
+	sConfigOC.OCMode		 = TIM_OCMODE_PWM1;
+	sConfigOC.Pulse			 = 5;
+	sConfigOC.OCPolarity	 = TIM_OCPOLARITY_LOW;
+	sConfigOC.OCFastMode	 = TIM_OCFAST_DISABLE;
+	sConfigOC.OCIdleState	 = TIM_OCIDLESTATE_SET;
+	sConfigOC.OCNIdleState	 = TIM_OCNIDLESTATE_SET;
+	if (HAL_TIM_PWM_ConfigChannel(&prvADS9224R_TIMER_SCLK_HANDLER, &sConfigOC, TIM_CHANNEL_4) != HAL_OK) return ADS9224R_STATUS_ERROR;
+
 	sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
 	sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
 	sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
@@ -96,10 +281,9 @@ static void MX_TIM3_Init(void)
 	sBreakDeadTimeConfig.Break2Polarity = TIM_BREAK2POLARITY_HIGH;
 	sBreakDeadTimeConfig.Break2Filter = 0;
 	sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
-	if (HAL_TIMEx_ConfigBreakDeadTime(&htim8, &sBreakDeadTimeConfig) != HAL_OK)
-	{
-	Error_Handler();
-	}
+	if (HAL_TIMEx_ConfigBreakDeadTime(&prvADS9224R_TIMER_SCLK_HANDLER, &sBreakDeadTimeConfig) != HAL_OK) return ADS9224R_STATUS_ERROR;
+
+	 return ADS9224R_STATUS_OK;
 
 }
 
@@ -108,7 +292,7 @@ static void MX_TIM3_Init(void)
   * @param None
   * @retval None
   */
-static void MX_CSTimer_Init(void)
+static void prvADS9224R_TIMER_CS_Init(void)
 {
 
 	/* USER CODE BEGIN TIM4_Init 0 */
@@ -123,282 +307,174 @@ static void MX_CSTimer_Init(void)
 	/* USER CODE BEGIN TIM4_Init 1 */
 
 	/* USER CODE END TIM4_Init 1 */
-	htim4.Instance = TIM4;
-	htim4.Init.Prescaler = 2-1;
-	htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim4.Init.Period = 280-1;
-	htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-	if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
-	{
-	Error_Handler();
-	}
+	prvADS9224R_TIMER_CS_HANDLER.Instance = TIM4;
+	prvADS9224R_TIMER_CS_HANDLER.Init.Prescaler = 2-1;
+	prvADS9224R_TIMER_CS_HANDLER.Init.CounterMode = TIM_COUNTERMODE_UP;
+	prvADS9224R_TIMER_CS_HANDLER.Init.Period = 280-1;
+	prvADS9224R_TIMER_CS_HANDLER.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	prvADS9224R_TIMER_CS_HANDLER.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+	if (HAL_TIM_Base_Init(&prvADS9224R_TIMER_CS_HANDLER) != HAL_OK) return ADS9224R_STATUS_ERROR;
+
 	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-	if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
-	{
-	Error_Handler();
-	}
-	if (HAL_TIM_PWM_Init(&htim4) != HAL_OK)
-	{
-	Error_Handler();
-	}
-	if (HAL_TIM_OnePulse_Init(&htim4, TIM_OPMODE_SINGLE) != HAL_OK)
-	{
-	Error_Handler();
-	}
+	if (HAL_TIM_ConfigClockSource(&prvADS9224R_TIMER_CS_HANDLER, &sClockSourceConfig) != HAL_OK) return ADS9224R_STATUS_ERROR;
+	if (HAL_TIM_PWM_Init(&prvADS9224R_TIMER_CS_HANDLER) != HAL_OK) return ADS9224R_STATUS_ERROR;
+	if (HAL_TIM_OnePulse_Init(&prvADS9224R_TIMER_CS_HANDLER, TIM_OPMODE_SINGLE) != HAL_OK) return ADS9224R_STATUS_ERROR;
+
 	sSlaveConfig.SlaveMode = TIM_SLAVEMODE_COMBINED_RESETTRIGGER;
 	sSlaveConfig.InputTrigger = TIM_TS_ETRF;
 	sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_NONINVERTED;
 	sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1;
 	sSlaveConfig.TriggerFilter = 0;
-	if (HAL_TIM_SlaveConfigSynchro(&htim4, &sSlaveConfig) != HAL_OK)
-	{
-	Error_Handler();
-	}
+	if (HAL_TIM_SlaveConfigSynchro(&prvADS9224R_TIMER_CS_HANDLER, &sSlaveConfig) != HAL_OK) return ADS9224R_STATUS_ERROR;
+
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-	if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
-	{
-	Error_Handler();
-	}
+	if (HAL_TIMEx_MasterConfigSynchronization(&prvADS9224R_TIMER_CS_HANDLER, &sMasterConfig) != HAL_OK) return ADS9224R_STATUS_ERROR;
+
 	sConfigOC.OCMode = TIM_OCMODE_PWM1;
 	sConfigOC.Pulse = 5;
 	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
 	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 	sConfigOC.OCNIdleState = TIM_OCIDLESTATE_SET;
 	sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-	if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-	{
-	Error_Handler();
-	}
+	if (HAL_TIM_PWM_ConfigChannel(&prvADS9224R_TIMER_CS_HANDLER, &sConfigOC, TIM_CHANNEL_1) != HAL_OK) return ADS9224R_STATUS_ERROR;
+
+	return ADS9224R_STATUS_OK;
 
 }
 
-volatile uint8_t data1[200] = {0};
-volatile uint8_t data2[200] = {0};
+volatile uint8_t data1[200];
+volatile uint8_t data2[200];
 /**
   * @brief TIM5 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_Convst_Init(void)
+static void prvADS9224R_TIMER_CONVST_Init(void)
 {
 
 	TIM_ClockConfigTypeDef sClockSourceConfig = {0};
 	TIM_MasterConfigTypeDef sMasterConfig = {0};
 	TIM_OC_InitTypeDef sConfigOC = {0};
 
-	htim5.Instance = TIM5;
-	htim5.Init.Prescaler = 2-1;
-	htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim5.Init.Period = 310-1;
-	htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-	if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
-	{
-	Error_Handler();
-	}
+	prvADS9224R_TIMER_CONVST_HANDLER.Instance = TIM5;
+	prvADS9224R_TIMER_CONVST_HANDLER.Init.Prescaler = 2-1;
+	prvADS9224R_TIMER_CONVST_HANDLER.Init.CounterMode = TIM_COUNTERMODE_UP;
+	prvADS9224R_TIMER_CONVST_HANDLER.Init.Period = 310-1;
+	prvADS9224R_TIMER_CONVST_HANDLER.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	prvADS9224R_TIMER_CONVST_HANDLER.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+	if (HAL_TIM_Base_Init(&prvADS9224R_TIMER_CONVST_HANDLER) != HAL_OK) return ADS9224R_STATUS_ERROR;
 	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-	if (HAL_TIM_ConfigClockSource(&htim5, &sClockSourceConfig) != HAL_OK)
-	{
-	Error_Handler();
-	}
-	if (HAL_TIM_PWM_Init(&htim5) != HAL_OK)
-	{
-	Error_Handler();
-	}
-//	if (HAL_TIM_OnePulse_Init(&htim5, TIM_OPMODE_SINGLE) != HAL_OK)
-//	{
-//	Error_Handler();
-//	}
+	if (HAL_TIM_ConfigClockSource(&prvADS9224R_TIMER_CONVST_HANDLER, &sClockSourceConfig) != HAL_OK) return ADS9224R_STATUS_ERROR;
+	if (HAL_TIM_PWM_Init(&prvADS9224R_TIMER_CONVST_HANDLER) != HAL_OK) return ADS9224R_STATUS_ERROR;
+
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-	if (HAL_TIMEx_MasterConfigSynchronization(&htim5, &sMasterConfig) != HAL_OK)
-	{
-	Error_Handler();
-	}
+	if (HAL_TIMEx_MasterConfigSynchronization(&prvADS9224R_TIMER_CONVST_HANDLER, &sMasterConfig) != HAL_OK) return ADS9224R_STATUS_ERROR;
+
 	sConfigOC.OCMode = TIM_OCMODE_PWM1;
 	sConfigOC.Pulse = 30;
 	sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
 	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 	sConfigOC.OCNIdleState = TIM_OCIDLESTATE_RESET;
 	sConfigOC.OCNPolarity = TIM_OCNPOLARITY_LOW;
-	if (HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
-	{
-	Error_Handler();
-	}
+	if (HAL_TIM_PWM_ConfigChannel(&prvADS9224R_TIMER_CONVST_HANDLER, &sConfigOC, TIM_CHANNEL_4) != HAL_OK) return ADS9224R_STATUS_ERROR;
+
+	 return ADS9224R_STATUS_OK;
 
 }
-
-
-
-ads9224r_status_t	ADS9224R_Init()
+static ads9224r_status_t prvADS9224R_ACQ_SetState()
 {
-	drv_spi_config_t config;
+	uint32_t curTick = 0;
+	if(prvADS9224R_DATA.opState == ADS9224R_OP_STATE_DOWN ||
+			((prvADS9224R_DATA.opState == ADS9224R_OP_STATE_ACQ) && (prvADS9224R_DATA.acqState == ADS9224R_ACQ_STATE_ACTIVE)))return ADS9224R_STATUS_ERROR;
 
-	config.mode = DRV_SPI_MODE_MASTER;
-	config.phase= DRV_SPI_PHASE_1EDGE;
-	config.polarity = DRV_SPI_POLARITY_LOW;
+	if(prvADS9224R_DATA.opState == ADS9224R_OP_STATE_DOWN) 	return ADS9224R_STATUS_OK;
 
-	uint8_t dataTx[2];
-	uint8_t dataRx;
 
-	if(DRV_SPI_Instance_Init(DRV_SPI_INSTANCE3, &config) != DRV_SPI_STATUS_OK) return ADS9224R_STATUS_ERROR;
-
-	/*CS Config*/
-	drv_gpio_pin_init_conf_t 	csCOnfig;
-	csCOnfig.mode = DRV_GPIO_PIN_MODE_OUTPUT_PP;
-	csCOnfig.pullState = DRV_GPIO_PIN_PULL_NOPULL;
-
-	drv_gpio_pin_init_conf_t 	readyStrobeConfig;
-	readyStrobeConfig.mode = DRV_GPIO_PIN_MODE_INPUT;
-	readyStrobeConfig.pullState = DRV_GPIO_PIN_PULL_NOPULL;
-
-	/*CS*/
-	DRV_GPIO_Port_Init(DRV_GPIO_PORT_D);
-	DRV_GPIO_Pin_Init(DRV_GPIO_PORT_D, 12, &csCOnfig);
-	DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_D, 12, DRV_GPIO_PIN_STATE_SET);
-
+	/*Check if driver and device were in CONFIG state*/
+	if(prvADS9224R_DATA.opState == ADS9224R_OP_STATE_CONFIG)
+	{
+		/*Clear config settings to release pins that in ACQ state are under timers' control*/
+		if(prvADS9224R_CONF_UnsetState() != ADS9224R_STATUS_OK)  	return ADS9224R_STATUS_OK;
+	}
+	/* Ready is used to check
+	 * if initialization of CONVST trigger conversion whereas CS is used to reset CONVST*/
 	/*CONVST Config*/
-	DRV_GPIO_Port_Init(DRV_GPIO_PORT_A);
-	DRV_GPIO_Pin_Init(DRV_GPIO_PORT_A, 3, 	&csCOnfig);
+	drv_gpio_pin_init_conf_t 	outPinConfig;
+	outPinConfig.mode = DRV_GPIO_PIN_MODE_OUTPUT_PP;
+	outPinConfig.pullState = DRV_GPIO_PIN_PULL_NOPULL;
 
-	/*Power down/ RST Config*/
-	DRV_GPIO_Port_Init(DRV_GPIO_PORT_G);
-	DRV_GPIO_Pin_Init(DRV_GPIO_PORT_G, 8, 	&csCOnfig);
+	drv_gpio_pin_init_conf_t 	inPinCOnfig;
+	inPinCOnfig.mode = DRV_GPIO_PIN_MODE_INPUT;
+	inPinCOnfig.pullState = DRV_GPIO_PIN_PULL_NOPULL;
 
-	DRV_GPIO_Port_Init(DRV_GPIO_PORT_G);
-	DRV_GPIO_Pin_Init(DRV_GPIO_PORT_G, 10, &readyStrobeConfig);
+	/*CONVST pin configuration*/
+	DRV_GPIO_Port_Init(ADS9224R_CS_PORT);
+	DRV_GPIO_Pin_Init(ADS9224R_CS_PORT, ADS9224R_CS_PIN, 	&outPinConfig);
+
+	/*Ready pin configuration*/
+	DRV_GPIO_Port_Init(ADS9224R_READY_STROBE_PORT);
+	DRV_GPIO_Pin_Init(ADS9224R_READY_STROBE_PORT, ADS9224R_READY_STROBE_PIN, &inPinCOnfig);
 
 
-	DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_G, 8, DRV_GPIO_PIN_STATE_SET);
-	while(DRV_GPIO_Pin_ReadState(DRV_GPIO_PORT_G, 10) != DRV_GPIO_PIN_STATE_SET);
-	while(DRV_GPIO_Pin_ReadState(DRV_GPIO_PORT_G, 10) != DRV_GPIO_PIN_STATE_RESET);
 
-	//Read and write to registers
-	DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_A, 3, DRV_GPIO_PIN_STATE_SET);
+	prvADS9224R_TIMER_CONVST_Init();
+	curTick = HAL_GetTick();
 
-	//Send Read command to read register 0x05
-	dataTx[0] = 0x25;
-	dataTx[1] = 0x00;
-	DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_D, 12, DRV_GPIO_PIN_STATE_RESET);
-	if(DRV_SPI_TransmitData(dataTx, 2, 1000) != DRV_SPI_STATUS_OK)
+	/*Wait for 5ms to debaunce in case that initialization of CONVST trigger CONVST signal*/
+	while((HAL_GetTick() - curTick) < 1000);
+
+
+	if(DRV_GPIO_Pin_ReadState(ADS9224R_READY_STROBE_PORT, ADS9224R_READY_STROBE_PIN) == DRV_GPIO_PIN_STATE_SET)
 	{
-		while(1);
+		/*If ready pin is set, CONVST trigger conversion. Pulling down CS pin will reset ready and prepare ADC for
+		 * acquisition. */
+		DRV_GPIO_Pin_SetState(ADS9224R_CS_PORT, ADS9224R_CS_PIN, DRV_GPIO_PIN_STATE_RESET);
+		/*Return CS to inactive state */
+		DRV_GPIO_Pin_SetState(ADS9224R_CS_PORT, ADS9224R_CS_PIN, DRV_GPIO_PIN_STATE_SET);
+
 	}
-	DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_D, 12, DRV_GPIO_PIN_STATE_SET);
 
-	//Wait for ready
-	while(DRV_GPIO_Pin_ReadState(DRV_GPIO_PORT_G, 10) != DRV_GPIO_PIN_STATE_SET);
-
-	//Read register 0x05
-	DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_D, 12, DRV_GPIO_PIN_STATE_RESET);
-	if(DRV_SPI_ReceiveData(&dataRx, 1, 1000) != DRV_SPI_STATUS_OK)
-	{
-		while(1);
-	}
-	DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_D, 12, DRV_GPIO_PIN_STATE_SET);
-
-	//Send Write command to write register 0x05 with data 0x02
-	dataTx[0] = 0x15;
-	dataTx[1] = 0x02;
-	DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_D, 12, DRV_GPIO_PIN_STATE_RESET);
-	if(DRV_SPI_TransmitData(dataTx, 2, 1000) != DRV_SPI_STATUS_OK)
-	{
-		while(1);
-	}
-	DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_D, 12, DRV_GPIO_PIN_STATE_SET);
-
-
-
-
-
-	//Send Read command to read register 0x05
-	dataTx[0] = 0x25;
-	dataTx[1] = 0x00;
-	DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_D, 12, DRV_GPIO_PIN_STATE_RESET);
-	if(DRV_SPI_TransmitData(dataTx, 2, 1000) != DRV_SPI_STATUS_OK)
-	{
-		while(1);
-	}
-	DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_D, 12, DRV_GPIO_PIN_STATE_SET);
-
-	//Wait for ready
-	while(DRV_GPIO_Pin_ReadState(DRV_GPIO_PORT_G, 10) != DRV_GPIO_PIN_STATE_SET);
-
-
-	DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_D, 12, DRV_GPIO_PIN_STATE_RESET);
-	if(DRV_SPI_ReceiveData(&dataRx, 1, 1000) != DRV_SPI_STATUS_OK)
-	{
-		while(1);
-	}
-	DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_D, 12, DRV_GPIO_PIN_STATE_SET);
-
-	DRV_SPI_Instance_DeInit(DRV_SPI_INSTANCE3);
-
-//    GPIO_InitTypeDef GPIO_InitStruct = {0};
-//
-//    /* Prepare pins for timers*/
-//	/* Convst is control by timer */
-////    memset(GPIO_InitStruct, 0, sizeof(GPIO_InitTypeDef));
-////	GPIO_InitStruct.Pin = GPIO_PIN_3;
-////	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-////	GPIO_InitStruct.Pull = GPIO_NOPULL;
-////	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-////	GPIO_InitStruct.Alternate = GPIO_AF2_TIM5;
-////	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-//	HAL_GPIO_DeInit(GPIOA, GPIO_PIN_3);
-//
-//
-//	/* CS is controled by time*/
-////    memset(GPIO_InitStruct, 0, sizeof(GPIO_InitTypeDef));
-////    GPIO_InitStruct.Pin = GPIO_PIN_12;
-////    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-////    GPIO_InitStruct.Pull = GPIO_NOPULL;
-////    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-////    GPIO_InitStruct.Alternate = GPIO_AF2_TIM4;
-////    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-//    HAL_GPIO_DeInit(GPIOD, GPIO_PIN_12);
-//
-//    /*Disable spi pins*/
-////    memset(GPIO_InitStruct, 0, sizeof(GPIO_InitTypeDef));
-////    GPIO_InitStruct.Pin = GPIO_PIN_2;
-////    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-////    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-////    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-////    GPIO_InitStruct.Alternate = GPIO_AF7_SPI3;
-////    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-//    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_2);
-//
-////    memset(GPIO_InitStruct, 0, sizeof(GPIO_InitTypeDef));
-////    GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11;
-////    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-////    GPIO_InitStruct.Pull = GPIO_NOPULL;
-////    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-////    GPIO_InitStruct.Alternate = GPIO_AF6_SPI3;
-////    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-//    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_10);
-//    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_11);
-
-
-	MX_Convst_Init();
-	DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_D, 12, DRV_GPIO_PIN_STATE_RESET);
-	DRV_GPIO_Pin_SetState(DRV_GPIO_PORT_D, 12, DRV_GPIO_PIN_STATE_SET);
-	MX_CSTimer_Init();
-	MX_TIM3_Init();
+	prvADS9224R_TIMER_CS_Init();
+	prvADS9224R_TIMER_SCLK_Init();
 
 
 	MX_SPI4_Init();
 	MX_SPI5_Init();
+
+
 	HAL_SPI_Receive_IT(&hspi4, data1, 200);
 	HAL_SPI_Receive_IT(&hspi5, data2, 200);
 
+	prvADS9224R_DATA.opState = ADS9224R_OP_STATE_ACQ;
+	prvADS9224R_DATA.acqState = ADS9224R_ACQ_STATE_INACTIVE;
+	return ADS9224R_STATUS_OK;
+}
 
 
-	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
-	HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_4);
 
-	HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_4);
+
+ads9224r_status_t	ADS9224R_Init(ads9224r_config_t *ads9224r_config_t, uint32_t timeout)
+{
+
+	memset(&prvADS9224R_DATA, 0, sizeof(ads9224r_handle_t));
+
+	if(prvADS9224R_PowerUp(timeout) != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
+
+	if(prvADS9224R_CONF_SetState() != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
+
+	prvADS9224R_DATA.init = ADS9224R_INIT_STATE_INIT;
+
+	if(ADS9224R_SetPatternState(ADS9224R_FPATTERN_STATE_ENABLED, timeout) != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
+
+	if(prvADS9224R_ACQ_SetState() != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
+
+	if(ADS9224R_SetAcquisitonState(ADS9224R_ACQ_STATE_ACTIVE) != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
+
+
+
+
 
 
 
@@ -410,14 +486,108 @@ ads9224r_status_t	ADS9224R_Init()
 	while(1);
 
 	return ADS9224R_STATUS_OK;
-
-
 }
-void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef* hspi)
+
+ads9224r_status_t	ADS9224R_SetPatternState(ads9224r_fpattern_state_t state, uint32_t timeout)
+{
+	/* Check if:
+	 * 1. driver is not initialized
+	 * 2. if it is in power down state
+	 * 3. if it is in acq state and acquisiton is active */
+	if(prvADS9224R_DATA.init == ADS9224R_INIT_STATE_NOINIT ||
+			prvADS9224R_DATA.opState == ADS9224R_OP_STATE_DOWN ||
+			((prvADS9224R_DATA.opState == ADS9224R_OP_STATE_ACQ) && (prvADS9224R_DATA.acqState == ADS9224R_ACQ_STATE_ACTIVE)))return ADS9224R_STATUS_ERROR;
+
+	/* Check if driver and device is in configuration state*/
+	if(prvADS9224R_DATA.opState != ADS9224R_OP_STATE_CONFIG)
+	{
+		if(prvADS9224R_CONF_SetState() != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
+	}
+
+	uint8_t regContentBit = 0;
+	uint8_t dataRx = 0;
+
+	switch(state)
+	{
+	case ADS9224R_FPATTERN_STATE_DISABLED:
+		regContentBit = 0;
+		break;
+	case ADS9224R_FPATTERN_STATE_ENABLED:
+		regContentBit = ADS9224R_REG_MASK_OUTPUT_DATA_WORD_CFG_FIXED_PATTERN_DATA;
+		break;
+	}
+
+	/* Read register */
+	if(prvADS9224R_CONF_SPI_Master_ReadReg(ADS9224R_REG_ADDR_OUTPUT_DATA_WORD_CFG, &dataRx, timeout) != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
+
+	/* Modify */
+	dataRx |= regContentBit;
+
+	/* Write back */
+	if(prvADS9224R_CONF_SPI_Master_WriteReg(ADS9224R_REG_ADDR_OUTPUT_DATA_WORD_CFG, dataRx, timeout) != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
+
+	dataRx = 0;
+
+	/* Read */
+	if(prvADS9224R_CONF_SPI_Master_ReadReg(ADS9224R_REG_ADDR_OUTPUT_DATA_WORD_CFG, &dataRx, timeout) != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
+
+	if( (dataRx & ADS9224R_REG_MASK_OUTPUT_DATA_WORD_CFG_FIXED_PATTERN_DATA) != regContentBit) return ADS9224R_STATUS_ERROR;
+
+	return ADS9224R_STATUS_OK;
+}
+
+ads9224r_status_t   ADS9224R_SetAcquisitonState(ads9224r_acq_state_t state)
+{
+	/* Check if:
+	 * 1. driver is not initialized
+	 * 2. if it is in power down state
+	 * 3. if it is in acq state and acquisiton is active */
+	if(prvADS9224R_DATA.init == ADS9224R_INIT_STATE_NOINIT || prvADS9224R_DATA.opState == ADS9224R_OP_STATE_DOWN) return ADS9224R_STATUS_ERROR;
+
+	/* Check if driver and device is in configuration state*/
+	switch(state)
+	{
+	case ADS9224R_ACQ_STATE_ACTIVE:
+		if((prvADS9224R_DATA.opState == ADS9224R_OP_STATE_ACQ) && (prvADS9224R_DATA.acqState == ADS9224R_ACQ_STATE_ACTIVE))return ADS9224R_STATUS_ERROR;
+		if(prvADS9224R_DATA.opState != ADS9224R_OP_STATE_ACQ)
+		{
+			if(prvADS9224R_ACQ_SetState() != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
+		}
+
+		HAL_TIM_PWM_Start(&prvADS9224R_TIMER_CS_HANDLER, TIM_CHANNEL_1);
+		HAL_TIM_PWM_Start(&prvADS9224R_TIMER_SCLK_HANDLER, TIM_CHANNEL_4);
+		HAL_TIM_PWM_Start(&prvADS9224R_TIMER_CONVST_HANDLER, TIM_CHANNEL_4);
+
+		prvADS9224R_DATA.acqState = ADS9224R_ACQ_STATE_ACTIVE;
+		break;
+	case ADS9224R_ACQ_STATE_INACTIVE:
+
+		HAL_TIM_PWM_Stop(&prvADS9224R_TIMER_CS_HANDLER, TIM_CHANNEL_1);
+		HAL_TIM_PWM_Stop(&prvADS9224R_TIMER_SCLK_HANDLER, TIM_CHANNEL_4);
+		HAL_TIM_PWM_Stop(&prvADS9224R_TIMER_CONVST_HANDLER, TIM_CHANNEL_4);
+		prvADS9224R_DATA.acqState = ADS9224R_ACQ_STATE_INACTIVE;
+		break;
+	}
+
+
+	return ADS9224R_STATUS_OK;
+}
+
+ads9224r_status_t   ADS9224R_SetConfig(ads9224r_config_t *config)
 {
 
+	return ADS9224R_STATUS_OK;
+}
+ads9224r_status_t   ADS9224R_SetSamplingRate(uint32_t samplingRate)
+{
 
-	HAL_TIM_PWM_Stop(&htim5, TIM_CHANNEL_4);
+	return ADS9224R_STATUS_OK;
+}
+
+
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef* hspi)
+{
+	ADS9224R_SetAcquisitonState(ADS9224R_ACQ_STATE_INACTIVE);
 }
 
 

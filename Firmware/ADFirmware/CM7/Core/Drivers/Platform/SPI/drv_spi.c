@@ -362,10 +362,6 @@ drv_spi_status_t	DRV_SPI_Instance_Init(drv_spi_instance_t instance, drv_spi_conf
 
 drv_spi_status_t	DRV_SPI_Instance_DeInit(drv_spi_instance_t instance)
 {
-	if(prvDRV_SPI_INSTANCE.lock != NULL) return DRV_SPI_STATUS_ERROR;
-
-	prvDRV_SPI_INSTANCE.lock = xSemaphoreCreateMutex();
-
 	if(prvDRV_SPI_INSTANCE.lock == NULL) return DRV_SPI_STATUS_ERROR;
 
 	/*TODO Check what user can actually configure. */
