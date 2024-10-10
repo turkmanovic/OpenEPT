@@ -24,8 +24,8 @@ typedef struct drv_spi_handle_t
 static drv_spi_handle_t prvDRV_SPI_INSTANCE;
 
 
-SPI_HandleTypeDef hspi4;
-SPI_HandleTypeDef hspi5;
+SPI_HandleTypeDef prvADS9224R_SPI_S_SDOB_HANDLER;
+SPI_HandleTypeDef prvADS9224R_SPI_S_SDOA_HANDLER;
 
 
 
@@ -220,72 +220,6 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef *hspi)
 
 
 
-/**
-  * @brief SPI4 Initialization Function
-  * @param None
-  * @retval None
-  */
-void MX_SPI4_Init(void)
-{
-	/* SPI4 parameter configuration*/
-	hspi4.Instance = SPI4;
-	hspi4.Init.Mode = SPI_MODE_SLAVE;
-	hspi4.Init.Direction = SPI_DIRECTION_2LINES_RXONLY;
-	hspi4.Init.DataSize = SPI_DATASIZE_8BIT;
-	hspi4.Init.CLKPolarity = SPI_POLARITY_LOW;
-	hspi4.Init.CLKPhase = SPI_PHASE_1EDGE;
-	hspi4.Init.NSS = SPI_NSS_HARD_INPUT;
-	hspi4.Init.FirstBit = SPI_FIRSTBIT_MSB;
-	hspi4.Init.TIMode = SPI_TIMODE_DISABLE;
-	hspi4.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-	hspi4.Init.CRCPolynomial = 0x0;
-	hspi4.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
-	hspi4.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
-	hspi4.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
-	hspi4.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
-	hspi4.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
-	hspi4.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
-	hspi4.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;
-	hspi4.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
-	hspi4.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_DISABLE;
-	hspi4.Init.IOSwap = SPI_IO_SWAP_DISABLE;
-	if (HAL_SPI_Init(&hspi4) != HAL_OK)
-	{
-		Error_Handler();
-	}
-
-}
-void MX_SPI5_Init(void)
-{
-
-	/* SPI5 parameter configuration*/
-	hspi5.Instance = SPI5;
-	hspi5.Init.Mode = SPI_MODE_SLAVE;
-	hspi5.Init.Direction = SPI_DIRECTION_2LINES_RXONLY;
-	hspi5.Init.DataSize = SPI_DATASIZE_8BIT;
-	hspi5.Init.CLKPolarity = SPI_POLARITY_LOW;
-	hspi5.Init.CLKPhase = SPI_PHASE_1EDGE;
-	hspi5.Init.NSS = SPI_NSS_HARD_INPUT;
-	hspi5.Init.FirstBit = SPI_FIRSTBIT_MSB;
-	hspi5.Init.TIMode = SPI_TIMODE_DISABLE;
-	hspi5.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-	hspi5.Init.CRCPolynomial = 0x0;
-	hspi5.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
-	hspi5.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
-	hspi5.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
-	hspi5.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
-	hspi5.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
-	hspi5.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
-	hspi5.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;
-	hspi5.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
-	hspi5.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_DISABLE;
-	hspi5.Init.IOSwap = SPI_IO_SWAP_DISABLE;
-	if (HAL_SPI_Init(&hspi5) != HAL_OK)
-	{
-	Error_Handler();
-	}
-
-}
 
 
 
