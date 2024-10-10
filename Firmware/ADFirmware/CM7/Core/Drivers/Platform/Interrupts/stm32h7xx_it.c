@@ -59,6 +59,8 @@ extern ETH_HandleTypeDef HETH;
 extern DMA_HandleTypeDef hdma_adc1;
 extern DAC_HandleTypeDef hdac1;
 extern TIM_HandleTypeDef htim6;
+extern SPI_HandleTypeDef hspi4;
+extern SPI_HandleTypeDef hspi5;
 
 /* USER CODE BEGIN EV */
 /**
@@ -291,4 +293,31 @@ void EXTI3_IRQHandler(void)
 void EXTI4_IRQHandler(void)
 {
 	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
+}
+/**
+  * @brief This function handles SPI4 global interrupt.
+  */
+void SPI4_IRQHandler(void)
+{
+  /* USER CODE BEGIN SPI4_IRQn 0 */
+
+  /* USER CODE END SPI4_IRQn 0 */
+  HAL_SPI_IRQHandler(&hspi4);
+  /* USER CODE BEGIN SPI4_IRQn 1 */
+
+  /* USER CODE END SPI4_IRQn 1 */
+}
+
+/**
+  * @brief This function handles SPI5 global interrupt.
+  */
+void SPI5_IRQHandler(void)
+{
+  /* USER CODE BEGIN SPI5_IRQn 0 */
+
+  /* USER CODE END SPI5_IRQn 0 */
+  HAL_SPI_IRQHandler(&hspi5);
+  /* USER CODE BEGIN SPI5_IRQn 1 */
+
+  /* USER CODE END SPI5_IRQn 1 */
 }

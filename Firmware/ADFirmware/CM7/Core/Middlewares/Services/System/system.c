@@ -23,6 +23,7 @@
 #include "drv_system.h"
 #include "drv_gpio.h"
 #include "drv_timer.h"
+#include "ads9224r.h"
 
 
 #include "system.h"
@@ -90,6 +91,8 @@ static void prvSYSTEM_Task()
 				prvSYSTEM_DATA.state = SYSTEM_STATE_ERROR;
 				break;
 			}
+			ADS9224R_Init();
+			while(1);
 			DRV_GPIO_Port_Init(SYSTEM_LINK_STATUS_DIODE_PORT);
 			DRV_GPIO_Port_Init(SYSTEM_ERROR_STATUS_DIODE_PORT);
 			DRV_GPIO_Pin_Init(SYSTEM_LINK_STATUS_DIODE_PORT, SYSTEM_LINK_STATUS_DIODE_PIN, &userLedConf);

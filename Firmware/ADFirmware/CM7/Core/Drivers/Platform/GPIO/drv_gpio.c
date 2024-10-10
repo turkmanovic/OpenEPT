@@ -164,6 +164,21 @@ drv_gpio_status_t DRV_GPIO_Pin_SetState(drv_gpio_port_t port, drv_gpio_pin pin, 
 	return DRV_GPIO_STATUS_OK;
 }
 
+drv_gpio_pin_state_t 	DRV_GPIO_Pin_ReadState(drv_gpio_port_t port, drv_gpio_pin pin)
+{
+	GPIO_PinState state;
+	if(prvDRV_GPIO_PORTS[port].initState != DRV_GPIO_PORT_INIT_STATUS_INITIALIZED || prvDRV_GPIO_PORTS[port].lock == NULL) return DRV_GPIO_STATUS_ERROR;
+	if(pin > DRV_GPIO_PIN_MAX_NUMBER) return DRV_GPIO_STATUS_ERROR;
+
+	if(xSemaphoreTake(prvDRV_GPIO_PORTS[port].lock, portMAX_DELAY) == pdFALSE ) return DRV_GPIO_STATUS_ERROR;
+
+	state = HAL_GPIO_ReadPin((GPIO_TypeDef*)prvDRV_GPIO_PORTS[port].portInstance, 1 << pin);
+
+	if(xSemaphoreGive(prvDRV_GPIO_PORTS[port].lock) == pdFALSE ) return DRV_GPIO_STATUS_ERROR;
+
+	return state;
+}
+
 drv_gpio_status_t DRV_GPIO_Pin_ToogleFromISR(drv_gpio_port_t port, drv_gpio_pin pin)
 {
 	BaseType_t * pxHigherPriorityTaskWoken = pdFALSE;

@@ -8,6 +8,7 @@
 #ifndef CORE_DRIVERS_PLATFORM_SPI_DRV_SPI_H_
 #define CORE_DRIVERS_PLATFORM_SPI_DRV_SPI_H_
 
+#include <stdint.h>
 #include "globalConfig.h"
 
 typedef enum drv_spi_initialization_status_t
@@ -91,7 +92,12 @@ typedef struct drv_spi_config_t
 
 drv_spi_status_t	DRV_SPI_Init();
 drv_spi_status_t	DRV_SPI_Instance_Init(drv_spi_instance_t instance, drv_spi_config_t* config);
+drv_spi_status_t	DRV_SPI_Instance_DeInit(drv_spi_instance_t instance);
 drv_spi_status_t	DRV_SPI_TransmitData(uint8_t* buffer, uint8_t size, uint32_t timeout);
 drv_spi_status_t	DRV_SPI_ReceiveData(uint8_t* buffer, uint8_t size, uint32_t timeout);
+
+/**/
+void				MX_SPI4_Init();
+void				MX_SPI5_Init();
 
 #endif /* CORE_DRIVERS_PLATFORM_SPI_DRV_SPI_H_ */
