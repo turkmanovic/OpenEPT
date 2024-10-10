@@ -536,6 +536,7 @@ static ads9224r_status_t prvADS9224R_ACQ_SetState()
 
 ads9224r_status_t	ADS9224R_Init(ads9224r_config_t *ads9224r_config_t, uint32_t timeout)
 {
+	uint8_t registersContent[8] = {0};
 
 	memset(&prvADS9224R_DATA, 0, sizeof(ads9224r_handle_t));
 
@@ -545,21 +546,14 @@ ads9224r_status_t	ADS9224R_Init(ads9224r_config_t *ads9224r_config_t, uint32_t t
 
 	prvADS9224R_DATA.init = ADS9224R_INIT_STATE_INIT;
 
+	for(uint8_t i =0; i < 8; i++)
+	{
+		if(prvADS9224R_CONF_SPI_Master_ReadReg(i, &registersContent[i], timeout) != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
+	}
+
 	if(ADS9224R_SetPatternState(ADS9224R_FPATTERN_STATE_ENABLED, timeout) != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
 
-	if(prvADS9224R_ACQ_SetState() != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
-
 	if(ADS9224R_SetAcquisitonState(ADS9224R_ACQ_STATE_ACTIVE) != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
-
-
-
-
-
-
-
-
-
-
 
 
 	while(1);
@@ -610,7 +604,9 @@ ads9224r_status_t	ADS9224R_SetPatternState(ads9224r_fpattern_state_t state, uint
 	/* Read */
 	if(prvADS9224R_CONF_SPI_Master_ReadReg(ADS9224R_REG_ADDR_OUTPUT_DATA_WORD_CFG, &dataRx, timeout) != ADS9224R_STATUS_OK) return ADS9224R_STATUS_ERROR;
 
+
 	if( (dataRx & ADS9224R_REG_MASK_OUTPUT_DATA_WORD_CFG_FIXED_PATTERN_DATA) != regContentBit) return ADS9224R_STATUS_ERROR;
+
 
 	return ADS9224R_STATUS_OK;
 }
