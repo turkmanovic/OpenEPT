@@ -95,11 +95,13 @@ bool DataProcessing::setAcquisitionStatus(dataprocessing_acquisition_status_t aA
 
 void DataProcessing::onNewSampleBufferReceived(QVector<double> rawData, int packetID, int magic)
 {
-    double          keyStartValue = packetID*rawData.size()/2*samplingPeriod;
+    double          keyStartValue = 0; ;
     double          dropRate = 0;
     unsigned int    i = 0;
     unsigned int    j = 0;
     unsigned short  ebp = (unsigned short)(magic >> 16);
+    unsigned int size = rawData.size();
+    unsigned int halfSize = rawData.size()/2;
 
     if(ebp != 0)
     {
@@ -132,34 +134,86 @@ void DataProcessing::onNewSampleBufferReceived(QVector<double> rawData, int pack
     dropRate = (double)dropPacketsNo / (double)(receivedPacketCounter + dropPacketsNo) * 100;
 
     /* Take data */
-    for(; i < rawData.size();)
-    {
-        voltageDataCollected[lastBufferUsedPositionIndex] = rawData[i]*voltageInc;
-        if(i == 0)
+    if(0){
+        keyStartValue = packetID*rawData.size()/2*samplingPeriod;
+        for(; i < rawData.size();)
         {
-            voltageKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue;
-            currentKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + samplingTime;
-            consumptionKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + samplingTime;
-            if(ebp != 0 && ebpNo > 0)
+            voltageDataCollected[lastBufferUsedPositionIndex] = rawData[i]*voltageInc;
+            if(i == 0)
             {
-                ebpValue.append(lastCumulativeCurrentConsumptionValue);
-                ebpValueKey.append(keyStartValue);
-                emit sigEBPValue(packetID, lastCumulativeCurrentConsumptionValue, keyStartValue);
+                voltageKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue;
+                currentKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + samplingTime;
+                consumptionKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + samplingTime;
+                if(ebp != 0 && ebpNo > 0)
+                {
+                    ebpValue.append(lastCumulativeCurrentConsumptionValue);
+                    ebpValueKey.append(keyStartValue);
+                    emit sigEBPValue(packetID, lastCumulativeCurrentConsumptionValue, keyStartValue);
+                }
             }
+            else
+            {
+                voltageKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + (double)j*samplingPeriod;
+                currentKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + (double)j*samplingPeriod + samplingTime;
+                consumptionKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + (double)j*samplingPeriod + samplingTime;
+            }
+            currentDataCollected[lastBufferUsedPositionIndex] = rawData[i+1]*currentInc;
+            currentConsumptionDataCollected[lastBufferUsedPositionIndex] = rawData[i+1]*(samplingPeriod)/3600000; //mAh
+            lastCumulativeCurrentConsumptionValue += rawData[i+1]*(samplingPeriod)/3600000;                         //This value remember last consumption in case when buffers are restarted
+            cumulativeConsumptionDataCollected[lastBufferUsedPositionIndex] = lastCumulativeCurrentConsumptionValue;
+            i                           += 2;
+            lastBufferUsedPositionIndex += 1;
+            j += 1;
         }
-        else
+    }
+    else
+    {
+        keyStartValue = packetID*rawData.size()/2;
+        for(; i < halfSize;)
         {
-            voltageKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + (double)j*samplingPeriod;
-            currentKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + (double)j*samplingPeriod + samplingTime;
-            consumptionKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + (double)j*samplingPeriod + samplingTime;
+            double rawVoltage = rawData[i];
+            double rawCurrent= rawData[i+halfSize];
+            short a = (((short) rawVoltage) >> 8) & 0x00FF;
+            short b = (((short) rawVoltage) << 8) & 0xFF00;
+            short c = a | b;
+            int d = (int) c;
+            double swapDataVoltage = (double)d;
+            a = (((short) rawCurrent) >> 8) & 0x00FF;
+            b = (((short) rawCurrent) << 8) & 0xFF00;
+            c = a | b;
+            d = (int) c;
+            double swapDataCurrent = (double)d;
+            voltageDataCollected[lastBufferUsedPositionIndex] = swapDataVoltage*voltageInc;
+            if(i == 0)
+            {
+                voltageKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue;
+                currentKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue;
+                consumptionKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue;
+                if(ebp != 0 && ebpNo > 0)
+                {
+                    ebpValue.append(lastCumulativeCurrentConsumptionValue);
+                    ebpValueKey.append(keyStartValue);
+                    emit sigEBPValue(packetID, lastCumulativeCurrentConsumptionValue, keyStartValue);
+                }
+            }
+            else
+            {
+//                voltageKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + (double)j*samplingPeriod;
+//                currentKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + (double)j*samplingPeriod;
+//                consumptionKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + (double)j*samplingPeriod;
+                voltageKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + (double)j;
+                currentKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + (double)j;
+                consumptionKeysDataCollected[lastBufferUsedPositionIndex] = keyStartValue + (double)j;
+            }
+            currentDataCollected[lastBufferUsedPositionIndex] = swapDataCurrent*currentInc;
+            currentConsumptionDataCollected[lastBufferUsedPositionIndex] = swapDataCurrent*(samplingPeriod)/3600000; //mAh
+            lastCumulativeCurrentConsumptionValue += swapDataCurrent*(samplingPeriod)/3600000;                         //This value remember last consumption in case when buffers are restarted
+            cumulativeConsumptionDataCollected[lastBufferUsedPositionIndex] = lastCumulativeCurrentConsumptionValue;
+            i                           += 1;
+            lastBufferUsedPositionIndex += 1;
+            j += 1;
         }
-        currentDataCollected[lastBufferUsedPositionIndex] = rawData[i+1]*currentInc;
-        currentConsumptionDataCollected[lastBufferUsedPositionIndex] = rawData[i+1]*(samplingPeriod)/3600000; //mAh
-        lastCumulativeCurrentConsumptionValue += rawData[i+1]*(samplingPeriod)/3600000;                         //This value remember last consumption in case when buffers are restarted
-        cumulativeConsumptionDataCollected[lastBufferUsedPositionIndex] = lastCumulativeCurrentConsumptionValue;
-        i                           += 2;
-        lastBufferUsedPositionIndex += 1;
-        j += 1;
+
     }
 
 

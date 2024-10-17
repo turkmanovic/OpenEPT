@@ -192,6 +192,7 @@ SECTIONS
   {
     . = ABSOLUTE(0x38000000);
     *(.ADCSamplesBuffer) 
+    *(.ADCSamplesBufferSPI) 
   } >RAM_D3
 
   /* Remove information from the compiler libraries */

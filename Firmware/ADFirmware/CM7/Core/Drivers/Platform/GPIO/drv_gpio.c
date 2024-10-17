@@ -153,7 +153,7 @@ drv_gpio_status_t DRV_GPIO_Pin_Init(drv_gpio_port_t port, drv_gpio_pin pin, drv_
 drv_gpio_status_t 		DRV_GPIO_Pin_DeInit(drv_gpio_port_t port, drv_gpio_pin pin)
 {
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
-	if(prvDRV_GPIO_PORTS[port].initState != DRV_GPIO_PORT_INIT_STATUS_INITIALIZED || prvDRV_GPIO_PORTS[port].lock == NULL) return DRV_GPIO_STATUS_ERROR;
+	if(prvDRV_GPIO_PORTS[port].lock == NULL) return DRV_GPIO_STATUS_ERROR;
 	if(pin > DRV_GPIO_PIN_MAX_NUMBER) return DRV_GPIO_STATUS_ERROR;
 
 	if(xSemaphoreTake(prvDRV_GPIO_PORTS[port].lock, portMAX_DELAY) == pdFALSE ) return DRV_GPIO_STATUS_ERROR;
@@ -175,6 +175,17 @@ drv_gpio_status_t DRV_GPIO_Pin_SetState(drv_gpio_port_t port, drv_gpio_pin pin, 
 	HAL_GPIO_WritePin((GPIO_TypeDef*)prvDRV_GPIO_PORTS[port].portInstance, 1 << pin, state);
 
 	if(xSemaphoreGive(prvDRV_GPIO_PORTS[port].lock) == pdFALSE ) return DRV_GPIO_STATUS_ERROR;
+
+	return DRV_GPIO_STATUS_OK;
+}
+drv_gpio_status_t 		DRV_GPIO_Pin_SetStateFromISR(drv_gpio_port_t port, drv_gpio_pin pin, drv_gpio_pin_state_t state)
+{
+	if(prvDRV_GPIO_PORTS[port].initState != DRV_GPIO_PORT_INIT_STATUS_INITIALIZED ) return DRV_GPIO_STATUS_ERROR;
+	if(pin > DRV_GPIO_PIN_MAX_NUMBER) return DRV_GPIO_STATUS_ERROR;
+
+
+	HAL_GPIO_WritePin((GPIO_TypeDef*)prvDRV_GPIO_PORTS[port].portInstance, 1 << pin, state);
+
 
 	return DRV_GPIO_STATUS_OK;
 }

@@ -2118,7 +2118,7 @@ HAL_StatusTypeDef HAL_SPI_Transmit_DMA(SPI_HandleTypeDef *hspi, const uint8_t *p
   * @note   When the CRC feature is enabled the pData Length must be Size + 1.
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_SPI_Receive_DMA(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size)
+HAL_StatusTypeDef HAL_SPI_Receive_DMA(SPI_HandleTypeDef *hspi, uint8_t *pData, uint8_t *pData1, uint16_t Size)
 {
   HAL_StatusTypeDef errorcode = HAL_OK;
 
@@ -2216,8 +2216,10 @@ HAL_StatusTypeDef HAL_SPI_Receive_DMA(SPI_HandleTypeDef *hspi, uint8_t *pData, u
   hspi->hdmarx->XferAbortCallback = NULL;
 
   /* Enable the Rx DMA Stream/Channel  */
-  if (HAL_OK != HAL_DMA_Start_IT(hspi->hdmarx, (uint32_t)&hspi->Instance->RXDR, (uint32_t)hspi->pRxBuffPtr,
-                                 hspi->RxXferCount))
+//  if (HAL_OK != HAL_DMA_Start_IT(hspi->hdmarx, (uint32_t)&hspi->Instance->RXDR, (uint32_t)hspi->pRxBuffPtr,
+//                                 hspi->RxXferCount))
+//  {
+  if(HAL_OK != HAL_DMAEx_MultiBufferStart_IT(hspi->hdmarx, (uint32_t)&hspi->Instance->RXDR, (uint32_t)hspi->pRxBuffPtr, (uint32_t)pData1, Size))
   {
     /* Update SPI error code */
     SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_DMA);
@@ -3275,7 +3277,7 @@ static void SPI_DMAReceiveCplt(DMA_HandleTypeDef *hdma)
 
   if (hspi->State != HAL_SPI_STATE_ABORT)
   {
-    if (hspi->hdmarx->Init.Mode == DMA_CIRCULAR)
+    if (hspi->hdmarx->Init.Mode == DMA_CIRCULAR || hspi->hdmarx->Init.Mode == DMA_DOUBLE_BUFFER_M0)
     {
 #if (USE_HAL_SPI_REGISTER_CALLBACKS == 1UL)
       hspi->RxCpltCallback(hspi);

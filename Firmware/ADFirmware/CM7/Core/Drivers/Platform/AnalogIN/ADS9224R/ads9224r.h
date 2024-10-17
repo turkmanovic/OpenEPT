@@ -48,6 +48,12 @@ typedef enum
 
 typedef enum
 {
+	ADS9224R_SDO_A,
+	ADS9224R_SDO_B,
+}ads9224r_sdo_t;
+
+typedef enum
+{
 	ADS9224R_INIT_STATE_NOINIT = 0,
 	ADS9224R_INIT_STATE_INIT
 }ads9224r_init_state_t;
@@ -174,11 +180,12 @@ typedef void (*bufferReceiveCallback)(uint32_t buffAddr);
 
 ads9224r_status_t	ADS9224R_Init(ads9224r_config_t *ads9224r_config_t, uint32_t timeout);
 ads9224r_status_t	ADS9224R_SetPatternState(ads9224r_fpattern_state_t state, uint32_t timeout);
-ads9224r_status_t   ADS9224R_SetAcquisitonState(ads9224r_acq_state_t state);
+ads9224r_status_t   ADS9224R_StartAcquisiton(uint8_t* sdoaBuffer0, uint8_t* sdoaBuffer1, uint8_t* sdobBuffer0, uint8_t* sdobBuffer1, uint32_t size);
+ads9224r_status_t   ADS9224R_StopAcquisiton();
 ads9224r_status_t   ADS9224R_SetConfig(ads9224r_config_t *config);
 ads9224r_status_t   ADS9224R_GetConfig(ads9224r_config_t *config);
-ads9224r_status_t   ADS9224R_SetSamplingRate(uint32_t samplingRate);
-ads9224r_status_t   ADS9224R_RegisterCallback(bufferReceiveCallback callback);
+ads9224r_status_t   ADS9224R_SetSamplingRate(uint32_t timPeriod, uint32_t timPrescaler);
+ads9224r_status_t   ADS9224R_RegisterCallback(bufferReceiveCallback callback, ads9224r_sdo_t trigger);
 ads9224r_status_t   ADS9224R_SubmitBuffer(uint32_t buffAddr);
 
 

@@ -228,9 +228,6 @@ static void prvENERGY_DEBUGGER_Task()
 					prvENERGY_DEBUGGER_DATA.mainTaskState = ENERGY_DEBUGGER_STATE_ERROR;
 			    	break;
 			    }
-			    // Initialize the GPIO driver
-			    if (DRV_GPIO_Init() != DRV_GPIO_STATUS_OK)
-			    	prvENERGY_DEBUGGER_DATA.mainTaskState = ENERGY_DEBUGGER_STATE_ERROR;
 
 			    // Initialize the GPIO port
 			    if (DRV_GPIO_Port_Init(DRV_GPIO_PORT_C) != DRV_GPIO_STATUS_OK)

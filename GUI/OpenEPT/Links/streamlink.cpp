@@ -56,7 +56,7 @@ void StreamLink::readPendingData()
     while(udpSocket->hasPendingDatagrams())
     {
         QByteArray receivedData;
-        QVector<unsigned short> data;
+        QVector<short> data;
         QVector<double> data_double;
 
         receivedData.resize(udpSocket->pendingDatagramSize());
@@ -68,7 +68,7 @@ void StreamLink::readPendingData()
         memcpy(&counter, receivedData.data(), 4);
         memcpy(&magic, receivedData.data()+4, 4);
         data_double.reserve(data.size());
-        std::copy(data.cbegin(), data.cend(), std::back_inserter(data_double));
+        std::copy(data.cbegin(), data.cend(), std::back_inserter(data_double));        
         emit sigNewSamplesBufferReceived(data_double, counter, magic);
     }
 }

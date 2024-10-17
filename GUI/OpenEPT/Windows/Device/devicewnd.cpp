@@ -526,13 +526,13 @@ void DeviceWnd::setStatisticsElapsedTime(int elapsedTime)
 
 bool DeviceWnd::plotSetVoltageValues(QVector<double> values, QVector<double> keys)
 {
-    voltageChart->setData(values, keys);
+    voltageChart->appendData(values, keys);
     return true;
 }
 
 bool DeviceWnd::plotSetCurrentValues(QVector<double> values, QVector<double> keys)
 {
-    currentChart->setData(values, keys);
+    currentChart->appendData(values, keys);
     return true;
 }
 

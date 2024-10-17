@@ -149,7 +149,7 @@ static drv_system_status_t prvDRV_SYSTEM_MPU_Init()
 	MPU_InitStruct.Enable 			= MPU_REGION_ENABLE;
 	MPU_InitStruct.Number 			= MPU_REGION_NUMBER3;
 	MPU_InitStruct.BaseAddress 		= 0x38000000;
-	MPU_InitStruct.Size 			= MPU_REGION_SIZE_2KB;
+	MPU_InitStruct.Size 			= MPU_REGION_SIZE_8KB;
 	MPU_InitStruct.SubRegionDisable = 0x0;
 	MPU_InitStruct.TypeExtField 	= MPU_TEX_LEVEL0;
 	MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
@@ -190,8 +190,8 @@ drv_system_status_t	DRV_SYSTEM_InitDrivers()
 {
 	if(DRV_GPIO_Init() != DRV_GPIO_STATUS_OK) return DRV_SYSTEM_STATUS_ERROR;
 	if(DRV_UART_Init() != DRV_UART_STATUS_OK) return DRV_SYSTEM_STATUS_ERROR;
-	if(DRV_AIN_Init(DRV_AIN_ADC_3, NULL) != DRV_AIN_STATUS_OK) return DRV_SYSTEM_STATUS_ERROR;
 	if(DRV_SPI_Init() != DRV_SPI_STATUS_OK) return DRV_SYSTEM_STATUS_ERROR;
+	if(DRV_AIN_Init(DRV_AIN_ADC_3, NULL) != DRV_AIN_STATUS_OK) return DRV_SYSTEM_STATUS_ERROR;
 
 	if(DRV_Timer_Init() != DRV_TIMER_STATUS_OK) return DRV_SYSTEM_STATUS_ERROR;
 	if(DRV_AOUT_Init() != DRV_AOUT_STATUS_OK) return DRV_SYSTEM_STATUS_ERROR;

@@ -24,8 +24,9 @@ typedef struct drv_spi_handle_t
 static drv_spi_handle_t prvDRV_SPI_INSTANCE;
 
 
-SPI_HandleTypeDef prvADS9224R_SPI_S_SDOB_HANDLER;
-SPI_HandleTypeDef prvADS9224R_SPI_S_SDOA_HANDLER;
+
+
+
 
 
 
@@ -115,9 +116,11 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
       GPIO_InitStruct.Alternate = GPIO_AF5_SPI4;
       HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
+
       /* SPI4 interrupt Init */
-      HAL_NVIC_SetPriority(SPI4_IRQn, 5, 0);
-      HAL_NVIC_EnableIRQ(SPI4_IRQn);
+//      HAL_NVIC_SetPriority(SPI4_IRQn, 5, 0);
+//      HAL_NVIC_EnableIRQ(SPI4_IRQn);
+
     /* USER CODE BEGIN SPI4_MspInit 1 */
 
     /* USER CODE END SPI4_MspInit 1 */
@@ -141,6 +144,8 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
       __HAL_RCC_SPI5_CLK_ENABLE();
 
       __HAL_RCC_GPIOF_CLK_ENABLE();
+
+      /* DMA interrupt init */
       /**SPI5 GPIO Configuration
       PF6     ------> SPI5_NSS
       PF7     ------> SPI5_SCK
@@ -154,11 +159,8 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
       HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
       /* SPI5 interrupt Init */
-      HAL_NVIC_SetPriority(SPI5_IRQn, 5, 0);
-      HAL_NVIC_EnableIRQ(SPI5_IRQn);
-    /* USER CODE BEGIN SPI5_MspInit 1 */
-
-    /* USER CODE END SPI5_MspInit 1 */
+//      HAL_NVIC_SetPriority(SPI5_IRQn, 5, 0);
+//      HAL_NVIC_EnableIRQ(SPI5_IRQn);
     }
 }
 
