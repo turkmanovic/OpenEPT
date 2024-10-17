@@ -198,6 +198,7 @@ static void prvENERGY_DEBUGGER_Task()
 {
 		LOGGING_Write("Energy Debugger", LOGGING_MSG_TYPE_INFO, "Energy Debugger service started\r\n");
 		uint8_t  data;
+		drv_uart_config_t channelConfig;
 		uint32_t id;
 		energy_debugger_ebp_name_t		  ebpName;
 		energy_debugger_breakpoint_info_t ebp;
@@ -209,7 +210,6 @@ static void prvENERGY_DEBUGGER_Task()
 			{
 			case ENERGY_DEBUGGER_STATE_INIT:
 
-				drv_uart_config_t channelConfig;
 
 				channelConfig.baudRate = 115200;
 				channelConfig.parityEnable = DRV_UART_PARITY_NONE;
